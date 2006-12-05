@@ -5,12 +5,10 @@ todo
 
 mike: deploy two apps and check if 'NameVirtualHost *:80' is required
 mike: move enable/disable cdrom/universe into function in apt::
-mike: setup trunk/branches/tags structure on svn
 mike: slicehost, re-runnability, multi, 
 mike: find out how to view checkins from cmdline
 mike: setup alerts
 mike: consistent shell environment - write it to .caprc and recipe to push
-mike: setup svn repos and trac on modu1 (make multi and automate adding new)
 
 
 
