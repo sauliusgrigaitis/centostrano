@@ -1,0 +1,171 @@
+---------------------------
+deprec - Deployment Recipes
+---------------------------
+
+QUICKSTART
+
+To get your rails app running on a stock standard Ubuntu 6.06 server:
+
+cd /path/to/railsapp
+deprec --apply-to . --name projectname --domain www.projectname.com
+# edit config/deploy.rb to put in details of your subversion repository
+cap install_rails_stack
+cap setup
+cap deploy_with_migrations
+cap restart_apache
+
+Read on for installation and usage instructions.
+
+
+WHAT DEPREC IS
+
+Deprec is a collection of automated recipes, written in ruby, for setting 
+up production ready rails servers. The idea is, even if it takes longer to 
+write a general recipe for your situation, rather than just doing it by hand, 
+it's well worth the effort because you get a reliable and reproducible 
+deployment that will work just as well even if it's 3am and a human would be 
+liable to make mistakes with live webservers.
+
+You also get the advantage of a further set of conventions, which means that 
+other tools that you write can build on these conventions, in the same way 
+that the conventions that we already have amongst rails and capistrano users 
+benefit us when writing plugins and gems.
+
+Deprec is designed to take a raw server, and set it up with current best 
+practices for a production web server. This currently means Apache 2.2 for 
+load balancing and static content, and Mongrel for serving rails. Other 
+alternatives can be added later, providing a convention over configuration 
+approach is followed. Version 1.0 of deprec contains recipes specifically 
+for default installations of Ubuntu 6.06 (server), although it also contains 
+tasks which will allow it to be used on slightly non-standard ubuntu 
+installations, such as those provided by slicehost.com.
+
+Deprec has been tested on live VPS hosts with real production sites. It works 
+for me, if it doesn't work for you, then it's easy to extend.
+
+
+WHAT DEPREC ISN'T
+
+Deprec isn't an attempt to solve all problems on all servers. I am solving 
+my own deployment problems, and providing a general framework to help you 
+solve yours. Submissions of recipes for other linux distributions, and maybe 
+even other operating systems, will be accepted and included. If this is 
+popular, some work may be done to allow your own recipes to be managed as 
+individual gems, dependent on the deprec gem.
+
+
+CREDITS
+
+Deprec is written and maintained by Mike Bailey <mike@bailey.net.au>. 
+More about me here: http://codemode.blogspot.com/
+
+Deprec was inspired and uses the brilliantly executed Capistrano. Thanks Jamis!
+
+After starting on this project I found myself reading and utilizing a lot of 
+code by Bradley Taylor, in particular the RailsMachine and VMbuilder gems.
+
+Neil Wilson wrote three capistrano plugins that are used in this project.
+
+I'd like to say a huge thanks to these guys for helping make my work easier!
+
+For the first cut I have included all third party code in a directory within 
+the deprec gem, rather than link to the gems themselves. I made this decision 
+to prevent deprec from breaking due to a change in one of the other libraries.
+
+Thanks to Craig Ambrose for help with testing, documentation and beer.
+
+
+LICENCE
+
+Deprec is licenced under the LGPL. This means that you can use it in commercial 
+or open source applications. More details found here:
+http://www.gnu.org/licenses/lgpl.html
+
+deprec - deployment recipes for capistrano
+Copyright (C) 2006 Mike Bailey
+
+This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+
+
+USAGE
+
+The following instructions describe how to use deprec. Please note that the 
+initial step, installing deprec on your workstation, will patch your copy of 
+capistrano to allow capistrano directives to be placed in a local configuration 
+file ~/.caprc. This patch has been accepted into capistrano and will be 
+available in a later release. The deprec_dotfiles command will not harm future 
+versions of capistrano that already contain this functionality.
+
+Most of the magic of deprec occurs in the install_rails_stack section. This 
+builds the server, which developers previously had to do by hand, or find a 
+hosting company that did it for them. Once that is done, deprec also adds 
+application specific helper tasks, which are shown below in the "deploy a 
+rails app to hosts" section.
+
+Please note that the "deprec --apply-to" command is much like the 
+"cap --apply-to" command, except that it creates a deploy.rb file in your 
+application's config directory with more available settings than capistrano 
+uses, because these settings can be used to configure the application specific 
+aspects of apache and mongrel. 
+
+Important Note:
+Running "deprec --apply-to" currently overwrites your existing deploy.rb file.
+If you have deployed the app elsewhere before, you may want to backup this file
+so that you can refer to it when setting up your deprec generated deploy.rb.
+Because deprec sets up the server, it can fill in more sensible defaults than
+capistrano normally does, but there are still a few settings that you need to
+set yourself. Future versions of deprec will not overwrite this file
+automatically, but will move it out of the way first.
+
+## install deprec on workstation
+#
+sudo gem install deprec -y    # installs what you need
+deprec_dotfiles               # patches capistrano + creates your ~/.caprc
+cap show_tasks		          # now you have deprec tasks included
+
+
+## install rails stack
+#
+# this currently only works with ubuntu 6.06.1 server installed
+# you need to have an account on this machine and sudo access
+#
+export HOSTS=r01,r02,r03      # define some hosts to mess with
+cap setup_ssh_keys            # copy out your public keys
+cap install_rails_stack	      # install apache, rubygems, mongrel, rails, etc.
+unset HOSTS                   # stop overriding cap's hosts list
+
+
+## deploy a rails app to hosts
+#
+# setup dns for your domain or put an entry in /etc/hosts
+cd /path/to/app
+deprec --apply-to . --name bailey --domain bailey.net.au
+cap setup
+# put svn details in config/deploy.rb 
+# or run 'cap setup_scm' to import project
+cap deploy_with_migrations
+cap restart_apache
+
+# update rails app on hosts
+cap deploy			
+cap deploy_with_migrations
+
+
+## some handy tools
+#
+cap show_tasks
+cap disable_web, enable_web   # puts up maintenance page
+cap restart_mongrel_cluster   # does what it says
+

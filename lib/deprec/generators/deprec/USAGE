@@ -1,0 +1,11 @@
+NAME
+     deprec - creates configuration and Capistrano tasks for server configuration.
+
+SYNOPSIS
+     deprec --apply-to /path/to/app --name application_name --domain domain_name
+
+DESCRIPTION
+     This generator creates deployment recipes.
+  
+EXAMPLE
+	deprec --apply-to . --name bailey --domain www.bailey.net.au
