@@ -122,8 +122,8 @@ Capistrano.configuration(:must_exist).load do
   
   desc "create deployment group and add current user to it"
   task :setup_user_perms do
-    sudo "grep #{group} /etc/group || sudo groupadd #{group}"
-    sudo "groups #{user} | grep #{group} || sudo usermod --groups #{group} -a #{user}"
+    sudo "grep '#{group}:' /etc/group || sudo groupadd #{group}"
+    sudo "groups #{user} | grep ' #{group} ' || sudo usermod --groups #{group} -a #{user}"
   end
   
   task :install_rubygems do
@@ -134,8 +134,6 @@ Capistrano.configuration(:must_exist).load do
       :dir => version,
       :url => "http://rubyforge.org/frs/download.php/11289/#{version}.tgz",
       :unpack => "tar zxf #{version}.tgz;",
-      :configure => nil,
-      :make => nil,
       :install => '/usr/bin/ruby1.8 setup.rb;'
     }
     download_src
@@ -155,6 +153,7 @@ Capistrano.configuration(:must_exist).load do
       :make => 'make;',
       :install => 'make install;',
       :post_install => 'cp support/apachectl /etc/init.d/httpd && chmod 0777 /etc/init.d/httpd;'
+      # XXX use 'install' command instead
     }
     download_src
     install_from_src
