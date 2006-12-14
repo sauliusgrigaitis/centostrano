@@ -7,6 +7,7 @@ require 'deprec/third_party/railsmachine/recipes/svn'
 require 'deprec/third_party/railsmachine/recipes/apache'
 require 'deprec/third_party/railsmachine/recipes/mysql'
 require 'deprec/capistrano_extensions/deprec_extensions.rb'
+require 'deprec/capistrano_extensions/actor_extensions.rb'
 
 Capistrano.configuration(:must_exist).load do
   set :user, (defined?(user) ? user : ENV['USER']) # user who is deploying

@@ -1,5 +1,5 @@
 Capistrano.configuration(:must_exist).load do
-  
+
   desc "remove and ignore log files and tmp from subversion"
   task :svn_remove_log_and_tmp do
     puts "removing log directory contents from svn"
@@ -15,4 +15,10 @@ Capistrano.configuration(:must_exist).load do
     puts "committing changes"
     system "svn commit -m 'Removed and ignored log files and tmp'"
   end
+
+  desc "Cache svn name and password on the server. Useful for http-based repositories."
+  task :svn_cache_credentials do
+    run_with_input "svn list #{repository}"
+  end
+
 end

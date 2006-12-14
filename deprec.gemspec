@@ -1,4 +1,7 @@
 require 'rubygems' 
+
+# TODO We should use Hoe to make this easier: http://rubyforge.org/projects/seattlerb -- topfunky
+
 SPEC = Gem::Specification.new do |spec|
   spec.name = 'deprec'
   spec.version = '1.1.0'

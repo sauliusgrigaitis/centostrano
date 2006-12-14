@@ -1,0 +1,7 @@
+
+== 1.1.1
+
+* Added run_with_input and sudo_with_input for interactive tasks. [topfunky]
+* Added sudo_stream for piping the output of a privileged command like the built-in stream() [topfunky]
+* svn_cache_credentials task does an interactive svn list to make http-based repository deployments easier. [topfunky]
+* Alternate deprec/recipes/cache_svn task overrides the built-in update_code task with a more efficient version. [topfunky]
