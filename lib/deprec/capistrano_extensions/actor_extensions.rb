@@ -2,7 +2,7 @@
 class Capistrano::Actor
 
   ##
-  # Run a task and ask for input when input_query is seen.
+  # Run a command and ask for input when input_query is seen.
   # Sends the response back to the server.
   #
   # +input_query+ is a regular expression that defaults to /^Password/.
@@ -16,7 +16,7 @@ class Capistrano::Actor
   end
 
   ##
-  # Run a task as root and ask for input when a regular expression is seen.
+  # Run a command using sudo and ask for input when a regular expression is seen.
   # Sends the response back to the server.
   #
   # See also +run_with_input+
@@ -28,7 +28,7 @@ class Capistrano::Actor
   end
   
   ##
-  # Run a command as root and continuously pipe the results back to the console.
+  # Run a command using sudo and continuously pipe the results back to the console.
   #
   # Similar to the built-in +stream+, but for privileged users.
   
@@ -41,8 +41,33 @@ class Capistrano::Actor
       end
     end
   end
+  
+  ##
+  # Run a command using the root account.
+  #
+  # Some linux distros/VPS providers only give you a root login when you install.
+  
+  def run_as_root(shell_command)
+    std.connect_as_root do |tempuser|
+      run shell_command
+    end
+  end
+  
+  ##
+  # Run a task using root account.
+  #
+  # Some linux distros/VPS providers only give you a root login when you install.
+  #
+  # tempuser: contains the value replaced by 'root' for the duration of this call
+  
+  def as_root()
+    std.connect_as_root do |tempuser|
+      yield tempuser
+    end
+  end
 
   private
+
 
   ##
   # Does the actual capturing of the input and streaming of the output.
