@@ -141,7 +141,7 @@ Capistrano.configuration(:must_exist).load do
   task :install_apache do
     # ??? is this an OK way to pass values around to the functions?
     version = 'httpd-2.2.3'
-    set :file_to_get, {
+    set :src_package, {
       :file => version + '.tar.gz',    
       :dir => version,  
       :url => "http://www.apache.org/dist/httpd/#{version}.tar.gz",
