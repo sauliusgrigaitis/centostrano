@@ -123,22 +123,22 @@ Capistrano.configuration(:must_exist).load do
   
   desc "create deployment group and add current user to it"
   task :setup_user_perms do
-    sudo "grep '#{group}:' /etc/group || sudo groupadd #{group}"
-    sudo "groups #{user} | grep ' #{group} ' || sudo usermod --groups #{group} -a #{user}"
+    deprec.groupadd(group)
+    deprec.add_user_to_group(user, group)
   end
   
   task :install_rubygems do
     # ??? is this an OK way to pass values around to the functions?
     version = 'rubygems-0.9.0'
-    set :file_to_get, {
+    set :src_package, {
       :file => version + '.tgz',
       :dir => version,
       :url => "http://rubyforge.org/frs/download.php/11289/#{version}.tgz",
       :unpack => "tar zxf #{version}.tgz;",
       :install => '/usr/bin/ruby1.8 setup.rb;'
     }
-    download_src
-    install_from_src
+    deprec.download_src(src_package, src_dir)
+    deprec.install_from_src(src_package, src_dir)
     gem.update_system
   end
   
@@ -153,43 +153,11 @@ Capistrano.configuration(:must_exist).load do
       :configure => './configure --enable-proxy --enable-proxy-balancer --enable-proxy-http --enable-rewrite  --enable-cache --enable-headers --enable-ssl --enable-deflate;',
       :make => 'make;',
       :install => 'make install;',
-      :post_install => 'cp support/apachectl /etc/init.d/httpd && chmod 0777 /etc/init.d/httpd;'
+      :post_install => 'install -b support/apachectl /etc/init.d/httpd;'
       # XXX use 'install' command instead
     }
-    download_src
-    install_from_src
-  end
-
-  # XXX move into cap extensions
-  desc "install package from source"
-  task :install_from_src do
-    package_dir = File.join(src_dir, file_to_get[:dir])
-    unpack_src
-    # XXX we need run_sh and sudo_sh functions to make 'cd' cmd work
-    sudo <<-SUDO
-    sh -c '
-      cd #{package_dir};
-      #{file_to_get[:configure]}
-      #{file_to_get[:make]}
-      #{file_to_get[:install]}
-      #{file_to_get[:post_install]}
-      '
-    SUDO
-  end
-  
-  desc "unpack src and make it writable by the group"
-  task :unpack_src do
-    package_dir = File.join(src_dir, file_to_get[:dir])
-    sudo <<-SUDO
-    sh -c '
-      cd #{src_dir};
-      test -d #{package_dir}.old && rm -fr #{package_dir}.old;
-      test -d #{package_dir} && mv #{package_dir} #{package_dir}.old;
-      #{file_to_get[:unpack]}
-      chgrp -R #{group} #{package_dir};  
-      chmod -R g+w #{package_dir};
-    '
-    SUDO
+    deprec.download_src(src_package, src_dir)
+    deprec.install_from_src(src_package, src_dir)
   end
   
   desc "Setup public symlink directories"
@@ -219,24 +187,19 @@ Capistrano.configuration(:must_exist).load do
     install_postfix
     deprec.render_template_to_file('postfix_main', '/etc/postfix/main.cf')
   end
-    
-  # something for later...
-  # desc "render a template"
-  # task :z_template do
-  #   file = File.join(File.dirname(__FILE__), 'recipes', 'templates', 'test_goo.rhtml')
-  #   msg = render :template => File.read(file), :foo => 'good', :bar => 'night'
-  #   run "echo #{msg}"
-  # end
-  
-  "will be moved to capistrano extension"
-  task :download_src do
-    # move this into cap extension
-    # XXX should make this group writable
-    # XXX so we don't need to sudo to compile
-    sudo "test -d #{src_dir} || sudo mkdir #{src_dir}" 
-    sudo "chgrp -R #{group} #{src_dir}"
-    sudo "chmod -R g+w #{src_dir}"
-    sudo "sh -c 'cd #{src_dir} && test -f #{file_to_get[:file]} || wget #{file_to_get[:url]}'"
+     
+  task :setup_admin_account do
+    user = Capistrano::CLI.password_prompt "Enter userid for new user:" 
+    deprec.useradd(user)
+    run_with_input("passwd #{user}", /UNIX password/) # ??? how many  versions of the prompt are there?
+    deprec.groupadd('admin')
+    deprec.add_user_to_group(user, 'admin')
+    deprec.append_to_file_if_missing('/etc/sudoers', '%admin ALL=(ALL) ALL')
   end
+  
+  task :setup_admin_account_as_root do
+    as_root { setup_admin_account }
+  end 
+
   
 end
