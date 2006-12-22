@@ -30,13 +30,9 @@ Capistrano.configuration(:must_exist).load do
   end
   
   desc "Set up the expected application directory structure on all boxes"
-  task :setup, :except => { :no_release => true } do
+  task :deprec_setup, :except => { :no_release => true } do
     setup_paths
-    run <<-CMD
-      mkdir -p -m 775 #{releases_path} #{shared_path}/system &&
-      mkdir -p -m 777 #{shared_path}/log &&
-      mkdir -p -m 777 #{shared_path}/pids
-    CMD
+    setup
     setup_servers
   end
   
