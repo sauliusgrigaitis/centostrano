@@ -28,14 +28,14 @@ class Capistrano::SCM::Subversion
 
   def setup_repository_cache(actor)
     params =  ""
-    params << "--username #{configuration.svn_username}" if configuration.svn_username
-    command = "#{svn} co -q -v #{params} #{configuration.repository} #{configuration.repository_cache} &&"
+    params << "--username #{configuration[:svn_username]}" if configuration[:svn_username]
+    command = "#{svn} co -q #{params} #{configuration[:repository]} #{configuration[:repository_cache]} &&"
     configuration.logger.debug "Caching SVN repository on remote servers..."
     run_checkout(actor, command, &svn_stream_handler(actor)) 
   end
 
   def update_repository_cache(actor)
-    command = "#{svn} up -q #{configuration.repository_cache} &&"
+    command = "#{svn} up -q #{configuration[:repository_cache]} &&"
     run_update(actor, command, &svn_stream_handler(actor)) 
   end
 
