@@ -48,7 +48,7 @@ Capistrano.configuration(:must_exist).load do
       buffer += ssl_buffer
     end
     
-    put buffer, "#{shared_path}/httpd.conf"
+    put buffer, "#{shared_path}/httpd.conf", :mode => 0444
     send(run_method, "cp #{shared_path}/httpd.conf #{apache_conf}")
     delete "#{shared_path}/httpd.conf"
   end
