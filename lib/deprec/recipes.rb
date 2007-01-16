@@ -103,18 +103,11 @@ Capistrano.configuration(:must_exist).load do
     sudo "chmod -R g+w #{deploy_to}"
   end
   
-  task :create_user do
-    newuser=user
-    user='root'
-    # run "useradd -m #{newuser}"
-    run "ls"
-    user=newuser
-  end
-  
   task :install_gems do
     gem.install 'rails'                 # gem lib makes installing gems fun
     gem.select 'mongrel'                # mongrel requires we select a version
     gem.install 'mongrel_cluster'
+    gem.install 'builder'
   end
   
   desc "create deployment group and add current user to it"
@@ -150,7 +143,6 @@ Capistrano.configuration(:must_exist).load do
       :make => 'make;',
       :install => 'make install;',
       :post_install => 'install -b support/apachectl /etc/init.d/httpd;'
-      # XXX use 'install' command instead
     }
     deprec.download_src(src_package, src_dir)
     deprec.install_from_src(src_package, src_dir)
@@ -187,7 +179,8 @@ Capistrano.configuration(:must_exist).load do
   task :setup_admin_account do
     user = Capistrano::CLI.password_prompt "Enter userid for new user:" 
     deprec.useradd(user)
-    run_with_input("passwd #{user}", /UNIX password/) # ??? how many  versions of the prompt are there?
+    puts "Setting pasword for new account"
+    sudo_with_input("passwd #{user}", /UNIX password/) # ??? how many  versions of the prompt are there?
     deprec.groupadd('admin')
     deprec.add_user_to_group(user, 'admin')
     deprec.append_to_file_if_missing('/etc/sudoers', '%admin ALL=(ALL) ALL')
