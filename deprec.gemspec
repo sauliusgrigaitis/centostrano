@@ -4,7 +4,7 @@ require 'rubygems'
 
 SPEC = Gem::Specification.new do |spec|
   spec.name = 'deprec'
-  spec.version = '1.2.1'
+  spec.version = '1.2.2'
   spec.summary = 'deployment recipes for capistrano'
   spec.description = <<-EOF
       This project provides libraries of Capistrano tasks and extensions to 
@@ -16,7 +16,6 @@ SPEC = Gem::Specification.new do |spec|
   # spec.platform = Gem::Platform::Ruby
   # spec.required_ruby_version = '>= 1.6.8' # I don't know
   spec.add_dependency('capistrano', '>= 1.2.0')
-  spec.add_dependency('termios', '>= 0.9.4')
   candidates = Dir.glob("{bin,docs,lib,test,resources}/**/*") 
   spec.files = candidates.delete_if do |item| 
     item.include?("CVS") || item.include?("rdoc") 
