@@ -32,12 +32,13 @@ Capistrano.configuration(:must_exist).load do
     apt.update
   end
   
-  desc "enable cdrom as a source of packages"
-  task :enable_cdrom_install do
-    # ruby is not installed by default so we use perl
-    sudo 'perl -pi -e \'s/^[# ]*(deb cdrom)/\1/g\' /etc/apt/sources.list'
-    apt.update
-  end
+  # XXX we need to run 'sudo apt-cdrom' to add a cdrom
+  # desc "enable cdrom as a source of packages"
+  # task :enable_cdrom_install do
+  #   # ruby is not installed by default so we use perl
+  #   sudo 'perl -pi -e \'s/^[# ]*(deb cdrom)/\1/g\' /etc/apt/sources.list'
+  #   apt.update
+  # end
   
   desc "installs packages required for a rails box"
   task :install_packages_for_rails do
@@ -54,8 +55,8 @@ Capistrano.configuration(:must_exist).load do
     apt.install({:base => ['postfix']}, :stable)
   end
   
-  desc "write network config to server"
-  task :network_configure do
+  # desc "write network config to server"
+  # task :network_configure do
     # set :ethernet_interfaces,  [{
     #                        :num => 0, 
     #                        :type => 'static', 
@@ -66,8 +67,8 @@ Capistrano.configuration(:must_exist).load do
     #                        :dns2 => '4.2.2.1'
     #                        }]
                           
-    deprec.render_template_to_file('interfaces.rhtml', '/etc/network/interfaces')
-  end
+  #   deprec.render_template_to_file('interfaces.rhtml', '/etc/network/interfaces')
+  # end
   
   # desc "configure hostname on server"
   # task :hostname_configure do
