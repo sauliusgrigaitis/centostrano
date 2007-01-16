@@ -28,8 +28,7 @@ module Deprec
   
   # create new user account on target system
   def useradd(user)
-    puts run_method
-    send(run_method, "grep '^#{user}:' /etc/passwd || /usr/sbin/useradd -m #{user}")
+    send(run_method, "grep '^#{user}:' /etc/passwd || sudo /usr/sbin/useradd -m #{user}")
   end
   
   # create a new group on target system
