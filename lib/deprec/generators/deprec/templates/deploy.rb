@@ -25,7 +25,8 @@ role :db,  domain, :primary => true
 set :application, "<%= singular_name %>"
 set :deploy_to, "/var/www/apps/#{application}"
 
-set :user, ENV['USER']
+# XXX we may not need this - it doesn't work on windows
+# XXX set :user, ENV['USER']
 set :repository, "svn+ssh://#{user}@#{domain}#{deploy_to}/repos/trunk"
 set :rails_env, "production"
 
@@ -47,6 +48,8 @@ set :apache_server_name, domain
 # set :apache_ssl_enabled, false
 # set :apache_ssl_ip, "127.0.0.1"
 # set :apache_ssl_forward_all, false
+# set :apache_ssl_chainfile, false
+
 
 # =============================================================================
 # MONGREL OPTIONS
