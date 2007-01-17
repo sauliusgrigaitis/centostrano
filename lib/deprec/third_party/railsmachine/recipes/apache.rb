@@ -12,6 +12,7 @@ Capistrano.configuration(:must_exist).load do
   set :apache_ssl_enabled, false
   set :apache_ssl_ip, nil
   set :apache_ssl_forward_all, false
+  set :apache_ssl_chainfile, false
   
   task :setup_apache, :roles => :web do
     set :apache_path, '/usr/local/apache2'
