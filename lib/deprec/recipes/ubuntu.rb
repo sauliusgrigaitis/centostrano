@@ -25,6 +25,22 @@ Capistrano.configuration(:must_exist).load do
     apt.update
   end
   
+  desc "enable multiverse repositories"
+  task :enable_multiverse do
+    # ruby is not installed by default or else we'd use 
+    # sudo "ruby -pi.bak -e \"gsub(/#\s?(.*universe$)/, '\1')\" sources.list"
+    sudo 'perl -pi -e \'s/#\s?(.*dapper multiverse$)/\1/g\' /etc/apt/sources.list'
+    apt.update
+  end
+  
+  desc "disable universe repositories"
+  task :disable_multiverse do
+    # ruby is not installed by default or else we'd use 
+    # sudo "ruby -pi.bak -e \"gsub(/#\s?(.*universe$)/, '\1')\" sources.list"
+    sudo 'perl -pi -e \'s/^([^#]*dapper multiverse)/#\1/g\' /etc/apt/sources.list'
+    apt.update
+  end
+  
   desc "disable cdrom as a source of packages"
   task :disable_cdrom_install do
     # ruby is not installed by default so we use perl
