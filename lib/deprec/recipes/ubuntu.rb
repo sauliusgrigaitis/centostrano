@@ -29,7 +29,7 @@ Capistrano.configuration(:must_exist).load do
   task :enable_multiverse do
     # ruby is not installed by default or else we'd use 
     # sudo "ruby -pi.bak -e \"gsub(/#\s?(.*universe$)/, '\1')\" sources.list"
-    sudo 'perl -pi -e \'s/#\s?(.*dapper multiverse$)/\1/g\' /etc/apt/sources.list'
+    sudo 'perl -pi -e \'s/#\s?(deb.* multiverse$)/\1/g\' /etc/apt/sources.list'
     apt.update
   end
   
@@ -37,7 +37,7 @@ Capistrano.configuration(:must_exist).load do
   task :disable_multiverse do
     # ruby is not installed by default or else we'd use 
     # sudo "ruby -pi.bak -e \"gsub(/#\s?(.*universe$)/, '\1')\" sources.list"
-    sudo 'perl -pi -e \'s/^([^#]*dapper multiverse)/#\1/g\' /etc/apt/sources.list'
+    sudo 'perl -pi -e \'s/^([^#]*multiverse)/#\1/g\' /etc/apt/sources.list'
     apt.update
   end
   
