@@ -5,7 +5,7 @@ Capistrano.configuration(:must_exist).load do
   # Package files for a rails  machine
   set :rails_ubuntu, {
   :base => %w(build-essential ntp-server mysql-server wget
-              ruby irb ri rdoc ruby1.8-dev libmysql-ruby 
+              ruby irb ri rdoc ruby1.8-dev libopenssl-ruby libmysql-ruby 
               zlib1g-dev zlib1g openssl libssl-dev subversion)
   }
   
