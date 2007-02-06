@@ -100,5 +100,15 @@ Capistrano.configuration(:must_exist).load do
     mv stemserver #{new_hostname};
     SUDO
   end
+  
+  desc "update hostname and ip address of new virtual server"
+  task :differentiate_stemserver do
+    # 
+    
+    # update /etc/hostname
+    # update /etc/hostname
+    # update /etc/network/interfaces
+    
+  end
 
 end
