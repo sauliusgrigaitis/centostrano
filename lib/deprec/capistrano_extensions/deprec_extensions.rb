@@ -20,9 +20,11 @@ module Deprec
     # XXX sort out single quotes in 'value' - they'l break command!
     # XXX if options[:requires_sudo] and :use_sudo then use sudo
     sudo <<-END
-      grep '#{value}' #{filename} > /dev/null 2>&1 || 
+    sh -c '
+      grep "#{value}" #{filename} > /dev/null 2>&1 || 
       test ! -f #{filename} ||
-      echo '#{value}' >> #{filename}
+      echo "#{value}" >> #{filename}
+      '
     END
   end
   
