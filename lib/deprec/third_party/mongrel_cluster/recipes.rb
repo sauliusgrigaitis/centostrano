@@ -35,6 +35,7 @@ Capistrano.configuration(:must_exist).load do
   task :install_mongrel_start_script , :roles => :app do
     rc_script = File.read(File.join(File.dirname(__FILE__), 'resources', 'mongrel_cluster'))
     std.su_put(rc_script, '/etc/init.d/mongrel_cluster', '/tmp', :mode => 0755)
+    send(run_method, "update-rc.d mongrel_cluster defaults")
   end
   
   desc "setup mongrel_cluster paths"
