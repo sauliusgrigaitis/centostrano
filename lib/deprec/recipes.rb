@@ -117,7 +117,6 @@ Capistrano.configuration(:must_exist).load do
   end
   
   task :install_rubygems do
-    # ??? is this an OK way to pass values around to the functions?
     version = 'rubygems-0.9.0'
     set :src_package, {
       :file => version + '.tgz',
@@ -130,9 +129,8 @@ Capistrano.configuration(:must_exist).load do
     deprec.install_from_src(src_package, src_dir)
     gem.update_system
   end
-  
+    
   task :install_apache do
-    # ??? is this an OK way to pass values around to the functions?
     version = 'httpd-2.2.3'
     set :src_package, {
       :file => version + '.tar.gz',    
@@ -146,6 +144,8 @@ Capistrano.configuration(:must_exist).load do
     }
     deprec.download_src(src_package, src_dir)
     deprec.install_from_src(src_package, src_dir)
+    # ubuntu specific - should instead call generic name which can be picked up by different distros
+    send(run_method, "update-rc.d httpd defaults")
   end
   
   desc "Setup public symlink directories"
@@ -173,6 +173,7 @@ Capistrano.configuration(:must_exist).load do
   desc "install and configure postfix"
   task :setup_smtp_server do
     install_postfix
+    set :postfix_destination_domains, [domain] + apache_server_aliases
     deprec.render_template_to_file('postfix_main', '/etc/postfix/main.cf')
   end
      
