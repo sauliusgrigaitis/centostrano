@@ -1,6 +1,0 @@
-#!/usr/bin/env ruby
-patch_target=File.dirname(`gemwhich capistrano`) + '/capistrano/cli.rb'
-patch_file = File.join(File.dirname(__FILE__), '..', 'resources','capistrano_include_dotfiles.patch')
-system "sudo patch -p0 #{patch_target} < #{patch_file}"
-req_statement = "require 'deprec/recipes'"
-system "grep '#{req_statement}' ~/.caprc > /dev/null 2>&1 || echo \"#{req_statement}\" >> ~/.caprc"
