@@ -1,8 +1,38 @@
+slicehost mephisto
+- start everything on reboot
+- re-runnable
+
+svk - external sources
+
+check deploy.rb is OK with :user not set
+
+
 todo
 ----
-
 ???: can we run "cap apt.select mongrel" ?
 
+mike: set environment variables before running mongrel
+desc <<-DESC
+Restart the Mongrel processes on the app server by starting and stopping the cluster. This uses the :use_sudo
+variable to determine whether to use sudo or not. By default, :use_sudo is set to true.
+DESC
+task :restart_mongrel_cluster , :roles => :app do
+  set_mongrel_conf
+  
+  send(run_method, "sh -c '
+  LD_LIBRARY_PATH=/var/www/apps/digicel/current/vendor/libs/pfpro4r/verisign/payflowpro/linux/lib;
+  export LD_LIBRARY_PATH;
+  PFPRO_CERT_PATH=/var/www/apps/digicel/current/vendor/libs/pfpro4r/verisign/payflowpro/linux/certs;
+  export PFPRO_CERT_PATH;
+  mongrel_rails cluster::restart -C #{mongrel_conf}
+  '
+  ")
+end
+
+
+
+mike: set stick group write bit on releases dir or chgrp+chmod when we push out
+mike: enable (and disable) services based on roles
 mike: deploy two apps and check if 'NameVirtualHost *:80' is required
 mike: move enable/disable cdrom/universe into function in apt::
 mike: slicehost, re-runnability, multi, 

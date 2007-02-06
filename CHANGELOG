@@ -1,5 +1,17 @@
+== SVN
 
-== 1.1.1
+* changed from LGPG to GPL licence. [mbailey]
+
+== 1.2.2
+
+* Added enable_multiverse(), disable_multiverse() tasks for ubuntu package management [mbailey]
+* Removed termios as a gem requirement as it doesn't work on Windows [mbailey]
+
+== 1.2.1
+
+* Updated railsmachine code to include SSL fix from new release [mbailey]
+
+== 1.2.0
 
 * Added run_with_input and sudo_with_input for interactive tasks. [topfunky]
 * Added sudo_stream for piping the output of a privileged command like the built-in stream() [topfunky]
