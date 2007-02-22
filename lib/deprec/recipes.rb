@@ -135,7 +135,7 @@ Capistrano.configuration(:must_exist).load do
     version = 'httpd-2.2.3'
     set :src_package, {
       :file => version + '.tar.gz',   
-      :md5sum => 'f72ffb176e2dc7b322be16508c09f63c  httpd-2.2.3.tar.gz' 
+      :md5sum => 'f72ffb176e2dc7b322be16508c09f63c  httpd-2.2.3.tar.gz', 
       :dir => version,  
       :url => "http://www.apache.org/dist/httpd/#{version}.tar.gz",
       :unpack => "tar zxf #{version}.tar.gz;",
