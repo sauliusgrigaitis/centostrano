@@ -4,7 +4,7 @@ require 'rubygems'
 
 SPEC = Gem::Specification.new do |spec|
   spec.name = 'deprec'
-  spec.version = '1.2.2'
+  spec.version = '1.3.0'
   spec.summary = 'deployment recipes for capistrano'
   spec.description = <<-EOF
       This project provides libraries of Capistrano tasks and extensions to 
@@ -21,5 +21,5 @@ SPEC = Gem::Specification.new do |spec|
     item.include?("CVS") || item.include?("rdoc") 
   end
   spec.default_executable = "deprec"
-  spec.executables = ["deprec","deprec_dotfiles"]
+  spec.executables = ["deprec"]
 end
