@@ -28,6 +28,30 @@ module Deprec
     END
   end
   
+  # ##
+  # # Update a users crontab
+  # #
+  # # user: which users crontab should be affected
+  # # entry: the entry as it would appear in the crontab (e.g. '*/15 * * * * sleep 5')
+  # # action: :add or :remove
+  # #
+  # def update_user_crontab(user, entry, action = :add)
+  #   # we don't want capistrano exiting if crontab doesn't yet exist 
+  #   cur_crontab = capture "crontab -u #{user} -l || exit 0"
+  #   if cur_crontab.include?(entry)
+  #     if action == :remove
+  #       sudo "crontab -u #{user} -l | grep -v #{entry} | sudo crontab -u #{user} -"
+  #     end
+  #   else
+  #     if action == :add
+  #       new_crontab = cur_crontab.chomp + entry
+  #       puts new_crontab
+  #       sudo "echo '#{new_crontab}' | sudo crontab -u #{user} -"
+  #     end
+  #   end
+  # end
+
+  
   # create new user account on target system
   def useradd(user)
     send(run_method, "grep '^#{user}:' /etc/passwd || sudo /usr/sbin/useradd -m #{user}")
@@ -44,6 +68,15 @@ module Deprec
     send(run_method, "groups #{user} | grep ' #{group} ' || sudo /usr/sbin/usermod -G #{group} -a #{user}")
   end
   
+  # create directory if it doesn't already exist
+  # set permissions and ownership
+  def mkdir(path, mode=0755, group=nil, user=nil)
+    sudo "test -d #{path} || sudo mkdir -p -m#{mode} #{path}"
+    sudo "chgrp -R #{group} #{path}" if group
+    sudo "chown -R #{user} #{path}" if user
+  end
+  
+  
   # download source package if we don't already have it
   def download_src(src_package, src_dir)
     deprec.groupadd(group)
@@ -52,7 +85,12 @@ module Deprec
     sudo "chmod -R g+w #{src_dir}"
     # XXX check if file exists and if we have and MD5 hash or bytecount to compare against
     # XXX if so, compare and decide if we need to download again
-    sudo "sh -c 'cd #{src_dir} && test -f #{src_package[:file]} || wget #{src_package[:url]}'"
+    if defined?(src_package[:md5sum])
+      md5_clause = " && echo '#{src_package[:md5sum]}' | md5sum -c - "
+    end
+    sudo <<-SUDO
+    sh -c "cd #{src_dir} && test -f #{src_package[:file]} #{md5_clause} || wget --timestamping #{src_package[:url]}"
+    SUDO
   end
   
   # unpack src and make it writable by the group
