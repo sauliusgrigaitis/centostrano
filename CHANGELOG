@@ -1,5 +1,7 @@
 == SVN
 
+== 1.3.0
+
 * added md5sum checking to deprec.download_src [mbailey]
 * new function: deprec.mkdir(path, mode=0755, group=nil, user=nil) [mbailey]
 * start apache and mongrel on server boot [mbailey]
