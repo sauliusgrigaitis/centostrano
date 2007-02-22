@@ -1,5 +1,9 @@
 == SVN
 
+* added md5sum checking to deprec.download_src [mbailey]
+* new function: deprec.mkdir(path, mode=0755, group=nil, user=nil) [mbailey]
+* start apache and mongrel on server boot [mbailey]
+* removed deprec_dotfiles script as the Cap code it patches is now in Capistrano source. [mbailey]
 * changed from LGPG to GPL licence. [mbailey]
 
 == 1.2.2
