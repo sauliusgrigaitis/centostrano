@@ -117,11 +117,12 @@ Capistrano.configuration(:must_exist).load do
   end
   
   task :install_rubygems do
-    version = 'rubygems-0.9.0'
+    version = 'rubygems-0.9.2'
     set :src_package, {
       :file => version + '.tgz',
+      :md5sum => 'cc525053dd465ab6e33af382166fa808  rubygems-0.9.2.tgz',
       :dir => version,
-      :url => "http://rubyforge.org/frs/download.php/11289/#{version}.tgz",
+      :url => "http://rubyforge.org/frs/download.php/17190/#{version}.tgz",
       :unpack => "tar zxf #{version}.tgz;",
       :install => '/usr/bin/ruby1.8 setup.rb;'
     }
@@ -133,7 +134,8 @@ Capistrano.configuration(:must_exist).load do
   task :install_apache do
     version = 'httpd-2.2.3'
     set :src_package, {
-      :file => version + '.tar.gz',    
+      :file => version + '.tar.gz',   
+      :md5sum => 'f72ffb176e2dc7b322be16508c09f63c  httpd-2.2.3.tar.gz' 
       :dir => version,  
       :url => "http://www.apache.org/dist/httpd/#{version}.tar.gz",
       :unpack => "tar zxf #{version}.tar.gz;",
