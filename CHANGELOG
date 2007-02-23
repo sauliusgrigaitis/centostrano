@@ -1,5 +1,14 @@
 == SVN
 
+== 1.4.0
+
+* renamed svn commands and made svn_create_repos re-runable
+* bugfix: Wildcard Apache NameVirtualHosts directive used be used just once
+
+== 1.3.1
+
+* bugfix
+
 == 1.3.0
 
 * added md5sum checking to deprec.download_src [mbailey]
