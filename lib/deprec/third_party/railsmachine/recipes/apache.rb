@@ -52,6 +52,8 @@ Capistrano.configuration(:must_exist).load do
     put buffer, "#{shared_path}/httpd.conf", :mode => 0444
     send(run_method, "cp #{shared_path}/httpd.conf #{apache_conf}")
     delete "#{shared_path}/httpd.conf"
+    
+    deprec.append_to_file_if_missing('/usr/local/apache2/conf/httpd.conf', 'NameVirtualHost *:80')
   end
   
   desc "Start Apache "
