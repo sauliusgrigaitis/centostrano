@@ -91,8 +91,8 @@ Capistrano.configuration(:must_exist).load do
   
   desc "Setup source control server."
   task :setup_scm, :roles => :scm  do
-    setup_svn
-    import_svn
+    svn_create_repos
+    svn_import
   end
   
   desc "setup extra paths required for deployment"

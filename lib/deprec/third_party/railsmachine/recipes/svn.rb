@@ -1,27 +1,32 @@
 require 'fileutils'
 Capistrano.configuration(:must_exist).load do
  
- desc "Setup svn repository"
- task :setup_svn, :roles => :scm do
-   dir = "#{deploy_to}/repos"
-   run "mkdir -p #{dir}"
-   run "chmod 770 #{dir}"
-   run "svnadmin create #{dir}"
+desc "create svn repository"
+ task :svn_create_repos, :roles => :scm do
+   svn_root ||= '/var/svn'
+   scm_group ||= 'scm'
+   deprec.groupadd('scm')
+   deprec.add_user_to_group(user, scm_group)
+   deprec.mkdir(svn_root, '2775', scm_group, user)
+   sudo "svnadmin verify #{svn_root} || sudo svnadmin create #{svn_root}"
  end
  
  desc "Import code into svn repository."
- task :import_svn  do
-   new_path = "../#{application}_machine"
+ task :svn_import  do
+   new_path = "../#{application}"
    tags = repository.sub("trunk", "tags")
    branches = repository.sub("trunk", "branches")
    puts "Adding branches and tags"
    system "svn mkdir -m 'Adding tags and branches directories' #{tags} #{branches}"
    puts "Importing application."
    system "svn import #{repository} -m 'Import'"
-   puts "Checking out to new directory."
-   system "svn co #{repository} #{new_path}"
    cwd = Dir.getwd
-   Dir.chdir new_path
+   puts "Moving application to new directory"
+   Dir.chdir '../'
+   system "mv #{cwd} #{cwd}.imported"
+   puts "Checking out application."
+   system "svn co #{repository} #{application}"
+   Dir.chdir application
    puts "removing log directory contents from svn"
    system "svn remove log/*"
    puts "ignoring log directory"
@@ -34,9 +39,7 @@ Capistrano.configuration(:must_exist).load do
    system "svn update tmp/"
    puts "committing changes"
    system "svn commit -m 'Removed and ignored log files and tmp'"
-   Dir.chdir cwd
    puts "Your repository is: #{repository}" 
-   puts "Please change to your new working directory: #{new_path}"
  end
  
 end
