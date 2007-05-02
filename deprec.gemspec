@@ -15,7 +15,7 @@ SPEC = Gem::Specification.new do |spec|
   # spec.autorequire = 'deprec/recipes.rb'
   # spec.platform = Gem::Platform::Ruby
   # spec.required_ruby_version = '>= 1.6.8' # I don't know
-  spec.add_dependency('capistrano', '>= 1.2.0')
+  spec.add_dependency('capistrano', '= 1.4.1')
   candidates = Dir.glob("{bin,docs,lib,test,resources}/**/*") 
   spec.files = candidates.delete_if do |item| 
     item.include?("CVS") || item.include?("rdoc") 

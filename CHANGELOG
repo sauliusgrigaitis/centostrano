@@ -1,5 +1,10 @@
 == SVN
 
+== 1.4.2
+
+* bugfix: install apache version 2.2.4 as previous version is no longer on their webserver [mbailey]
+* bugfix: fixed install_rubygems so install_rails_stack no longer fails when first run [mbailey]
+
 == 1.4.0
 
 * renamed svn commands and made svn_create_repos re-runable
