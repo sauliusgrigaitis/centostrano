@@ -65,9 +65,7 @@ More about me here: http://codemode.blogspot.com/
 Deprec was inspired and uses the brilliantly executed Capistrano. Thanks Jamis!
 
 After starting on this project I found myself reading and utilizing a lot of 
-code by Bradley Taylor, in particular the RailsMachine and VMbuilder gems.
-
-Neil Wilson wrote three capistrano plugins that are used in this project.
+code by Bradley Taylor (RailsMachine gem) and Neil Wilson (vmbuilder_plugins gem).
 
 I'd like to say a huge thanks to these guys for helping make my work easier!
 
