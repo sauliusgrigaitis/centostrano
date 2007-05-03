@@ -39,8 +39,8 @@ set :rails_env, "production"
 set :apache_server_name, domain
 # set :apache_server_aliases, %w{alias1 alias2}
 # set :apache_default_vhost, true # force use of apache_default_vhost_config
-# set :apache_default_vhost_conf, "/etc/httpd/conf/default.conf"
-# set :apache_conf, "/etc/httpd/conf/apps/#{application}.conf"
+# set :apache_default_vhost_conf, "/usr/local/apache2/conf/default.conf"
+# set :apache_conf, "/usr/local/apache2/conf/apps/#{application}.conf"
 # set :apache_ctl, "/etc/init.d/httpd"
 # set :apache_proxy_port, 8000
 # set :apache_proxy_servers, 2
@@ -59,8 +59,8 @@ set :apache_server_name, domain
 set :mongrel_address, apache_proxy_address
 # set :mongrel_environment, "production"
 # set :mongrel_config, "/etc/mongrel_cluster/#{application}.conf"
-# set :mongrel_user, user
-# set :mongrel_group, group
+set :mongrel_user, "mongrel_#{application}"
+set :mongrel_group, "app_#{application}"
 
 # =============================================================================
 # MYSQL OPTIONS
