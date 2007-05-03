@@ -29,10 +29,20 @@ Capistrano.configuration(:must_exist).load do
     install_apache
   end
   
-  desc "Set up the expected application directory structure on all boxes"
+  desc <<-DESC
+  deprecated: this function has been replaced by :before_setup and :after_setup
+  DESC
   task :deprec_setup, :except => { :no_release => true } do
-    setup_paths
     setup
+  end
+  
+  desc "creates paths required by Capistrano's :setup task"
+  task :before_setup, :except => { :no_release => true } do
+    setup_paths
+  end
+  
+  desc "sets up and configures servers "
+  task :after_setup, :except => { :no_release => true } do
     setup_servers
   end
   
@@ -42,7 +52,23 @@ Capistrano.configuration(:must_exist).load do
     setup_paths
     setup_app
     setup_symlinks
-    setup_db
+    setup_db # XXX fails is database already exists
+  end
+  
+  task :after_update, :roles => :app do
+    set_perms_for_mongrel_dirs
+  end
+  
+  desc "set group ownership and permissions on dirs mongrel needs to write to"
+  task :set_perms_for_mongrel_dirs, :roles => :app do
+    tmp_dir = "#{deploy_to}/current/tmp"
+    shared_dir = "#{deploy_to}/shared"
+    files = ["#{deploy_to}/shared/log/mongrel.log", "#{deploy_to}/shared/log/#{rails_env}.log"]
+    
+    sudo "chgrp -R #{mongrel_group} #{tmp_dir} #{shared_dir}"
+    sudo "chmod 0775 #{tmp_dir} #{shared_dir}" 
+    sudo "chown #{mongrel_user} #{files.join(' ')}"   
+    sudo "chgrp #{mongrel_group} #{files.join(' ')}"   
   end
   
   desc "Setup web server."
@@ -52,11 +78,21 @@ Capistrano.configuration(:must_exist).load do
     configure_apache
   end
   
+  desc "create user and group for mongel to run as"
+  task :create_mongrel_user_and_group do
+    set :mongrel_user, 'mongrel_' + application if mongrel_user.nil?
+    set :mongrel_group, 'app_' + application if mongrel_group.nil?
+    deprec.groupadd(mongrel_group) 
+    deprec.useradd(mongrel_user, :group => mongrel_group, :homedir => false)
+    sudo "usermod --gid #{mongrel_group} #{mongrel_user}"
+  end
+  
   desc "Setup application server."
   task :setup_app, :roles => :app  do
     set :mongrel_environment, rails_env
     set :mongrel_port, apache_proxy_port
     set :mongrel_servers, apache_proxy_servers
+    create_mongrel_user_and_group
     install_mongrel_start_script
     setup_mongrel_cluster_path
     configure_mongrel_cluster
@@ -141,7 +177,7 @@ Capistrano.configuration(:must_exist).load do
       :dir => version,  
       :url => "http://www.apache.org/dist/httpd/#{version}.tar.gz",
       :unpack => "tar zxf #{version}.tar.gz;",
-      :configure => './configure --enable-proxy --enable-proxy-balancer --enable-proxy-http --enable-rewrite  --enable-cache --enable-headers --enable-ssl --enable-deflate;',
+      :configure => './configure --enable-proxy --enable-proxy-balancer --enable-proxy-http --enable-rewrite  --enable-cache --enable-headers --enable-ssl --enable-deflate --with-included-apr;',
       :make => 'make;',
       :install => 'make install;',
       :post_install => 'install -b support/apachectl /etc/init.d/httpd;'
