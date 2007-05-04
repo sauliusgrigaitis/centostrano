@@ -59,7 +59,7 @@ module Std
   # +options+ are as for *put*
   #
   def su_put(data, destination, temporary_area='/tmp', options={})
-    temporary_area = File.join(temporary_area,File.basename(destination)) if File.directory?(temporary_area)
+    temporary_area = File.join(temporary_area,File.basename(destination)) 
     put(data, temporary_area, options)
     sudo <<-CMD
       sh -c "install -m#{sprintf("%3o",options[:mode]||0755)} #{temporary_area} #{destination} &&
