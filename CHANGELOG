@@ -1,14 +1,26 @@
 == SVN
 
+== 1.5.0
+
+* bugfix: :set_perms_for_mongrel_dirs [mbailey]
+  - now don't fail if log files do not exist (e.g initial deployment)
+  - is called by :after_symlink task instead of :after_update 
+    this is because some tasks call :update_code without calling the 
+    :update task but in all of these cases :symlink is called 
+
+* updated version from 1.4.x to 1.5.x due to pretty big change made
+  in previous version (mongrel no longer running as root) [mbailey]
+
 == 1.4.2
 
+* change: mongrel no longer runs as root for security reasons [mbailey]
 * bugfix: install apache version 2.2.4 as previous version is no longer on their webserver [mbailey]
 * bugfix: fixed install_rubygems so install_rails_stack no longer fails when first run [mbailey]
 
 == 1.4.0
 
-* renamed svn commands and made svn_create_repos re-runable
-* bugfix: Wildcard Apache NameVirtualHosts directive used be used just once
+* renamed svn commands and made svn_create_repos re-runable [mbailey]
+* bugfix: Wildcard Apache NameVirtualHosts directive used be used just once [mbailey]
 
 == 1.3.1
 
