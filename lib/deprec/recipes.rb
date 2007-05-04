@@ -55,7 +55,7 @@ Capistrano.configuration(:must_exist).load do
     setup_db # XXX fails is database already exists
   end
   
-  task :after_update, :roles => :app do
+  task :after_symlink, :roles => :app do
     set_perms_for_mongrel_dirs
   end
   
@@ -67,8 +67,11 @@ Capistrano.configuration(:must_exist).load do
     
     sudo "chgrp -R #{mongrel_group} #{tmp_dir} #{shared_dir}"
     sudo "chmod 0775 #{tmp_dir} #{shared_dir}" 
-    sudo "chown #{mongrel_user} #{files.join(' ')}"   
-    sudo "chgrp #{mongrel_group} #{files.join(' ')}"   
+    # set owner and group of mogrels file (if they exist)
+    files.each { |file|
+      sudo "chown #{mongrel_user} #{file} || exit 0"   
+      sudo "chgrp #{mongrel_group} #{file} || exit 0"  
+    } 
   end
   
   desc "Setup web server."
