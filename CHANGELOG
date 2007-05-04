@@ -1,5 +1,9 @@
 == SVN
 
+== 1.5.1
+
+* bugfix: fixed bug in su_put that was causing Windows [mbailey]
+
 == 1.5.0
 
 * bugfix: :set_perms_for_mongrel_dirs [mbailey]
