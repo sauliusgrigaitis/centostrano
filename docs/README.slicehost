@@ -1,0 +1,14 @@
+== Slicehost extras
+
+# A freshly built slice gives you the root account
+# This creates a user account with sudo access
+# The '_as_root' means 'log in as root to do this'
+#
+cap setup_admin_account_as_root
+cap setup_ssh_keys
+cap install_rails_stack
+cap setup
+cap deploy_with_migrations
+cap restart_apache
+
+
