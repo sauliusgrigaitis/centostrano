@@ -192,7 +192,7 @@ Capistrano.configuration(:must_exist).load do
   end
   
   desc "Install PHP from source"
-  task :install_php_from_source do
+  task :install_php do
     version = 'php-5.2.2'
     set :src_package, {
       :file => version + '.tar.gz',
