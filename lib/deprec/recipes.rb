@@ -180,7 +180,19 @@ Capistrano.configuration(:must_exist).load do
       :dir => version,  
       :url => "http://www.apache.org/dist/httpd/#{version}.tar.gz",
       :unpack => "tar zxf #{version}.tar.gz;",
-      :configure => './configure --enable-so --enable-proxy --enable-proxy-balancer --enable-proxy-http --enable-rewrite  --enable-cache --enable-headers --enable-ssl --enable-deflate --with-included-apr;',
+      :configure => %w{
+        ./configure
+        --enable-proxy 
+        --enable-proxy-balancer 
+        --enable-proxy-http 
+        --enable-rewrite  
+        --enable-cache 
+        --enable-headers 
+        --enable-ssl 
+        --enable-deflate 
+        --with-included-apr
+        ;
+        }.reject{|arg| arg.match '#'}.join(' '),
       :make => 'make;',
       :install => 'make install;',
       :post_install => 'install -b support/apachectl /etc/init.d/httpd;'
@@ -200,7 +212,29 @@ Capistrano.configuration(:must_exist).load do
       :dir => version,
       :url => "http://www.php.net/distributions/#{version}.tar.gz",
       :unpack => "tar zxf #{version}.tar.gz;",
-      :configure => "./configure --prefix=/usr/local/php --with-apxs2=/usr/local/apache2/bin/apxs --disable-ipv6 --enable-sockets --enable-soap --with-pcre-regex --with-mysql --with-zlib --with-gettext --with-sqlite --enable-sqlite-utf8 --with-openssl --with-mcrypt --with-ncurses --with-jpeg-dir=/usr --with-gd --with-ctype --enable-mbstring --with-curl==/usr/lib;",
+      :configure => %w{
+        ./configure 
+        --prefix=/usr/local/php
+        --with-apxs2=/usr/local/apache2/bin/apxs
+        --disable-ipv6
+        --enable-sockets
+        --enable-soap
+        --with-pcre-regex
+        --with-mysql
+        --with-zlib 
+        --with-gettext
+        --with-sqlite
+        --enable-sqlite-utf8
+        --with-openssl
+        --with-mcrypt
+        --with-ncurses
+        --with-jpeg-dir=/usr
+        --with-gd
+        --with-ctype
+        --enable-mbstring
+        --with-curl==/usr/lib 
+        ;
+        }.reject{|arg| arg.match '#'}.join(' '),
       :make => 'make;',
       :install => 'make install;',
       :post_install => ""
