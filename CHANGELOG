@@ -1,6 +1,6 @@
 == SVN
 
-* new task :install_php_from_source installs php-5.2.2 [mbailey]
+* new task :install_php installs php-5.2.2 [mbailey]
 
 == 1.5.1
 
