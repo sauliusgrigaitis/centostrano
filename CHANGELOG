@@ -1,5 +1,7 @@
 == SVN
 
+* new task :install_php_from_source installs php-5.2.2 [mbailey]
+
 == 1.5.1
 
 * bugfix: fixed bug in su_put that was causing Windows [mbailey]

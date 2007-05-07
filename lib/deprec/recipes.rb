@@ -180,7 +180,7 @@ Capistrano.configuration(:must_exist).load do
       :dir => version,  
       :url => "http://www.apache.org/dist/httpd/#{version}.tar.gz",
       :unpack => "tar zxf #{version}.tar.gz;",
-      :configure => './configure --enable-proxy --enable-proxy-balancer --enable-proxy-http --enable-rewrite  --enable-cache --enable-headers --enable-ssl --enable-deflate --with-included-apr;',
+      :configure => './configure --enable-so --enable-proxy --enable-proxy-balancer --enable-proxy-http --enable-rewrite  --enable-cache --enable-headers --enable-ssl --enable-deflate --with-included-apr;',
       :make => 'make;',
       :install => 'make install;',
       :post_install => 'install -b support/apachectl /etc/init.d/httpd;'
@@ -189,6 +189,27 @@ Capistrano.configuration(:must_exist).load do
     deprec.install_from_src(src_package, src_dir)
     # ubuntu specific - should instead call generic name which can be picked up by different distros
     send(run_method, "update-rc.d httpd defaults")
+  end
+  
+  desc "Install PHP from source"
+  task :install_php_from_source do
+    version = 'php-5.2.2'
+    set :src_package, {
+      :file => version + '.tar.gz',
+      :md5sum => '7a920d0096900b2b962b21dc5c55fe3c  php-5.2.2.tar.gz', 
+      :dir => version,
+      :url => "http://www.php.net/distributions/#{version}.tar.gz",
+      :unpack => "tar zxf #{version}.tar.gz;",
+      :configure => "./configure --prefix=/usr/local/php --with-apxs2=/usr/local/apache2/bin/apxs --disable-ipv6 --enable-sockets --enable-soap --with-pcre-regex --with-mysql --with-zlib --with-gettext --with-sqlite --enable-sqlite-utf8 --with-openssl --with-mcrypt --with-ncurses --with-jpeg-dir=/usr --with-gd --with-ctype --enable-mbstring --with-curl==/usr/lib;",
+      :make => 'make;',
+      :install => 'make install;',
+      :post_install => ""
+    }
+    apt.install( {:base => %w(flex libcurl3 libcurl3-dev libmcrypt-dev libmysqlclient15-dev libncurses5-dev libxml2-dev libjpeg62-dev libpng12-dev)}, :stable )
+    run "export CFLAGS=-O2;"
+    deprec.download_src(src_package, src_dir)
+    deprec.install_from_src(src_package, src_dir)
+    deprec.append_to_file_if_missing('/usr/local/apache2/conf/httpd.conf', 'AddType application/x-httpd-php .php')
   end
   
   desc "Setup public symlink directories"
