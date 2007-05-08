@@ -59,8 +59,10 @@ set :apache_server_name, domain
 set :mongrel_address, apache_proxy_address
 # set :mongrel_environment, "production"
 # set :mongrel_config, "/etc/mongrel_cluster/#{application}.conf"
-set :mongrel_user, "mongrel_#{application}"
-set :mongrel_group, "app_#{application}"
+# set :mongrel_user_prefix,  'mongrel_'
+# set :mongrel_user, mongrel_user_prefix + application
+# set :mongrel_group_prefix,  'app_'
+# set :mongrel_group, mongrel_group_prefix + application
 
 # =============================================================================
 # MYSQL OPTIONS

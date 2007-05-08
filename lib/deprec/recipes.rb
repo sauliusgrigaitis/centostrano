@@ -13,8 +13,12 @@ Capistrano.configuration(:must_exist).load do
   set :user, (defined?(user) ? user : ENV['USER']) # user who is deploying
   set :group, 'deploy'           # deployment group
   set :src_dir, (defined?(src_dir) ? src_dir : '/usr/local/src') # 3rd party src on servers 
-  set :app_symlinks, nil                  
-  
+  set :app_symlinks, nil
+  set :mongrel_user_prefix,  'mongrel_'
+  set :mongrel_user, lambda {mongrel_user_prefix + application}
+  set :mongrel_group_prefix,  'app_'
+  set :mongrel_group, lambda {mongrel_group_prefix + application}
+    
   desc <<-DESC
   setup_rails_host takes a stock standard ubuntu 'dapper' 6.06.1 server
   and installs everything needed to be a rails machine
@@ -67,7 +71,7 @@ Capistrano.configuration(:must_exist).load do
     
     sudo "chgrp -R #{mongrel_group} #{tmp_dir} #{shared_dir}"
     sudo "chmod 0775 #{tmp_dir} #{shared_dir}" 
-    # set owner and group of mogrels file (if they exist)
+    # set owner and group of mongrels file (if they exist)
     files.each { |file|
       sudo "chown #{mongrel_user} #{file} || exit 0"   
       sudo "chgrp #{mongrel_group} #{file} || exit 0"  
