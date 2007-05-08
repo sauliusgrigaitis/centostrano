@@ -327,7 +327,7 @@ Capistrano.configuration(:must_exist).load do
      
   task :setup_admin_account do
     user = Capistrano::CLI.password_prompt "Enter userid for new user:" 
-    deprec.useradd(user)
+    deprec.useradd(user, :shell => '/bin/bash')
     puts "Setting pasword for new account"
     sudo_with_input("passwd #{user}", /UNIX password/) # ??? how many  versions of the prompt are there?
     deprec.groupadd('admin')

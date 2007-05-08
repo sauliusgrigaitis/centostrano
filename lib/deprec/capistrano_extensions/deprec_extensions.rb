@@ -55,6 +55,7 @@ module Deprec
   # create new user account on target system
   def useradd(user, options={})
     switches = ''
+    switches += " --shell=#{options[:shell]} " if options[:shell]
     switches += ' --create-home ' unless options[:homedir] == false
     switches += " --gid #{options[:group]} " unless options[:group].nil?
     send(run_method, "grep '^#{user}:' /etc/passwd || sudo /usr/sbin/useradd #{switches} #{user}")
