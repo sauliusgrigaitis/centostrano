@@ -4,6 +4,7 @@
 # This creates a user account with sudo access
 # The '_as_root' means 'log in as root to do this'
 #
+export HOSTS=deptest.deprecated.org
 cap setup_admin_account_as_root
 cap setup_ssh_keys
 cap install_rails_stack
