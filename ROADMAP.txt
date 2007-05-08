@@ -33,7 +33,7 @@ server04 - user 'fred' exists. Set type to 'admin'
   for a project however there are many ways to get this list.
 
 
-# plugin based architecture
+# plugin based support different distros, versions (and possibly OS's)
 
 While deprec was built to work with Ubuntu 6.06, some people have shown interest
 in using it with other distro's. I plan to move all of the Ubuntu specific code
