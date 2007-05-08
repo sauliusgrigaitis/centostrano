@@ -54,6 +54,7 @@ module Deprec
   
   # create new user account on target system
   def useradd(user, options={})
+    options[:shell] ||= '/bin/bash' # new accounts on ubuntu 6.06.1 have been getting /bin/sh
     switches = ''
     switches += " --shell=#{options[:shell]} " if options[:shell]
     switches += ' --create-home ' unless options[:homedir] == false
