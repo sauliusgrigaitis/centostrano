@@ -250,6 +250,28 @@ Capistrano.configuration(:must_exist).load do
     deprec.append_to_file_if_missing('/usr/local/apache2/conf/httpd.conf', 'AddType application/x-httpd-php .php')
   end
   
+  task :install_memcached do
+    version = 'memcached-1.2.2'
+    set :src_package, {
+      :file => version + '.tar.gz',   
+      :md5sum => 'a08851f7fa7b15e92ee6320b7a79c321  memcached-1.2.2.tar.gz', 
+      :dir => version,  
+      :url => "http://www.danga.com/memcached/dist/#{version}.tar.gz",
+      :unpack => "tar zxf #{version}.tar.gz;",
+      :configure => %w{
+        ./configure
+        --prefix=/usr/local 
+        ;
+        }.reject{|arg| arg.match '#'}.join(' '),
+      :make => 'make;',
+      :install => 'make install;',
+      :post_install => 'install -b support/apachectl /etc/init.d/httpd;'
+    }
+    apt.install( {:base => %w(libevent-dev)}, :stable )
+    deprec.download_src(src_package, src_dir)
+    deprec.install_from_src(src_package, src_dir)
+  end
+  
   desc "Setup public symlink directories"
   task :setup_symlinks, :roles => [:app, :web] do
    if app_symlinks
