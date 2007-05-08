@@ -250,6 +250,29 @@ Capistrano.configuration(:must_exist).load do
     deprec.append_to_file_if_missing('/usr/local/apache2/conf/httpd.conf', 'AddType application/x-httpd-php .php')
   end
   
+
+  
+  # move all memcache stuff to separate file
+  set :memcache_ip, '127.0.0.1'
+  set :memcache_port, 11211
+  set :memcache_memory, 256
+  
+  # XXX needs thought/work
+  task :memcached_start do
+    run "memcached -d -m #{memcache_memory} -l #{memcache_ip} -p #{memcache_port}"
+  end
+  
+  # XXX needs thought/work
+  task :memcached_stop do
+    run "killall memcached"
+  end
+  
+  # XXX needs thought/work
+  task :memcached_restart do
+    memcached_stop
+    memcached_start
+  end
+  
   task :install_memcached do
     version = 'memcached-1.2.2'
     set :src_package, {
@@ -271,6 +294,7 @@ Capistrano.configuration(:must_exist).load do
     deprec.download_src(src_package, src_dir)
     deprec.install_from_src(src_package, src_dir)
   end
+  
   
   desc "Setup public symlink directories"
   task :setup_symlinks, :roles => [:app, :web] do
