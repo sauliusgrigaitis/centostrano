@@ -3,13 +3,13 @@ require 'deprec/recipes/svn'
 require 'deprec/recipes/ubuntu'
 require 'deprec/third_party/mongrel_cluster/recipes'
 require 'deprec/third_party/vmbuilder/plugins'
-require 'deprec/third_party/railsmachine/recipes/svn'
 require 'deprec/third_party/railsmachine/recipes/apache'
 require 'deprec/third_party/railsmachine/recipes/mysql'
 require 'deprec/capistrano_extensions/deprec_extensions.rb'
 require 'deprec/capistrano_extensions/actor_extensions.rb'
 
 Capistrano.configuration(:must_exist).load do
+  set :application, lambda { application = Capistrano::CLI.password_prompt "Enter application name:" }
   set :user, (defined?(user) ? user : ENV['USER']) # user who is deploying
   set :group, 'deploy'           # deployment group
   set :src_dir, (defined?(src_dir) ? src_dir : '/usr/local/src') # 3rd party src on servers 
@@ -184,8 +184,9 @@ Capistrano.configuration(:must_exist).load do
       :dir => version,  
       :url => "http://www.apache.org/dist/httpd/#{version}.tar.gz",
       :unpack => "tar zxf #{version}.tar.gz;",
-      :configure => %w{
+      :configure => %w(
         ./configure
+        --enable-mods-shared=all
         --enable-proxy 
         --enable-proxy-balancer 
         --enable-proxy-http 
@@ -194,13 +195,16 @@ Capistrano.configuration(:must_exist).load do
         --enable-headers 
         --enable-ssl 
         --enable-deflate 
-        --with-included-apr
+        --with-included-apr   #_so_this_recipe_doesn't_break_when_rerun
+        --enable-dav          #_for_subversion_
+        --enable-so           #_for_subversion_
         ;
-        }.reject{|arg| arg.match '#'}.join(' '),
+        ).reject{|arg| arg.match '#'}.join(' '),
       :make => 'make;',
       :install => 'make install;',
       :post_install => 'install -b support/apachectl /etc/init.d/httpd;'
     }
+    apt.install( {:base => %w(zlib1g-dev zlib1g openssl libssl-dev)}, :stable )
     deprec.download_src(src_package, src_dir)
     deprec.install_from_src(src_package, src_dir)
     # ubuntu specific - should instead call generic name which can be picked up by different distros
@@ -216,7 +220,7 @@ Capistrano.configuration(:must_exist).load do
       :dir => version,
       :url => "http://www.php.net/distributions/#{version}.tar.gz",
       :unpack => "tar zxf #{version}.tar.gz;",
-      :configure => %w{
+      :configure => %w(
         ./configure 
         --prefix=/usr/local/php
         --with-apxs2=/usr/local/apache2/bin/apxs
@@ -238,12 +242,14 @@ Capistrano.configuration(:must_exist).load do
         --enable-mbstring
         --with-curl==/usr/lib 
         ;
-        }.reject{|arg| arg.match '#'}.join(' '),
+        ).reject{|arg| arg.match '#'}.join(' '),
       :make => 'make;',
       :install => 'make install;',
       :post_install => ""
     }
-    apt.install( {:base => %w(flex libcurl3 libcurl3-dev libmcrypt-dev libmysqlclient15-dev libncurses5-dev libxml2-dev libjpeg62-dev libpng12-dev)}, :stable )
+    apt.install( {:base => %w(zlib1g-dev zlib1g openssl libssl-dev 
+      flex libcurl3 libcurl3-dev libmcrypt-dev libmysqlclient15-dev libncurses5-dev 
+      libxml2-dev libjpeg62-dev libpng12-dev)}, :stable )
     run "export CFLAGS=-O2;"
     deprec.download_src(src_package, src_dir)
     deprec.install_from_src(src_package, src_dir)

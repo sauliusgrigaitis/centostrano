@@ -75,10 +75,12 @@ module Deprec
   
   # create directory if it doesn't already exist
   # set permissions and ownership
-  def mkdir(path, mode=0755, group=nil, user=nil)
-    sudo "test -d #{path} || sudo mkdir -p -m#{mode} #{path}"
-    sudo "chgrp -R #{group} #{path}" if group
-    sudo "chown -R #{user} #{path}" if user
+  # XXX move mode, path and
+  def mkdir(path, options={})
+    options[:mode] ||= '0755'
+    sudo "test -d #{path} || sudo mkdir -p -m#{options[:mode]} #{path}"
+    sudo "chgrp -R #{options[:group]} #{path}" if options[:group]
+    sudo "chown -R #{user} #{path}" if options[:user]
   end
   
   
@@ -117,6 +119,7 @@ module Deprec
   def install_from_src(src_package, src_dir)
     package_dir = File.join(src_dir, src_package[:dir])
     unpack_src(src_package, src_dir)
+    apt.install( {:base => %w(build-essential)}, :stable )
     sudo <<-SUDO
     sh -c '
       cd #{package_dir};
@@ -127,6 +130,7 @@ module Deprec
       '
     SUDO
   end
+  
 
 end
 

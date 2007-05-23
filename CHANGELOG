@@ -1,4 +1,14 @@
+deprec changelog (check the timeline at http://trac.deprecated.org/trac.cgi/timeline)
+
 == SVN
+
+== 1.7.0
+
+* new tasks :install_memcached, :memcached_start, :memcached_stop, :memcached_restart [mbailey]
+* set default shell to '/bin/bash' for new users [mbailey]
+* bugfix: set default values for mongrel_user and mongrel_group
+
+== 1.6.0
 
 * new task :install_php installs php-5.2.2 [mbailey]
 

@@ -3,6 +3,7 @@ deprec 2.0 roadmap
 # expectations/constraints
 
 - all tasks should be re-runnable
+- all install_ tasks should install required dependancies 
 - users should expect that standard cap commands will work
 
 
@@ -61,3 +62,16 @@ install and configure the following package groups:
 - source control (svn, trac)
 - mail (postfix, imap, mutt, mailx)
 
+
+# don't rely on third party servers to be available when installing software
+
+As I write, www.apache.org is serving at a crawling pace. I'd like to make it easy for 
+users to download and cache all required third party apps, gems, etc and have deprec
+use these.
+
+
+# move to using debian mode for apache
+
+This has been requested and is the default way ubuntu does it.
+I'm thinking it will allow easier management of the config files (module-enabled) 
+e.g. mods-enabled/dav_svn.conf
