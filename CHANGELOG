@@ -2,6 +2,9 @@ deprec changelog (check the timeline at http://trac.deprecated.org/trac.cgi/time
 
 == SVN
 
+== 1.7.1
+* bugfix: setup_ssh_keys() - print message and exit if ssh_options[:keys] not set
+
 == 1.7.0
 
 * new tasks :install_memcached, :memcached_start, :memcached_stop, :memcached_restart [mbailey]
