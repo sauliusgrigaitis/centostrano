@@ -10,6 +10,15 @@ module MySQLMethods
     end
   end
   
+  def create_database(db_name, user = nil, pass = nil)
+    sql = ["CREATE DATABASE IF NOT EXISTS #{db_name};"]
+    sql << "GRANT ALL PRIVILEGES ON #{user}.* TO #{user}@localhost" if user
+    sql << " IDENTIFIED BY '#{pass}'" if pass
+    sql << ';'
+    sql << 'flush privileges;'
+    mysql.execute sql, mysql_admin
+  end
+  
   private
   def handle_mysql_password(user, channel, stream, data)
     logger.info data, "[database on #{channel[:host]} asked for password]"
