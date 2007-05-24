@@ -1,6 +1,6 @@
----------------------------
-deprec - Deployment Recipes
----------------------------
+------------------------------------------
+deprec - Deployment Recipes for Capistrano
+------------------------------------------
 
 QUICKSTART
 
@@ -22,45 +22,30 @@ Read on for installation and usage instructions.
 
 WHAT DEPREC IS
 
-Deprec is a collection of automated recipes, written in ruby, for setting 
-up production ready rails servers. The idea is, even if it takes longer to 
-write a general recipe for your situation, rather than just doing it by hand, 
-it's well worth the effort because you get a reliable and reproducible 
-deployment that will work just as well even if it's 3am and a human would be 
-liable to make mistakes with live webservers.
+Deprec is a collection of automated recipes, written in ruby, for setting up production ready rails servers. The idea is, even if it takes longer to write a general recipe for your situation, rather than just doing it by hand, 
+it's well worth the effort because you get a reliable and reproducible deployment that will work just as well even if it's 3am and a human would be liable to make mistakes with live webservers.
 
-You also get the advantage of a further set of conventions, which means that 
-other tools that you write can build on these conventions, in the same way 
-that the conventions that we already have amongst rails and capistrano users 
+You also get the advantage of a further set of conventions, which means that other tools that you write can build on these conventions, in the same way that the conventions that we already have amongst rails and capistrano users 
 benefit us when writing plugins and gems.
 
-Deprec is designed to take a raw server, and set it up with current best 
-practices for a production web server. This currently means Apache 2.2 for 
-load balancing and static content, and Mongrel for serving rails. Other 
-alternatives can be added later, providing a convention over configuration 
-approach is followed. Version 1.0 of deprec contains recipes specifically 
-for default installations of Ubuntu 6.06 (server), although it also contains 
-tasks which will allow it to be used on slightly non-standard ubuntu 
-installations, such as those provided by slicehost.com.
+Deprec is designed to take a raw server, and set it up with current best practices for a production web server. Until recently this has meant Apache 2.2 for load balancing and static content, and Mongrel for serving rails. The default setup will soon be changed, with nginx replacing apache. A convention over configuration approach will be followed so Apache will be available to those who still wish to use it. 
 
-Deprec has been tested on live VPS hosts with real production sites. It works 
-for me, if it doesn't work for you, then it's easy to extend.
+Version 1.x of deprec contains recipes specifically for default installations of Ubuntu 6.06 (server). Version 2.x of deprec (currently being worked on) will extract all ubuntu specific code to a plugin, alowing others to easily write thrid party plugins to get deprec working on other distros (and even OS's). [http://dev.deprec.org/trac.cgi/browser/trunk/ROADMAP.txt deprec roadmap]
+
+Deprec also contains tasks which will allow it to be used on slightly non-standard ubuntu installations, such as those provided by slicehost.com.
+
+Deprec has been tested on live VPS hosts with real production sites. It works for me, if it doesn't work for you, then it's easy to extend.
 
 
 WHAT DEPREC ISN'T
 
-Deprec isn't an attempt to solve all problems on all servers. I am solving 
-my own deployment problems, and providing a general framework to help you 
-solve yours. Submissions of recipes for other linux distributions, and maybe 
-even other operating systems, will be accepted and included. If this is 
-popular, some work may be done to allow your own recipes to be managed as 
-individual gems, dependent on the deprec gem.
+Deprec isn't an attempt to solve all problems on all servers. I am solving my own deployment problems, and providing a general framework to help you solve yours. I'm currently working on deprec2.0 which will make it easy for others to write plugin support for other linux distributions.
 
 
 CREDITS
 
 Deprec is written and maintained by Mike Bailey <mike@bailey.net.au>. 
-More about me here: http://codemode.blogspot.com/
+More about me here: [http://mike.bailey.net.au/]
 
 Deprec was inspired and uses the brilliantly executed Capistrano. Thanks Jamis!
 
@@ -104,26 +89,12 @@ USAGE
 
 The following instructions describe how to use deprec. 
 
-Most of the magic of deprec occurs in the install_rails_stack section. This 
-builds the server, which developers previously had to do by hand, or find a 
-hosting company that did it for them. Once that is done, deprec also adds 
-application specific helper tasks, which are shown below in the "deploy a 
-rails app to hosts" section.
+Most of the magic of deprec occurs in the install_rails_stack section. This builds the server, which developers previously had to do by hand, or find a hosting company that did it for them. Once that is done, deprec also adds application specific helper tasks, which are shown below in the "deploy a rails app to hosts" section.
 
-Please note that the "deprec --apply-to" command is much like the 
-"cap --apply-to" command, except that it creates a deploy.rb file in your 
-application's config directory with more available settings than capistrano 
-uses, because these settings can be used to configure the application specific 
-aspects of apache and mongrel. 
+Please note that the "deprec --apply-to" command is much like the "cap --apply-to" command, except that it creates a deploy.rb file in your application's config directory with more available settings than capistrano uses, because these settings can be used to configure the application specific aspects of apache and mongrel. 
 
 Important Note:
-Running "deprec --apply-to" currently overwrites your existing deploy.rb file.
-If you have deployed the app elsewhere before, you may want to backup this file
-so that you can refer to it when setting up your deprec generated deploy.rb.
-Because deprec sets up the server, it can fill in more sensible defaults than
-capistrano normally does, but there are still a few settings that you need to
-set yourself. Future versions of deprec will not overwrite this file
-automatically, but will move it out of the way first.
+Running "deprec --apply-to" currently overwrites your existing deploy.rb file. If you have deployed the app elsewhere before, you may want to backup this file so that you can refer to it when setting up your deprec generated deploy.rb. Because deprec sets up the server, it can fill in more sensible defaults than capistrano normally does, but there are still a few settings that you need to set yourself. Future versions of deprec will not overwrite this file automatically, but will move it out of the way first.
 
 ## install deprec on workstation
 #
@@ -137,8 +108,11 @@ cap show_tasks		                        # should now include deprec tasks
 # this currently only works with ubuntu 6.06.1 server installed
 # you need to have an account on this machine and sudo access
 #
+# This will install a rails stack on three hosts simultaneously
+# It should take about ten minutes depending on network and server speeds.
+#
 export HOSTS=r01,r02,r03      # define some hosts to mess with
-cap setup_ssh_keys            # copy out your public keys
+cap setup_ssh_keys            # copy your public keys to the servers
 cap install_rails_stack	      # install apache, rubygems, mongrel, rails, etc.
 unset HOSTS                   # stop overriding cap's hosts list
 
@@ -147,10 +121,9 @@ unset HOSTS                   # stop overriding cap's hosts list
 #
 # setup dns for your domain or put an entry in /etc/hosts
 cd /path/to/app
-deprec --apply-to . --name bailey --domain bailey.net.au
+deprec --apply-to .
+# open config/deploy.rb to update :domain, :application and :repository fields
 cap setup
-# put svn details in config/deploy.rb 
-# or run 'cap setup_scm' to import project
 cap deploy_with_migrations
 cap restart_apache
 
