@@ -13,6 +13,7 @@ set :domain, "<%= domain_name %>"
 role :web, domain
 role :app, domain
 role :db,  domain, :primary => true
+role :scm, domain
 
 # =============================================================================
 # REQUIRED VARIABLES
@@ -32,6 +33,19 @@ set :rails_env, "production"
 
 # Automatically symlink these directories from current/public to shared/public.
 # set :app_symlinks, %w{photo, document, asset}
+
+# =============================================================================
+# SPECIAL OPTIONS
+# =============================================================================
+# These options allow you to tweak deprec behaviour
+
+# If you do not keep database.yml in source control, set this to false.
+# After new code is deployed, deprec will symlink current/config/database.yml 
+# to shared/config/database.yml
+#
+# You can generate shared/config/database.yml with 'cap generate_database_yml'
+#
+# set :database_yml_in_scm, true
 
 # =============================================================================
 # APACHE OPTIONS

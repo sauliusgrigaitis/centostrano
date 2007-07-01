@@ -4,7 +4,7 @@ require 'rubygems'
 
 SPEC = Gem::Specification.new do |spec|
   spec.name = 'deprec'
-  spec.version = '1.7.1'
+  spec.version = '1.9.0'
   spec.summary = 'deployment recipes for capistrano'
   spec.description = <<-EOF
       This project provides libraries of Capistrano tasks and extensions to 

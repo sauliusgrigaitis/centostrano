@@ -2,10 +2,10 @@
 require 'capistrano'
 
 module Deprec
-  DEPREC_TEMPLATES_BASE = File.join(File.dirname(__FILE__), '..', 'recipes', 'templates')
+  DEPREC_TEMPLATES_BASE = File.join(File.dirname(__FILE__), '..', 'templates')
 
   def render_template_to_file(template_name, destination_file_name, templates_dir = DEPREC_TEMPLATES_BASE)
-    template_name += '.conf' if File.extname(template_name) == ''
+    template_name += '.conf' if File.extname(template_name) == '' # XXX this to be removed
     
     file = File.join(templates_dir, template_name)
     buffer = render :template => File.read(file)
@@ -21,7 +21,7 @@ module Deprec
     # XXX if options[:requires_sudo] and :use_sudo then use sudo
     sudo <<-END
     sh -c '
-      grep "#{value}" #{filename} > /dev/null 2>&1 || 
+      grep -F "#{value}" #{filename} > /dev/null 2>&1 || 
       test ! -f #{filename} ||
       echo "#{value}" >> #{filename}
       '

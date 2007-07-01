@@ -1,19 +1,14 @@
-== Slicehost extras
+== Slicehost specific notes for deprec
 
-# A freshly built slice gives you the root account
-# This creates a user account with sudo access
-# The '_as_root' means 'log in as root to do this'
-#
-export HOSTS=deptest.deprecated.org
-cap setup_admin_account_as_root # XXX echo new username
-cap setup_ssh_keys  # XXX do for others also
-cap install_rails_stack
-cap install_php
-cap setup
-cap deploy_with_migrations
-cap restart_apache
+# Slicehost provides you with root login and password for your slice.
 
-# svn+trac
-cap install_svn
-cap svn_setup_repos
+# Change the root password!
+cap change_root_password_as_root # '_as_root' means run this as 'root' user
 
+# Create an account with sudo access
+cap setup_admin_account_as_root 
+
+# Copy your ssh keys to remote server to avoid having to type passwords
+cap setup_ssh_keys
+
+now read README.quickstart

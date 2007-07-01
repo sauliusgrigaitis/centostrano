@@ -1,15 +1,20 @@
 require 'deprec/recipes/ssh'
 require 'deprec/recipes/svn'
+require 'deprec/recipes/trac'
+require 'deprec/recipes/rails'
 require 'deprec/recipes/ubuntu'
+require 'deprec/recipes/apache'
+require 'deprec/recipes/memcache'
 require 'deprec/third_party/mongrel_cluster/recipes'
 require 'deprec/third_party/vmbuilder/plugins'
 require 'deprec/third_party/railsmachine/recipes/apache'
 require 'deprec/third_party/railsmachine/recipes/mysql'
+require 'deprec/capistrano_extensions/cli_extensions.rb'
 require 'deprec/capistrano_extensions/deprec_extensions.rb'
 require 'deprec/capistrano_extensions/actor_extensions.rb'
 
 Capistrano.configuration(:must_exist).load do
-  set :application, lambda { application = Capistrano::CLI.password_prompt "Enter application name:" }
+  set :application, lambda { Capistrano::CLI.prompt "Enter application name" }
   set :user, (defined?(user) ? user : ENV['USER']) # user who is deploying
   set :group, 'deploy'           # deployment group
   set :src_dir, (defined?(src_dir) ? src_dir : '/usr/local/src') # 3rd party src on servers 
@@ -30,7 +35,7 @@ Capistrano.configuration(:must_exist).load do
     install_packages_for_rails # install packages that come with distribution
     install_rubygems
     install_gems 
-    install_apache
+    apache_install
   end
   
   desc <<-DESC
@@ -70,7 +75,7 @@ Capistrano.configuration(:must_exist).load do
     files = ["#{deploy_to}/shared/log/mongrel.log", "#{deploy_to}/shared/log/#{rails_env}.log"]
     
     sudo "chgrp -R #{mongrel_group} #{tmp_dir} #{shared_dir}"
-    sudo "chmod 0775 #{tmp_dir} #{shared_dir}" 
+    sudo "chmod -R g+w #{tmp_dir} #{shared_dir}" 
     # set owner and group of mongrels file (if they exist)
     files.each { |file|
       sudo "chown #{mongrel_user} #{file} || exit 0"   
@@ -175,132 +180,6 @@ Capistrano.configuration(:must_exist).load do
     gem.upgrade
     gem.update_system
   end
-    
-  task :install_apache do
-    version = 'httpd-2.2.4'
-    set :src_package, {
-      :file => version + '.tar.gz',   
-      :md5sum => '3add41e0b924d4bb53c2dee55a38c09e  httpd-2.2.4.tar.gz', 
-      :dir => version,  
-      :url => "http://www.apache.org/dist/httpd/#{version}.tar.gz",
-      :unpack => "tar zxf #{version}.tar.gz;",
-      :configure => %w(
-        ./configure
-        --enable-mods-shared=all
-        --enable-proxy 
-        --enable-proxy-balancer 
-        --enable-proxy-http 
-        --enable-rewrite  
-        --enable-cache 
-        --enable-headers 
-        --enable-ssl 
-        --enable-deflate 
-        --with-included-apr   #_so_this_recipe_doesn't_break_when_rerun
-        --enable-dav          #_for_subversion_
-        --enable-so           #_for_subversion_
-        ;
-        ).reject{|arg| arg.match '#'}.join(' '),
-      :make => 'make;',
-      :install => 'make install;',
-      :post_install => 'install -b support/apachectl /etc/init.d/httpd;'
-    }
-    apt.install( {:base => %w(zlib1g-dev zlib1g openssl libssl-dev)}, :stable )
-    deprec.download_src(src_package, src_dir)
-    deprec.install_from_src(src_package, src_dir)
-    # ubuntu specific - should instead call generic name which can be picked up by different distros
-    send(run_method, "update-rc.d httpd defaults")
-  end
-  
-  desc "Install PHP from source"
-  task :install_php do
-    version = 'php-5.2.2'
-    set :src_package, {
-      :file => version + '.tar.gz',
-      :md5sum => '7a920d0096900b2b962b21dc5c55fe3c  php-5.2.2.tar.gz', 
-      :dir => version,
-      :url => "http://www.php.net/distributions/#{version}.tar.gz",
-      :unpack => "tar zxf #{version}.tar.gz;",
-      :configure => %w(
-        ./configure 
-        --prefix=/usr/local/php
-        --with-apxs2=/usr/local/apache2/bin/apxs
-        --disable-ipv6
-        --enable-sockets
-        --enable-soap
-        --with-pcre-regex
-        --with-mysql
-        --with-zlib 
-        --with-gettext
-        --with-sqlite
-        --enable-sqlite-utf8
-        --with-openssl
-        --with-mcrypt
-        --with-ncurses
-        --with-jpeg-dir=/usr
-        --with-gd
-        --with-ctype
-        --enable-mbstring
-        --with-curl==/usr/lib 
-        ;
-        ).reject{|arg| arg.match '#'}.join(' '),
-      :make => 'make;',
-      :install => 'make install;',
-      :post_install => ""
-    }
-    apt.install( {:base => %w(zlib1g-dev zlib1g openssl libssl-dev 
-      flex libcurl3 libcurl3-dev libmcrypt-dev libmysqlclient15-dev libncurses5-dev 
-      libxml2-dev libjpeg62-dev libpng12-dev)}, :stable )
-    run "export CFLAGS=-O2;"
-    deprec.download_src(src_package, src_dir)
-    deprec.install_from_src(src_package, src_dir)
-    deprec.append_to_file_if_missing('/usr/local/apache2/conf/httpd.conf', 'AddType application/x-httpd-php .php')
-  end
-  
-
-  
-  # move all memcache stuff to separate file
-  set :memcache_ip, '127.0.0.1'
-  set :memcache_port, 11211
-  set :memcache_memory, 256
-  
-  # XXX needs thought/work
-  task :memcached_start do
-    run "memcached -d -m #{memcache_memory} -l #{memcache_ip} -p #{memcache_port}"
-  end
-  
-  # XXX needs thought/work
-  task :memcached_stop do
-    run "killall memcached"
-  end
-  
-  # XXX needs thought/work
-  task :memcached_restart do
-    memcached_stop
-    memcached_start
-  end
-  
-  task :install_memcached do
-    version = 'memcached-1.2.2'
-    set :src_package, {
-      :file => version + '.tar.gz',   
-      :md5sum => 'a08851f7fa7b15e92ee6320b7a79c321  memcached-1.2.2.tar.gz', 
-      :dir => version,  
-      :url => "http://www.danga.com/memcached/dist/#{version}.tar.gz",
-      :unpack => "tar zxf #{version}.tar.gz;",
-      :configure => %w{
-        ./configure
-        --prefix=/usr/local 
-        ;
-        }.reject{|arg| arg.match '#'}.join(' '),
-      :make => 'make;',
-      :install => 'make install;',
-      :post_install => 'install -b support/apachectl /etc/init.d/httpd;'
-    }
-    apt.install( {:base => %w(libevent-dev)}, :stable )
-    deprec.download_src(src_package, src_dir)
-    deprec.install_from_src(src_package, src_dir)
-  end
-  
   
   desc "Setup public symlink directories"
   task :setup_symlinks, :roles => [:app, :web] do
@@ -332,7 +211,7 @@ Capistrano.configuration(:must_exist).load do
   end
      
   task :setup_admin_account do
-    user = Capistrano::CLI.password_prompt "Enter userid for new user:" 
+    user = Capistrano::CLI.prompt "Enter userid for new user" 
     deprec.useradd(user, :shell => '/bin/bash')
     puts "Setting pasword for new account"
     sudo_with_input("passwd #{user}", /UNIX password/) # ??? how many  versions of the prompt are there?
@@ -344,6 +223,15 @@ Capistrano.configuration(:must_exist).load do
   task :setup_admin_account_as_root do
     as_root { setup_admin_account }
   end 
+  
+  desc "Change password for the root account"
+  task :change_root_password do
+    sudo_with_input("passwd root", /UNIX password/) # ??? how many  versions of the prompt are there?
+  end
+
+  task :change_root_password_as_root do
+    as_root { change_root_password }
+  end
 
   
 end

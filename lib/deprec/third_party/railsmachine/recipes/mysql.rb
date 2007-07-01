@@ -5,7 +5,8 @@ require 'capistrano/cli'
 module MySQLMethods
   
   def execute(sql, user)
-    run "mysql --user=root -p --execute=\"#{sql}\"" do |channel, stream, data|
+    user = 'root'
+    run "mysql --user=#{user} -p --execute=\"#{sql}\"" do |channel, stream, data|
       handle_mysql_password(user, channel, stream, data)
     end
   end
@@ -45,10 +46,15 @@ Capistrano.configuration(:must_exist).load do
   task :setup_mysql, :roles => :db, :only => { :primary => true } do
     # on_rollback {}
     
+    # rails puts "socket: /tmp/mysql.sock" into config/database.yml
+    # this is not the location for our ubuntu's mysql socket file
+    # so we create this link to make depployment using rails defaults simpler
+    sudo "sudo ln -sf /var/run/mysqld/mysqld.sock /tmp/mysql.sock"
+    
     set_mysql_admin
     read_config
     
-    sql = "CREATE DATABASE #{db_name};"
+    sql = "CREATE DATABASE IF NOT EXISTS #{db_name};"
     sql += "GRANT ALL PRIVILEGES ON #{db_name}.* TO #{db_user}@localhost IDENTIFIED BY '#{db_password}';"  
     mysql.execute sql, mysql_admin
   end

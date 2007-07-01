@@ -61,8 +61,13 @@ Capistrano.configuration(:must_exist).load do
     send(run_method, "#{apache_ctl} start")
   end
   
+
   desc "Restart Apache "
-  task :restart_apache, :roles => :web do
+  task :apache_restart, :roles => :web do
+    restart_apache
+  end
+  
+  task :restart_apache, :roles => :web do # deprecated
     send(run_method, "#{apache_ctl} restart")
   end
   

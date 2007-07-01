@@ -2,44 +2,59 @@ deprec changelog (check the timeline at http://trac.deprecated.org/trac.cgi/time
 
 == SVN
 
+* bugfix :setup_svn no longer stomps on :repository config item
+* new task :generate_database_yml creates shared/config/database.yml on server [Mike Bailey]
+* new config item :database_yml_in_scm causes shared/config/database.yml to be symlinked after deploy if set to false [Mike Bailey]
+* added defaults to prompt-> Capistrano::CLI.prompt('Enter database host', 'localhost') [Mike Bailey]
+
+== 1.8.0
+
+* fixed scm_setup. it parses :repository if set and prompts user for values if not [Mike Bailey]
+* added "role :scm, domain" to generated deploy.rb [Mike Bailey]
+* added :trac_install, :trac_setup, :trac_start, :trac_stop  [Mike Bailey]
+* added :change_root_password and :change_root_password_as_root [Mike Bailey]
+* moved templates dir [Mike Bailey]
+* bugfix :db_setup now re-runnable
+
 == 1.7.1
-* bugfix: setup_ssh_keys() - print message and exit if ssh_options[:keys] not set
+
+* bugfix: setup_ssh_keys() - print message and exit if ssh_options[:keys] not set [Mike Bailey]
 
 == 1.7.0
 
-* new tasks :install_memcached, :memcached_start, :memcached_stop, :memcached_restart [mbailey]
-* set default shell to '/bin/bash' for new users [mbailey]
-* bugfix: set default values for mongrel_user and mongrel_group
+* new tasks :install_memcached, :memcached_start, :memcached_stop, :memcached_restart [Mike Bailey]
+* set default shell to '/bin/bash' for new users [Mike Bailey]
+* bugfix: set default values for mongrel_user and mongrel_group [Mike Bailey]
 
 == 1.6.0
 
-* new task :install_php installs php-5.2.2 [mbailey]
+* new task :install_php installs php-5.2.2 [Mike Bailey]
 
 == 1.5.1
 
-* bugfix: fixed bug in su_put that was causing Windows [mbailey]
+* bugfix: fixed bug in su_put that was causing Windows [Mike Bailey]
 
 == 1.5.0
 
-* bugfix: :set_perms_for_mongrel_dirs [mbailey]
+* bugfix: :set_perms_for_mongrel_dirs [Mike Bailey]
   - now don't fail if log files do not exist (e.g initial deployment)
   - is called by :after_symlink task instead of :after_update 
     this is because some tasks call :update_code without calling the 
     :update task but in all of these cases :symlink is called 
 
 * updated version from 1.4.x to 1.5.x due to pretty big change made
-  in previous version (mongrel no longer running as root) [mbailey]
+  in previous version (mongrel no longer running as root) [Mike Bailey]
 
 == 1.4.2
 
-* change: mongrel no longer runs as root for security reasons [mbailey]
-* bugfix: install apache version 2.2.4 as previous version is no longer on their webserver [mbailey]
-* bugfix: fixed install_rubygems so install_rails_stack no longer fails when first run [mbailey]
+* change: mongrel no longer runs as root for security reasons [Mike Bailey]
+* bugfix: install apache version 2.2.4 as previous version is no longer on their webserver [Mike Bailey]
+* bugfix: fixed install_rubygems so install_rails_stack no longer fails when first run [Mike Bailey]
 
 == 1.4.0
 
-* renamed svn commands and made svn_create_repos re-runable [mbailey]
-* bugfix: Wildcard Apache NameVirtualHosts directive used be used just once [mbailey]
+* renamed svn commands and made svn_create_repos re-runable [Mike Bailey]
+* bugfix: Wildcard Apache NameVirtualHosts directive used be used just once [Mike Bailey]
 
 == 1.3.1
 
@@ -47,20 +62,20 @@ deprec changelog (check the timeline at http://trac.deprecated.org/trac.cgi/time
 
 == 1.3.0
 
-* added md5sum checking to deprec.download_src [mbailey]
-* new function: deprec.mkdir(path, mode=0755, group=nil, user=nil) [mbailey]
-* start apache and mongrel on server boot [mbailey]
-* removed deprec_dotfiles script as the Cap code it patches is now in Capistrano source. [mbailey]
-* changed from LGPG to GPL licence. [mbailey]
+* added md5sum checking to deprec.download_src [Mike Bailey]
+* new function: deprec.mkdir(path, mode=0755, group=nil, user=nil) [Mike Bailey]
+* start apache and mongrel on server boot [Mike Bailey]
+* removed deprec_dotfiles script as the Cap code it patches is now in Capistrano source. [Mike Bailey]
+* changed from LGPG to GPL licence. [Mike Bailey]
 
 == 1.2.2
 
-* Added enable_multiverse(), disable_multiverse() tasks for ubuntu package management [mbailey]
-* Removed termios as a gem requirement as it doesn't work on Windows [mbailey]
+* Added enable_multiverse(), disable_multiverse() tasks for ubuntu package management [Mike Bailey]
+* Removed termios as a gem requirement as it doesn't work on Windows [Mike Bailey]
 
 == 1.2.1
 
-* Updated railsmachine code to include SSL fix from new release [mbailey]
+* Updated railsmachine code to include SSL fix from new release [Mike Bailey]
 
 == 1.2.0
 
