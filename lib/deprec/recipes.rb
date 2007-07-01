@@ -9,6 +9,7 @@ require 'deprec/third_party/mongrel_cluster/recipes'
 require 'deprec/third_party/vmbuilder/plugins'
 require 'deprec/third_party/railsmachine/recipes/apache'
 require 'deprec/third_party/railsmachine/recipes/mysql'
+require 'deprec/capistrano_extensions'
 
 
 Capistrano.configuration(:must_exist).load do
