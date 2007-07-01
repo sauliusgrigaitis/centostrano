@@ -1,0 +1,7 @@
+History.txt
+Manifest.txt
+README.txt
+Rakefile
+bin/deprec
+lib/deprec.rb
+test/test_deprec.rb
