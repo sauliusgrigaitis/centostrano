@@ -2,6 +2,76 @@
 deprec - Deployment Recipes for Capistrano
 ------------------------------------------
 
+== dep2
+
+# dep2 defines the CRUD of system services with the following tasks
+
+	:install                : add or remove the application from disk
+	:config                 : push config files to server
+	:config_gen             : generate config files from templates
+	                          - kept in version control
+	                          - allow extra modifications made by hand
+	:start, :stop, :restart : control process on server
+	:activate, :deactivate  : install or remove start script
+	:backup, :restore       : for services that generate valuable data
+
+	Some of these won't be relevant to some services. In these cases,
+	there will be no :desc set so they won't show up in task lists.
+	They should still be present so they don't cause an error if called.
+
+# dep2 supports a choice of deployment architectures:
+
+  webserver: nginx(default), apache
+  appserver: mongrel(default)
+  database: mysql(default), postgresql
+
+# dep2 interactively prompts for values not supplied in config file(s):
+
+	maculike:~ mbailey$ cap2 deprec:install_rails_stack
+	 * executing `deprec:install_rails_stack'
+	select webserver type:
+	1. nginx
+	2. apache
+	?  1
+	select application server type:
+	1. mongrel
+	2. webrick
+	?  1
+	select database server type:
+	1. mysql
+	2. postgres
+	?  2
+	about to install nginx, mongrel, postgres
+	
+dep2 has canonical task names, linked through to system specific settings
+So users can remember a simple set regardless of the implementation chosen.
+
+deprec:web:install -> deprec:nginx:restart
+
+# dep2
+
+- rotates logs
+
+# dep2 now uses debian layout for apache configs
+
+
+
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 QUICKSTART
 
 To get your rails app running on a stock standard Ubuntu 6.06 server:
