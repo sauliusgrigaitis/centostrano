@@ -14,6 +14,9 @@ Hoe.new('deprec', Deprec::VERSION) do |p|
         remove the repetitive manual work associated with installing services 
         on linux servers.
   EOF
+  p.extra_deps << ['capistrano']
+  p.extra_deps << ['gem_plugin', '>= 0.2.2']
+  
   # p.url = p.paragraphs_of('README.txt', 0).first.split(/\n/)[1..-1]
   p.changes = p.paragraphs_of('History.txt', 0..1).join("\n\n")
   p.remote_rdoc_dir = '' # Release to root

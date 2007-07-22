@@ -1,0 +1,10 @@
+* make _as_root automatically run command as root (method missing?)
+
+* write a generator for new recipe files
+
+* as much as possible, removing project dir should remove project
+
+* make start script for nginx ubuntu
+* logrotate
+* trac - copy trac_banner.png into templates and make config_gen copy it in, config push it
+

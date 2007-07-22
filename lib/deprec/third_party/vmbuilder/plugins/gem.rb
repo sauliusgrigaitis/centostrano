@@ -93,5 +93,5 @@ module Gem
 
 end
 
-Capistrano.plugin :gem, Gem
+Capistrano.plugin :gem2, Gem
 # vim: nowrap sw=2 sts=2 ts=8 ff=unix ft=ruby:

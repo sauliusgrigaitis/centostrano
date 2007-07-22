@@ -1,18 +1,57 @@
-Capistrano.configuration(:must_exist).load do
-    
-  set :trac_password_file, lambda { "#{trac_path}/conf/users.htdigest" }
-  set :trac_pidfile, lambda { "#{deploy_to}/shared/pids/trac.pid" }
+Capistrano::Configuration.instance(:must_exist).load do 
+  namespace :deprec do
+    namespace :trac do
+      
+  set(:trac_backup_dir) { File.join(backup_dir, 'trac') }
+      
+      
+  set(:trac_home_url) { 'http://' + domain.sub(/^.*?\./, 'trac.') + '/' }
+   
+  set(:trac_password_file)  { "#{trac_path}/conf/users.htdigest" }
+  set(:trac_pidfile) { "#{deploy_to}/shared/pids/trac.pid" }
   set :tracd_port, '9000'
   set (:trac_path) do
-    deploy_to ? "#{deploy_to}/trac" : Capistrano::CLI.prompt('path to trac config')
+    exists?(:deploy_to) ? "#{deploy_to}/trac" : Capistrano::CLI.ui.ask('path to trac config')
   end
   set (:trac_account) do
     Capistrano::CLI.prompt('enter new trac user account name')
   end  
   set :trac_passwordfile_exists, true # hack - should check on remote system instead
   
-  set :trac_smtp_enabled, true
+  set(:trac_header_logo_link) { trac_home_url }
   
+  # project
+  set(:trac_home_url) { 'http://' + domain.sub(/^.*?\./, 'trac.') + '/' }
+  set(:trac_desc) { application } 
+  
+  task :default do
+    puts trac_desc
+  end
+  
+  
+  # notification
+  set :trac_always_notify_owner, false
+  set :trac_always_notify_reporter, false
+  set :trac_always_notify_updater, true
+  set :trac_smtp_always_bcc, ''
+  set :trac_smtp_always_cc, ''
+  set :trac_smtp_default_domain, ''
+  set :trac_smtp_enabled, true
+  set :trac_smtp_from, 'trac@localhost'
+  set :trac_smtp_password, ''
+  set :trac_smtp_port, 25
+  set :trac_smtp_replyto, 'trac@localhost'
+  set :trac_smtp_server, 'localhost'
+  set :trac_smtp_subject_prefix, '__default__'
+  set :trac_smtp_user, ''
+  set :trac_use_public_cc, false
+  set :trac_use_short_addr, false
+  set :trac_use_tls, false  
+  
+  set(:trac_base_url) { trac_home_url }
+  
+  
+  desc "Install trac on server"
   task :trac_install, :roles => :scm do
     version = 'trac-0.10.4'
     set :src_package, {
@@ -27,6 +66,11 @@ Capistrano.configuration(:must_exist).load do
     apt.install( {:base => %w(python-sqlite sqlite python-clearsilver)}, :stable )
     deprec.download_src(src_package, src_dir)
     deprec.install_from_src(src_package, src_dir)
+  end
+  
+  # desc "Remove trac from server"
+  task :uninstall, :roles => :web do
+    # not implemented
   end
   
   task :trac_create_pid_dir, :roles => :scm do
@@ -65,7 +109,7 @@ Capistrano.configuration(:must_exist).load do
   end
   
   task :trac_config, :roles => :scm do
-    deprec.render_template_to_file('trac.ini.erb', "#{trac_path}/conf/trac.ini")
+    deprec.render_template_to_file('trac/trac.ini.erb', "#{trac_path}/conf/trac.ini")
   end
   
   task :trac_start, :roles => :scm do
@@ -95,6 +139,20 @@ Capistrano.configuration(:must_exist).load do
     sudo "cat #{trac_path}/conf/users.htdigest"
   end
   
-
+  desc "create backup of trac repository"
+  task :backup, :roles => :web do
+    # http://trac.edgewall.org/wiki/TracBackup
+    timestamp = Time.now.utc.strftime("%Y%m%d%H%M%S")
+    dest_dir = File.join(trac_backup_dir, "trac_#{application}_#{timestamp}"
+    sudo "trac-admin #{trac_path} hotcopy #{dest_dir)}"
+  end
+  
+  task :restore, :roles => :web do
+    # prompt user to select from list of locally stored backups
+    # tracd_stop
+    # copy out backup
+  end
+  
+end end
   
 end

@@ -1,0 +1,10 @@
+before "deploy:update_code", :say_something
+
+task :say_something do
+  puts 'something'
+end
+
+task :dump do
+  require 'yaml'
+  y variables
+end

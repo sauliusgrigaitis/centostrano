@@ -1,5 +1,7 @@
-Capistrano.configuration(:must_exist).load do
-  
+Capistrano::Configuration.instance(:must_exist).load do 
+  namespace :deprec do
+    namespace :memcache do
+      
   set :memcache_ip, '127.0.0.1'
   set :memcache_port, 11211
   set :memcache_memory, 256
@@ -41,5 +43,6 @@ Capistrano.configuration(:must_exist).load do
     deprec.download_src(src_package, src_dir)
     deprec.install_from_src(src_package, src_dir)
   end
+end end
   
 end

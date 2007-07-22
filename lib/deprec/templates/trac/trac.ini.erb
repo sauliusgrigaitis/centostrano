@@ -17,7 +17,7 @@ wiki_format_messages = true
 [header_logo]
 alt = 
 height = -1
-link = http://example.org/
+link = <%= trac_header_logo_link %>
 src = common/trac_banner.png
 width = -1
 
@@ -37,24 +37,43 @@ silvercity_modes =
 tab_width = 8
 
 [notification]
-always_notify_owner = false
-always_notify_reporter = false
-always_notify_updater = true
+always_notify_owner = <%= trac_always_notify_owner.to_s %>
+always_notify_reporter = <%= trac_always_notify_reporter.to_s %>
+always_notify_updater = <%= trac_always_notify_updater.to_s %>
 mime_encoding = base64
-smtp_always_bcc = 
-smtp_always_cc = 
-smtp_default_domain = 
+smtp_always_bcc = <%= trac_smtp_always_bcc %>
+smtp_always_cc = <%= trac_smtp_always_cc %>
+smtp_default_domain = <%= trac_smtp_default_domain %>
 smtp_enabled = <%= trac_smtp_enabled.to_s %>
-smtp_from = trac@localhost
-smtp_password = 
-smtp_port = 25
-smtp_replyto = trac@localhost
-smtp_server = localhost
-smtp_subject_prefix = __default__
-smtp_user = 
-use_public_cc = false
-use_short_addr = false
-use_tls = false
+smtp_from = <%= trac_smtp_from %>
+smtp_password = <%= trac_smtp_password %>
+smtp_port = <%= trac_smtp_port %>
+smtp_replyto = <%= trac_smtp_replyto %>
+smtp_server = <%= trac_smtp_server %>
+smtp_subject_prefix = <%= trac_smtp_subject_prefix %>
+smtp_user = <%= trac_smtp_user %>
+use_public_cc = <%= trac_use_public_cc.to_s %>
+use_short_addr = <%= trac_use_short_addr.to_s %>
+use_tls = <%= trac_use_tls.to_s %>
+
+set :trac_always_notify_owner, false
+set :trac_always_notify_reporter, false
+set :trac_always_notify_updater, true
+set :trac_smtp_always_bcc, ''
+set :trac_smtp_always_cc, ''
+set :trac_smtp_default_domain, ''
+set :trac_smtp_enabled, true
+set :trac_smtp_from, 'trac@localhost'
+set :trac_smtp_port, 25
+set :trac_smtp_replyto, 'trac@localhost'
+set :trac_smtp_server, 'localhost'
+set :trac_smtp_subject_prefix, '__default__'
+set :trac_smtp_user, ''
+set :trac_use_public_cc, false
+set :trac_use_short_addr, false
+set :trac_use_tls, false
+
+
 
 [project]
 descr = My example project

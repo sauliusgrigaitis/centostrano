@@ -1,62 +1,36 @@
+################################################################################
 require 'fileutils'
 require 'uri'
 
-Capistrano.configuration(:must_exist).load do
+Capistrano::Configuration.instance(:must_exist).load do 
+  namespace :deprec do namespace :svn do
   
-  # By default, all repositories are group writable by the group 'scm'
-  # Originally I have envisaged this value being initialized here as:
-  #
-  #   set :scm_group, lambda {'scm_' + application} 
-  #
-  # however the SVN docs convinced me it's probably overkill.
-  # http://svnbook.red-bean.com/nightly/en/svn-book.html#svn.serverconfig.pathbasedauthz
-  #
   set :scm_group, 'scm'
   
-  # The following values define the svn repository to work with.
-  # If any are undefined but :repository is set, we'll extract the 
-  # necessary values from it, otherwise we'll prompt the user.
+  # Extract svn attributes from :repository URL
   # 
-  # An example of :repository entries are:
+  # Two examples of :repository entries are:
   #
   #   set :repository, 'svn+ssh://scm.deprecated.org/var/svn/deprec/trunk'
   #   set :repository, 'file:///tmp/svn/deprec/trunk'
   #
-  # I've only used svn+ssh but it shouldn't be hard to get the file scheme working.
+  # This has only been tested with svn+ssh but file: should work.
   #
-  set (:svn_scheme) do
-    repository ? URI.parse(repository).scheme : 'svn+ssh'
-  end
-  
-  set (:scm_host) do
-    if repository
-      URI.parse(repository).host || 'localhost'
-    elsif ENV['HOSTS']
-      svn_host = ENV['HOSTS']
-    else
-      Capistrano::CLI.prompt('svn host')
-    end
-  end
-
-  # This is the actual path in the svn repos where we'll check our project into
-  set (:repos_path) do
-    repository ? URI.parse(repository).path : Capistrano::CLI.prompt('svn repos path')
-  end
-
-  # We'll calculate this based on the repos_path. It's used when initializing the repository
-  set (:repos_root) do
-    (repository ? URI.parse(repository).path : repos_path).sub(/\/(trunk|tags|branches)$/, '')
-  end
+  set (:svn_scheme) { URI.parse(repository).scheme }  
+  set (:scm_host)   { URI.parse(repository).host }
+  set (:repos_path) { URI.parse(repository).path }
+  set (:repos_root) { 
+    URI.parse(repository).path.sub(/\/(trunk|tags|branches)$/, '') 
+  }
   
   # account name to perform actions on
   # this is a hack to allow us to optionally pass a variable to tasks 
   set (:svn_account) do
-    Capistrano::CLI.prompt('account name')
+    Capistrano::CLI.ui.ask 'account name'
   end
   
-  # I'd like to be able to construct :repository if it's not explicitly set
-  # However we're grabbing values from it in the lines above so it would get a bit recursive
-  # set :repository, lambda { "#{svn_scheme}://#{scm_host == 'localhost' ? '/' : user+'@'+scm_host}#{repos_path}" }
+  set(:svn_backup_dir) { File.join(backup_dir, 'svn') }
+  
   
   # XXX requires apache to have already been installed...
   desc "install Subversion version control system"
@@ -179,7 +153,21 @@ Capistrano.configuration(:must_exist).load do
     run_with_input "svn list #{repository}"
   end
   
+  desc "create backup of trac repository"
+  task :backup, :roles => :scm do
+    # http://svnbook.red-bean.com/nightly/en/svn.reposadmin.maint.html#svn.reposadmin.maint.backup
+    # XXX do we need this? insane!
+    # echo "REPOS_BASE=/var/svn" > ~/.svntoolsrc
+    timestamp = Time.now.utc.strftime("%Y%m%d%H%M%S")
+    dest_dir = File.join(svn_backup_dir, "svn_#{application}_#{timestamp}"
+    run "svn-dump #{application} #{dest_dir}"
+  end
 
+  task :restore, :roles => :scm do
+    # prompt user to select from list of locally stored backups
+    # tracd_stop
+    # copy out backup
+  end
   
   
   # XXX TODO
@@ -188,4 +176,5 @@ Capistrano.configuration(:must_exist).load do
   #   puts "read http://svnbook.red-bean.com/nightly/en/svn-book.html#svn.reposadmin.maint.backup"
   # end
 
+  end end
 end
