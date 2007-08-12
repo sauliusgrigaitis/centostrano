@@ -37,7 +37,7 @@ Capistrano::Configuration.instance(:must_exist).load do
         }.reject{|arg| arg.match '#'}.join(' '),
       :make => 'make;',
       :install => 'make install;',
-      :post_install => 'install -b support/apachectl /etc/init.d/httpd;'
+      :post_install => 'install -b scripts/memcached-init /etc/init.d/memcached;'
     }
     apt.install( {:base => %w(libevent-dev)}, :stable )
     deprec.download_src(src_package, src_dir)
