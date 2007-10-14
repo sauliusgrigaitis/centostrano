@@ -15,11 +15,10 @@ Capistrano::Configuration.instance(:must_exist).load do
           ERROR
           exit
         end
-    
-        deprec2.mkdir '~/.ssh', :mode => '0700'
+        
+        deprec2.mkdir '.ssh', :mode => '0700'
         put(ssh_options[:keys].collect{|key| File.read(key+'.pub')}.join("\n"),
-          File.join('/home', user, '.ssh/authorized_keys'),
-          :mode => 0600 )
+          '.ssh/authorized_keys', :mode => 0600 )
       end      
     end
   end
