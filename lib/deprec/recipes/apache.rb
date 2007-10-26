@@ -30,17 +30,12 @@ Capistrano::Configuration.instance(:must_exist).load do
       set :apache_ssl_forward_all, false
       set :apache_ssl_chainfile, false
       
-      desc "install dependencies for apache"
-      task :install_deps do
-        puts "This function should be overridden by your OS plugin!"
-      end
-
       desc "Install apache"
       task :install do
-        version = 'httpd-2.2.4'
+        version = 'httpd-2.2.6'
         set :src_package, {
           :file => version + '.tar.gz',   
-          :md5sum => '3add41e0b924d4bb53c2dee55a38c09e  httpd-2.2.4.tar.gz', 
+          :md5sum => 'd050a49bd7532ec21c6bb593b3473a5d  httpd-2.2.6.tar.gz', 
           :dir => version,  
           :url => "http://www.apache.org/dist/httpd/#{version}.tar.gz",
           :unpack => "tar zxf #{version}.tar.gz;",
@@ -67,6 +62,12 @@ Capistrano::Configuration.instance(:must_exist).load do
         install_deps
         deprec2.download_src(src_package, src_dir)
         deprec2.install_from_src(src_package, src_dir)
+      end
+      
+      desc "install dependencies for apache"
+      task :install_deps do
+        puts "This function should be overridden by your OS plugin!"
+        apt.install( {:base => %w(build-essential zlib1g-dev zlib1g openssl libssl-dev)}, :stable )
       end
 
       desc "Generate configuration file(s) for apache from template(s)"
