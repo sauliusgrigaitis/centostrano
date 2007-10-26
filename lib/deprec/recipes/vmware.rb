@@ -1,4 +1,8 @@
-Capistrano.configuration(:must_exist).load do
+Capistrano::Configuration.instance(:must_exist).load do 
+  
+  # http://ftpsite.vmware.com/download/WebinarFiles/103106%20TnT/103106vmware12pmet.htm
+  # command line tools look like they'll start/stop guest OS's and build virtual disks!
+
   set :vm_dir, '/var/vm'
   set :stemserver, 'stemserver_ubuntu_6.06.1'
   
