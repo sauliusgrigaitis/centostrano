@@ -8,7 +8,7 @@ Capistrano::Configuration.instance(:must_exist).load do
           puts <<-ERROR
 
           You need to define the name of your SSH key(s)
-          e.g. ssh_options[:keys] = %w(/Users/someuser/.ssh/id_rsa)
+          e.g. ssh_options[:keys] = %w(/Users/your_username/.ssh/id_rsa)
 
           You can put this in your .caprc file in your home directory.
 
