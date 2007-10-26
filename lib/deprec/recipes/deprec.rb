@@ -1,17 +1,26 @@
 Capistrano::Configuration.instance(:must_exist).load do 
   
-  # a wrapper function that only sets that value if not already set
+  # A wrapper function that only sets that value if not already set
   # this is accessible to all recipe files
   def self.default(name, *args, &block)
     unless exists?(name)
       set(name, *args, &block)
     end
   end
-    
+  
+  # The following two Constants contain details of the configuration 
+  # files used by each service. They're used when generating config
+  # files from templates and when configs files are pushed out to servers.
+  #
+  SYSTEM_CONFIG_FILES  = {} # e.g. httpd.conf
+  PROJECT_CONFIG_FILES = {} # e.g. projectname-httpd-vhost.conf
+  
+  # Server options
   CHOICES_WEBSERVER = [:nginx, :apache, :none]
   CHOICES_APPSERVER = [:mongrel, :webrick, :none]
   CHOICES_DATABASE  = [:mysql, :postgres, :none]
   
+  # Server defaults
   default :web_server_type, :nginx
   default :app_server_type, :mongrel
   default :db_server_type,  :mysql
