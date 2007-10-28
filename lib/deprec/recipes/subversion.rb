@@ -1,4 +1,3 @@
-################################################################################
 require 'fileutils'
 require 'uri'
 
@@ -17,13 +16,13 @@ Capistrano::Configuration.instance(:must_exist).load do
   # This has only been tested with svn+ssh but file: should work.
   #
   set (:svn_scheme) { URI.parse(repository).scheme }  
-  set (:scm_host)   { URI.parse(repository).host }
+  set (:svn_host)   { URI.parse(repository).host }
   set (:repos_path) { URI.parse(repository).path }
   set (:repos_root) { 
     URI.parse(repository).path.sub(/\/(trunk|tags|branches)$/, '') 
   }
   
-  # account name to perform actions on
+  # account name to perform actions on (such as granting access to an account)
   # this is a hack to allow us to optionally pass a variable to tasks 
   set (:svn_account) do
     Capistrano::CLI.ui.ask 'account name'
@@ -31,10 +30,9 @@ Capistrano::Configuration.instance(:must_exist).load do
   
   set(:svn_backup_dir) { File.join(backup_dir, 'svn') }
   
-  
   # XXX requires apache to have already been installed...
   desc "install Subversion version control system"
-  task :svn_install, :roles => :scm do
+  task :install, :roles => :scm do
     # svn 1.4 server improves on 1.3 and is backwards compatible with 1.3 clients
     # http://subversion.tigris.org/svn_1.4_releasenotes.html
     #
@@ -44,10 +42,10 @@ Capistrano::Configuration.instance(:must_exist).load do
     # NOTE: we're bulding the python bindings for trac
     # ./subversion/bindings/swig/INSTALL
     #
-    version = 'subversion-1.4.4'
+    version = 'subversion-1.4.5'
     set :src_package, {
       :file => version + '.tar.gz',   
-      :md5sum => '702655defa418bab8f683f6268b4fd30  subversion-1.4.4.tar.gz', 
+      :md5sum => '3caf1d93e13ed09d76c42eff0f52dfaf  subversion-1.4.5.tar.gz', 
       :dir => version,  
       :url => "http://subversion.tigris.org/downloads/#{version}.tar.gz",
       :unpack => "tar zxf #{version}.tar.gz;",
@@ -69,9 +67,16 @@ Capistrano::Configuration.instance(:must_exist).load do
         '
     }
     enable_universe
-    apt.install( {:base => %w(libneon25 libneon25-dev swig python-dev)}, :stable )
-    deprec.download_src(src_package, src_dir)
-    deprec.install_from_src(src_package, src_dir)
+    # XXX should really check if apache has already been installed
+    # XXX can do that when we move to rake
+    deprec2.download_src(src_package, src_dir)
+    deprec2.install_from_src(src_package, src_dir)
+  end
+  
+  desc "install dependencies for apache"
+  task :install_deps do
+    puts "This function should be overridden by your OS plugin!"
+    apt.install( {:base => %w(build-essential wget libneon25 libneon25-dev swig python-dev)}, :stable )
   end
   
   desc "grant a user access to svn repos"
@@ -159,7 +164,7 @@ Capistrano::Configuration.instance(:must_exist).load do
     # XXX do we need this? insane!
     # echo "REPOS_BASE=/var/svn" > ~/.svntoolsrc
     timestamp = Time.now.utc.strftime("%Y%m%d%H%M%S")
-    dest_dir = File.join(svn_backup_dir, "svn_#{application}_#{timestamp}"
+    dest_dir = File.join(svn_backup_dir, "svn_#{application}_#{timestamp}")
     run "svn-dump #{application} #{dest_dir}"
   end
 
