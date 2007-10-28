@@ -1,13 +1,13 @@
 Capistrano::Configuration.instance(:must_exist).load do 
   namespace :deprec do
     namespace :php do
- 
+      
       desc "Install PHP from source"
       task :install do
-        version = 'php-5.2.2'
+        version = 'php-5.2.4'
         set :src_package, {
           :file => version + '.tar.gz',
-          :md5sum => '7a920d0096900b2b962b21dc5c55fe3c  php-5.2.2.tar.gz', 
+          :md5sum => '0826e231c3148b29fd039d7a8c893ad3  php-5.2.4.tar.gz', 
           :dir => version,
           :url => "http://www.php.net/distributions/#{version}.tar.gz",
           :unpack => "tar zxf #{version}.tar.gz;",
@@ -38,13 +38,20 @@ Capistrano::Configuration.instance(:must_exist).load do
           :install => 'make install;',
           :post_install => ""
         }
-        # apt.install( {:base => %w(zlib1g-dev zlib1g openssl libssl-dev 
-        #   flex libcurl3 libcurl3-dev libmcrypt-dev libmysqlclient15-dev libncurses5-dev 
-        #   libxml2-dev libjpeg62-dev libpng12-dev)}, :stable )
-        # run "export CFLAGS=-O2;"
-        # deprec.download_src(src_package, src_dir)
-        # deprec.install_from_src(src_package, src_dir)
-        # deprec.append_to_file_if_missing('/usr/local/apache2/conf/httpd.conf', 'AddType application/x-httpd-php .php')
+        enable_universe
+        install_deps
+        run "export CFLAGS=-O2;"
+        deprec2.download_src(src_package, src_dir)
+        deprec2.install_from_src(src_package, src_dir)
+        deprec2.append_to_file_if_missing('/usr/local/apache2/conf/httpd.conf', 'AddType application/x-httpd-php .php')
+      end
+      
+      # install dependencies for php
+      task :install_deps do
+        puts "This function should be overridden by your OS plugin!"
+        apt.install( {:base => %w(zlib1g-dev zlib1g openssl libssl-dev 
+          flex libcurl3 libcurl3-dev libmcrypt-dev libmysqlclient15-dev libncurses5-dev 
+          libxml2-dev libjpeg62-dev libpng12-dev)}, :stable )
       end
       
       desc "generate config file for php"
