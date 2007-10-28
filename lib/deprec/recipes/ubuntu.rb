@@ -1,4 +1,4 @@
-Capistrano.configuration(:must_exist).load do
+Capistrano::Configuration.instance(:must_exist).load do 
   
   # require 'deprec/third_party/vmbuilder/plugins/apt'
 
@@ -6,7 +6,7 @@ Capistrano.configuration(:must_exist).load do
   set :rails_ubuntu, {
   :base => %w(build-essential ntp-server mysql-server wget
               ruby irb ri rdoc ruby1.8-dev libopenssl-ruby libmysql-ruby 
-              zlib1g-dev zlib1g openssl libssl-dev subversion)
+              zlib1g-dev zlib1g openssl libssl-dev)
   }
   
   desc "enable universe repositories"
