@@ -1,7 +1,13 @@
+# canonical.rb
+#
+# Running deprec:web:stop will be the same as running deprec:apache:stop or 
+# deprec:nginx:stop depending what you have chosen.
+#
+# generic namespaces are linked up to chosen applications at runtime but these
+# stubs are so they'll be included in the output of "cap -T"
+#
 Capistrano::Configuration.instance(:must_exist).load do 
   
-  # server specific tasks don't get linked into the canonical ones till runtime
-  # So these stubs are for cap -T
   %w(web app db).each do |server|
     namespace "deprec:#{server}" do
       
