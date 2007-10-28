@@ -1,0 +1,15 @@
+== Configuration
+
+deprec2 has a two stage process for generating/deploying configuration files.
+Configuration files for web, app, db servers (and more) are generated from templates and put under the config/ tree in your Rails apps source tree. The second stage is pushing the files out to the destination servers. This used to be a one stage process in deprec1 however the change has been made so that:
+
+- all config files for a project can be kept under source control
+- you can make changes to config files that are not available through deprec
+
+Many of the settings in these config files are based on values in the projects deploy.rb file. Others reflect defaults in deprec that you can override by adding fields to deploy.rb. This means you may never need to edit the generated config files directly. You can generate a set of config files with the following.
+
+> cap deprec:trac:config_gen # generates config files for trac from templates
+
+Changes to service configuration should never be done on the server. Deprec acknowledges this by offering no assistance to people who want to copy config files back from servers. But pushing the files out couldn't be simpler!
+
+> cap deprec:trac:config # pushes out all config files for trac
