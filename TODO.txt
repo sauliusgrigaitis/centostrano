@@ -1,3 +1,7 @@
+* write up instructions for people to test from SVN
+
+* required_gems :ferret, :blah
+
 * make _as_root automatically run command as root (method missing?)
 
 * write a generator for new recipe files

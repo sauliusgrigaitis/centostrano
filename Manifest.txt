@@ -6,7 +6,6 @@ bin/deprec
 lib/deprec.rb
 test/test_deprec.rb
 lib/deprec/recipes.rb
-lib/deprec/recipes/recipes.rb
 lib/deprec/recipes/ssh.rb
 lib/deprec/recipes/subversion.rb
 lib/deprec/recipes/trac.rb
@@ -14,3 +13,4 @@ lib/deprec/recipes/apache.rb
 lib/deprec/recipes/nginx.rb
 lib/deprec/recipes/mongrel.rb
 lib/deprec/recipes/ubuntu.rb
+lib/deprec/capistrano_extensions/deprec_extensions.rb

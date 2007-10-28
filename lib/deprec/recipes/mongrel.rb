@@ -1,7 +1,8 @@
 Capistrano::Configuration.instance(:must_exist).load do 
+  
   namespace :deprec do
     namespace :mongrel do
-    
+      
       set :mongrel_servers, 2
       set :mongrel_port, 8000
       set :mongrel_address, "127.0.0.1"

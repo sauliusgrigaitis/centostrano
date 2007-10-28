@@ -7,6 +7,12 @@ deprec changelog (check the timeline at http://trac.deprecated.org/trac.cgi/time
 * new config item :database_yml_in_scm causes shared/config/database.yml to be symlinked after deploy if set to false [Mike Bailey]
 * added defaults to prompt-> Capistrano::CLI.prompt('Enter database host', 'localhost') [Mike Bailey]
 
+== 1.10.0
+Massive changes in preparation for 2.0
+
+== 1.9.0
+
+
 == 1.8.0
 
 * fixed scm_setup. it parses :repository if set and prompts user for values if not [Mike Bailey]
