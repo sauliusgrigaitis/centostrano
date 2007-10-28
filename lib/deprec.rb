@@ -1,4 +1,4 @@
 class Deprec
-  VERSION = '2.0.0'
+  VERSION = '1.10.0'
 end
 
