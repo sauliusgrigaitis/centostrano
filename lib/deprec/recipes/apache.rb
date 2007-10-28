@@ -64,7 +64,7 @@ Capistrano::Configuration.instance(:must_exist).load do
         deprec2.install_from_src(src_package, src_dir)
       end
       
-      desc "install dependencies for apache"
+      # install dependencies for apache
       task :install_deps do
         puts "This function should be overridden by your OS plugin!"
         apt.install( {:base => %w(build-essential zlib1g-dev zlib1g openssl libssl-dev)}, :stable )
