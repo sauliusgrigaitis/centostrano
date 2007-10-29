@@ -56,31 +56,12 @@ use_public_cc = <%= trac_use_public_cc.to_s %>
 use_short_addr = <%= trac_use_short_addr.to_s %>
 use_tls = <%= trac_use_tls.to_s %>
 
-set :trac_always_notify_owner, false
-set :trac_always_notify_reporter, false
-set :trac_always_notify_updater, true
-set :trac_smtp_always_bcc, ''
-set :trac_smtp_always_cc, ''
-set :trac_smtp_default_domain, ''
-set :trac_smtp_enabled, true
-set :trac_smtp_from, 'trac@localhost'
-set :trac_smtp_port, 25
-set :trac_smtp_replyto, 'trac@localhost'
-set :trac_smtp_server, 'localhost'
-set :trac_smtp_subject_prefix, '__default__'
-set :trac_smtp_user, ''
-set :trac_use_public_cc, false
-set :trac_use_short_addr, false
-set :trac_use_tls, false
-
-
-
 [project]
-descr = My example project
+descr = <%= trac_desc %>
 footer = Visit the Trac open source project at<br /><a href="http://trac.edgewall.org/">http://trac.edgewall.org/</a>
 icon = common/trac.ico
 name = <%= application %>
-url = http://example.org/
+url = <%= domain %>
 
 [search]
 min_query_length = 3
@@ -102,7 +83,7 @@ ticket_show_details = false
 [trac]
 authz_file = 
 authz_module_name = 
-base_url = 
+base_url = <%= trac_base_url %>
 check_auth_ip = true
 database = sqlite:db/trac.db
 default_charset = iso-8859-15
