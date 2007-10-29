@@ -1,6 +1,8 @@
 require 'fileutils'
 require 'uri'
 
+# http://svnbook.red-bean.com/en/1.4/svn-book.html#svn.serverconfig.choosing.apache
+
 Capistrano::Configuration.instance(:must_exist).load do 
   namespace :deprec do namespace :svn do
   
@@ -67,6 +69,7 @@ Capistrano::Configuration.instance(:must_exist).load do
         '
     }
     enable_universe
+    install_deps
     # XXX should really check if apache has already been installed
     # XXX can do that when we move to rake
     deprec2.download_src(src_package, src_dir)
@@ -76,42 +79,34 @@ Capistrano::Configuration.instance(:must_exist).load do
   desc "install dependencies for apache"
   task :install_deps do
     puts "This function should be overridden by your OS plugin!"
-    apt.install( {:base => %w(build-essential wget libneon25 libneon25-dev swig python-dev)}, :stable )
+    apt.install( {:base => %w(build-essential wget libneon25 libneon25-dev swig python-dev libexpat1-dev)}, :stable )
   end
   
   desc "grant a user access to svn repos"
-  task :svn_grant_user_access, :roles => :scm do
-    deprec.useradd(svn_account)
-    deprec.groupadd(scm_group) 
-    deprec.add_user_to_group(svn_account, scm_group)
+  task :grant_user_access, :roles => :scm do
+    deprec2.useradd(svn_account)
+    deprec2.groupadd(scm_group) 
+    deprec2.add_user_to_group(svn_account, scm_group)
   end
   
   desc "Create subversion repository and import project into it"
-  task :svn_setup, :roles => :scm do 
-    svn_create_repos
-    svn_import
-  end
-  
-  task :scm_setup, :roles => :scm do # deprecated
-    svn_setup
-  end
-  
-  task :svn_import_project, :roles => :scm do # deprecated
-    svn_setup
+  task :setup, :roles => :scm do 
+    create_repos
+    import
   end
   
   desc "Create a subversion repository"
-  task :svn_create_repos, :roles => :scm do
-    set :svn_account, user
-    svn_grant_user_access
-    deprec.mkdir(repos_root, :mode => '2775', :group => scm_group)
+  task :create_repos, :roles => :scm do
+    set :svn_account, top.user
+    grant_user_access
+    deprec2.mkdir(repos_root, :mode => '2775', :group => scm_group, :via => :sudo)
     sudo "svnadmin verify #{repos_root} > /dev/null 2>&1 || sudo svnadmin create #{repos_root}"
     sudo "chmod -R g+w #{repos_root}"
   end
   
   # Adapted from code in Bradley Taylors RailsMachine gem
   desc "Import project into subversion repository."
-  task :svn_import, :roles => :scm do 
+  task :import, :roles => :scm do 
     new_path = "../#{application}"
     tags = repository.sub("trunk", "tags")
     branches = repository.sub("trunk", "branches")
@@ -126,13 +121,13 @@ Capistrano::Configuration.instance(:must_exist).load do
     puts "Checking out application."
     system "svn co #{repository} #{application}"
     Dir.chdir application
-    svn_remove_log_and_tmp
+    remove_log_and_tmp
     puts "Your repository is: #{repository}" 
   end
   
   # Lifted from Bradley Taylors RailsMachine gem
   desc "remove and ignore log files and tmp from subversion"
-  task :svn_remove_log_and_tmp, :roles => :scm  do
+  task :remove_log_and_tmp, :roles => :scm  do
     puts "removing log directory contents from svn"
     system "svn remove log/*"
     puts "ignoring log directory"
@@ -154,7 +149,7 @@ Capistrano::Configuration.instance(:must_exist).load do
   end
   
   # desc "Cache svn name and password on the server. Useful for http-based repositories."
-  task :svn_cache_credentials do
+  task :cache_credentials do
     run_with_input "svn list #{repository}"
   end
   
