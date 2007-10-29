@@ -29,6 +29,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       set :apache_ssl_ip, nil
       set :apache_ssl_forward_all, false
       set :apache_ssl_chainfile, false
+      set :apache_vhost_dir, '/usr/local/apache2/conf/apps/'
       
       desc "Install apache"
       task :install do
