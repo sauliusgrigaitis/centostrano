@@ -9,7 +9,7 @@ Capistrano::Configuration.instance(:must_exist).load do
   # Settings for this projects trac instance
   set(:trac_backup_dir) { "#{backup_dir}/trac" }
   set(:trac_path) { exists?(:deploy_to) ? "#{deploy_to}/trac" : Capistrano::CLI.ui.ask('path to trac config') }
-  set(:tracd_parent_dir) { "#{trac_path}/projects" }
+  set(:tracd_parent_dir) { "#{deploy_to}/../trac/projects" }
   set(:trac_password_file)  { "#{trac_path}/conf/users.htdigest" }
   set(:trac_account) { Capistrano::CLI.prompt('enter new trac user account name') }
   set :trac_passwordfile_exists, true # hack - should check on remote system instead
@@ -59,23 +59,26 @@ Capistrano::Configuration.instance(:must_exist).load do
     deprec2.install_from_src(src_package, src_dir)
   end
   
-  # desc "Remove trac from server"
-  task :uninstall, :roles => :web do
-    # not implemented
-  end
-  
+  # The start script has a couple of config values in it.
+  # We may want to extract them into a config file later
+  # and install this script as part of the :install task.
   SYSTEM_CONFIG_FILES[:trac] = [
     {:template => 'tracd-init.erb',
      :path => '/etc/init.d/tracd',
      :mode => '0755',
      :owner => 'root:root'}
-   ]
+  ]
   
   PROJECT_CONFIG_FILES[:trac] = [
     {:template => 'trac.ini.erb',
      :path => "conf/trac.ini",
      :mode => '0644',
-     :owner => 'root:root'}
+     :owner => 'root:root'},
+     
+    {:template => 'apache_vhost.conf.erb',
+     :path => "conf/trac_apache_vhost.conf",
+     :mode => '0644',
+     :owner => 'root:root'},
   ]
   
   desc "Generate config files for trac"
@@ -140,6 +143,11 @@ Capistrano::Configuration.instance(:must_exist).load do
   task :stop, :roles => :scm do
     sudo "/etc/init.d/tracd stop"
   end
+  
+  task :restart, :roles => :scm do
+    stop
+    start
+  end
 
   task :activate, :roles => :scm do
     activate_system
@@ -151,15 +159,19 @@ Capistrano::Configuration.instance(:must_exist).load do
   end
   
   task :activate_project, :roles => :scm do
-    sudo "update-rc.d tracd defaults"
+    symlink_project
   end
   
   task :deactivate, :roles => :scm do
     deactivate_system
-    unlink_project
+    deactivate_project
   end
   
   task :deactivate_system, :roles => :scm do
+    sudo "update-rc.d -f tracd remove"
+  end
+  
+  task :deactivate_project, :roles => :scm do
     sudo "update-rc.d -f tracd remove"
   end
   
@@ -188,7 +200,7 @@ Capistrano::Configuration.instance(:must_exist).load do
     # XXX check if htdigest file exists and add '-c' option if not
     # sudo "test -f #{trac_path/conf/users.htdigest}
     create_file = trac_passwordfile_exists ? '' : ' -c '
-    sudo_with_input("#{htdigest} #{create_file} #{trac_path}/conf/users.htdigest #{application} #{trac_account}", /password:/) 
+    deprec2.sudo_with_input("#{htdigest} #{create_file} #{trac_path}/conf/users.htdigest #{application} #{trac_account}", /password:/) 
   end
   
   desc "list trac users"
@@ -209,13 +221,24 @@ Capistrano::Configuration.instance(:must_exist).load do
   #
   # Helper tasks used by other tasks
   #
+  
+  # Link the trac repos for this project into the master trac repos dir
+  # We do this so we can use trac for multiple projects on the same server
   task :symlink_project, :roles => :scm do
-    link = File.join(tracd_parent_dir, application)
-    sudo "ln -sf #{link}"
+    sudo "sudo ln -sf ../../#{application}/trac #{tracd_parent_dir}/#{application}"
   end
   
   task :unlink_project, :roles => :scm do
-    link = File.join(tracd_parent_dir, application)
+    link = "#{tracd_parent_dir}/#{application}"
+    sudo "test -h #{link} && unlink #{link} || true"
+  end
+  
+  task :symlink_apache_vhost, :roles => :scm do
+    sudo "sudo ln -sf #{deploy_to}/trac/conf/trac_apache_vhost.conf #{apache_vhost_dir}/#{application}-trac.conf"
+  end
+  
+  task :unlink_apache_vhost, :roles => :scm do
+    link = "#{apache_vhost_dir}/#{application}-trac.conf"
     sudo "test -h #{link} && unlink #{link} || true"
   end
 
