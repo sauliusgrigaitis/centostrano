@@ -105,7 +105,7 @@ module Deprec
     via = options.delete(:via) || :run
     # XXX need to make sudo commands wrap the whole command (sh -c ?)
     # XXX removed the extra 'sudo' from after the '||' - need something else
-    invoke_command "test -d #{path} || mkdir -p -m#{options[:mode]} #{path}",
+    invoke_command "sh -c 'test -d #{path} || mkdir -p -m#{options[:mode]} #{path}'",
     :via => via
     invoke_command "chgrp -R #{options[:group]} #{path}",
     :via => via if options[:group]
@@ -244,7 +244,7 @@ module Deprec
       # If the file path is relative we will prepend a path to this projects
       # own config directory for this service.
       if file[:path][0,1] != '/'
-        full_remote_path = File.join(shared_path, 'config', app, file[:path]) 
+        full_remote_path = File.join(deploy_to, app, file[:path]) 
       else
         full_remote_path = file[:path]
       end
