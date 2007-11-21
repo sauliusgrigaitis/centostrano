@@ -13,4 +13,4 @@ lib/deprec/recipes/apache.rb
 lib/deprec/recipes/nginx.rb
 lib/deprec/recipes/mongrel.rb
 lib/deprec/recipes/ubuntu.rb
-lib/deprec/capistrano_extensions/deprec_extensions.rb
+lib/deprec/capistrano_extensions/deprec2_extensions.rb
