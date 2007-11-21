@@ -203,7 +203,7 @@ cap deploy_with_migrations
 
 
 ## some handy tools
-# 
+#
 cap show_tasks
 cap disable_web, enable_web   # puts up maintenance page
 cap restart_mongrel_cluster   # does what it says
