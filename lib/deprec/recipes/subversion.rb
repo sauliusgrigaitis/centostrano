@@ -178,3 +178,21 @@ Capistrano::Configuration.instance(:must_exist).load do
 
   end end
 end
+
+# svnserve setup
+# I've previously used ssh exclusively I've decided svnserve is a reasonable choice for collaboration on open source projects.
+# It's easier to setup than apache/ssl webdav access.
+#
+# sudo useradd svn
+# sudo mkdir -p /var/svn/deprec_svnserve_root
+# sudo ln -sf /var/www/apps/deprec/repos /var/svn/deprec_svnserve_root/deprec
+# sudo chown -R svn /var/svn/deprec_svnserve_root/deprec
+
+#
+# XXX put password file into svn and command to push it
+# 
+# # run svnserve
+# sudo -u svn svnserve --daemon --root /var/svn/deprec_svnserve_root
+# 
+# # check it out now
+# svn co svn://scm.deprecated.org/deprec/trunk deprec

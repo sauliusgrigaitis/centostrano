@@ -1,6 +1,6 @@
 Capistrano::Configuration.instance(:must_exist).load do 
   namespace :deprec do
-    namespace :user do
+    namespace :users do
       
       desc "Create user account"
       task :add do

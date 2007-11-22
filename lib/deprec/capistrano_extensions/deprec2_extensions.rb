@@ -1,7 +1,6 @@
-
 require 'capistrano'
 
-module Deprec
+module Deprec2
   DEPREC_TEMPLATES_BASE = File.join(File.dirname(__FILE__), '..', 'templates')
   @@template_dir = File.join(File.dirname(__FILE__), '..', 'templates')
 
@@ -276,4 +275,4 @@ module Deprec
   
 end
 
-Capistrano.plugin :deprec2, Deprec
+Capistrano.plugin :deprec2, Deprec2

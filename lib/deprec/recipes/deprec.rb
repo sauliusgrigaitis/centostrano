@@ -1,7 +1,7 @@
 Capistrano::Configuration.instance(:must_exist).load do 
   
-  # A wrapper function that only sets that value if not already set
-  # this is accessible to all recipe files
+  # Set the value if not already set
+  # This method is accessible to all recipe files
   def self.default(name, *args, &block)
     unless exists?(name)
       set(name, *args, &block)
@@ -12,6 +12,8 @@ Capistrano::Configuration.instance(:must_exist).load do
   # files used by each service. They're used when generating config
   # files from templates and when configs files are pushed out to servers.
   #
+  # They are populated by the recipe file for each service
+  #
   SYSTEM_CONFIG_FILES  = {} # e.g. httpd.conf
   PROJECT_CONFIG_FILES = {} # e.g. projectname-httpd-vhost.conf
   
@@ -21,7 +23,7 @@ Capistrano::Configuration.instance(:must_exist).load do
   CHOICES_DATABASE  = [:mysql, :postgres, :none]
   
   # Server defaults
-  default :web_server_type, :nginx
+  default :web_server_type, :apache
   default :app_server_type, :mongrel
   default :db_server_type,  :mysql
 
@@ -106,6 +108,16 @@ Capistrano::Configuration.instance(:must_exist).load do
     task :dump do
       require 'yaml'
       y variables
+    end
+    
+    task :moo do
+      puts SRC_PACKAGES.collect{|sp| sp['url']}.join(' ')
+    end
+    
+    task :setup_src_dir do
+      deprec2.groupadd(src_dir)
+      deprec2.add_user_to_group(user, group_src)
+      deprec2.mkdir(src_dir, :mode => 0775, :group => group_src, :via => :sudo)
     end
      
   end

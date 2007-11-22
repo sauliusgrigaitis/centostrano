@@ -3,50 +3,70 @@ Capistrano::Configuration.instance(:must_exist).load do
   set :database_yml_in_scm, true
   set :app_symlinks, nil
   
+  # Hook into the default capistrano deploy tasks
+  before 'deploy:setup', :except => { :no_release => true } do
+    top.deprec.rails.setup_paths
+  end
+  
+  after 'deploy:setup', :except => { :no_release => true } do
+    top.deprec.rails.setup_servers
+  end
+  
+  after 'deploy:update_code', :roles => :app do
+    top.deprec.rails.symlink_database_yml unless database_yml_in_scm
+  end
+  
+  after 'deploy:symlink', :roles => :app do
+    top.deprec.mongrel.set_perms_for_mongrel_dirs
+  end
+  
+  after :deploy, :roles => :app do
+    deploy.cleanup
+  end
+  
+  # redefine the reaper
+  namespace :deploy do
+    task :restart do
+      top.deprec.mongrel.restart
+      top.deprec.apache.restart
+    end
+  end
+  
   namespace :deprec do
     namespace :rails do
       
-      desc "Setup application server."
-      task :setup_app, :roles => :app  do
-        set :mongrel_environment, rails_env
-        set :mongrel_port, apache_proxy_port
-        set :mongrel_servers, apache_proxy_servers
-        create_mongrel_user_and_group
-        install_mongrel_start_script
-        setup_mongrel_cluster_path
-        configure_mongrel_cluster
+      desc <<-DESC
+      install_rails_stack takes a stock standard ubuntu 'dapper' 6.06.1 server
+      and installs everything needed to be a rails machine
+      DESC
+      task :install_rails_stack do
+        setup_user_perms
+        top.deprec.ubuntu.enable_universe       # we need  packages from 'universe' repository
+        top.deprec.ubuntu.disable_cdrom_install # don't want to have to insert cdrom
+        top.deprec.ubuntu.install_packages_for_rails # install ubuntu packages 
+        top.deprec.ruby.install_rubygems
+        install_gems 
+        puts "Installing #{web_server_type}"
+        deprec.web.install
+        puts "Installing #{app_server_type}"
+        deprec.app.install
+        puts "Installing #{db_server_type}"
+        deprec.db.install
       end
       
-      desc "Start the processes on the application server by calling start_app."
-      task :spinner, :roles => :app do
-        start_app
+      # create deployment group and add current user to it
+      task :setup_user_perms do
+        deprec2.groupadd(group)
+        deprec2.add_user_to_group(user, group)
       end
       
-      desc "Setup database server."
-      task :setup_db, :roles => :db, :only => { :primary => true } do
-        setup_mysql
-      end
-
-      desc "Setup source control server."
-      task :setup_scm, :roles => :scm  do
-        svn_create_repos
-        svn_import
-      end
-
+      # install some required ruby gems
       task :install_gems do
-        gem.install 'rails'                 # gem lib makes installing gems fun
-        gem.select 'mongrel'                # mongrel requires we select a version
-        gem.install 'mongrel_cluster'
-        gem.install 'builder'
-      end
-
-      desc "install the rmagic gem, and dependent image-magick library"
-      task :install_rmagick, :roles => [:app, :web] do
-        install_image_magic
-        gem.install 'rmagick'
+        gem2.install 'rails'
+        gem2.install 'builder'
       end
       
-      desc "setup extra paths required for deployment"
+      # setup extra paths required for deployment
       task :setup_paths, :roles => :app do
         # XXX make a function to create a group writable dir
         sudo "test -d #{shared_path}/config || sudo mkdir -p #{shared_path}/config"
@@ -54,32 +74,20 @@ Capistrano::Configuration.instance(:must_exist).load do
         sudo "chmod -R g+w #{deploy_to}"
       end
       
-      desc "create deployment group and add current user to it"
-      task :setup_user_perms do
-        deprec.groupadd(group)
-        deprec.add_user_to_group(user, group)
-      end
-      
-      task :install_rails_stack do
-        web_server_type
-        app_server_type
-        db_server_type
-        puts "selected: #{web_server_type} #{app_server_type} #{db_server_type}"
-      end
-      
       desc "setup and configure servers"
       task :setup_servers do
         setup_web
         setup_paths
-        setup_app
+        top.deprec.app.setup # currently this will be mongrel
         setup_symlinks
-        setup_db # XXX fails is database already exists
-      end
-
-      task :after_symlink, :roles => :app do
-        set_perms_for_mongrel_dirs
+        setup_db
       end
       
+      # Setup database server.
+      task :setup_db, :roles => :db, :only => { :primary => true } do
+        top.deprec.mysql.setup
+      end
+
       desc "Setup web server."
       task :setup_web, :roles => :web  do
         set :apache_server_name, domain unless apache_server_name
@@ -93,13 +101,6 @@ Capistrano::Configuration.instance(:must_exist).load do
           app_symlinks.each { |link| run "mkdir -p #{shared_path}/public/#{link}" }
         end
       end
-      
-      desc "Setup public symlink directories"
-      task :setup_symlinks, :roles => [:app, :web] do
-       if app_symlinks
-         app_symlinks.each { |link| run "mkdir -p #{shared_path}/public/#{link}" }
-       end
-      end
 
       desc "Link up any public directories."
       task :symlink_public, :roles => [:app, :web] do
@@ -108,94 +109,68 @@ Capistrano::Configuration.instance(:must_exist).load do
        end
       end
     
+      # database.yml stuff
+      #
+      # XXX DRY this up 
+      # I don't know how to let :gen_db_yml check if values have been set.
+      #
+      # if (self.respond_to?("db_host_#{rails_env}".to_sym)) # doesn't seem to work
+  
+      set :db_host_default, lambda { Capistrano::CLI.prompt 'Enter database host', 'localhost'}
+      set :db_host_staging, lambda { db_host_default }
+      set :db_host_production, lambda { db_host_default }
+  
+      set :db_name_default, lambda { Capistrano::CLI.prompt 'Enter database name', "#{application}_#{rails_env}" }
+      set :db_name_staging, lambda { db_name_default }
+      set :db_name_production, lambda { db_name_default }
+  
+      set :db_user_default, lambda { Capistrano::CLI.prompt 'Enter database user', 'root' }
+      set :db_user_staging, lambda { db_user_default }
+      set :db_user_production, lambda { db_user_default }
+  
+      set :db_pass_default, lambda { Capistrano::CLI.prompt 'Enter database pass', '' }
+      set :db_pass_staging, lambda { db_pass_default }
+      set :db_pass_production, lambda { db_pass_default }
+  
+      set :db_adaptor_default, lambda { Capistrano::CLI.prompt 'Enter database adaptor', 'mysql' }
+      set :db_adaptor_staging, lambda { db_adaptor_default }
+      set :db_adaptor_production, lambda { db_adaptor_default }
+  
+      set :db_socket_default, lambda { Capistrano::CLI.prompt('Enter database socket', '')}
+      set :db_socket_staging, lambda { db_socket_default }
+      set :db_socket_production, lambda { db_socket_default }
 
-      
-      desc <<-DESC
-      install_rails_stack takes a stock standard ubuntu 'dapper' 6.06.1 server
-      and installs everything needed to be a rails machine
-      DESC
-      task :install_rails_stack do
-        setup_user_perms
-        enable_universe # we'll need some packages from the 'universe' repository
-        disable_cdrom_install # we don't want to have to insert cdrom
-        install_packages_for_rails # install packages that come with distribution
-        install_rubygems
-        install_gems 
-        apache_install
+      task :generate_database_yml, :roles => :app do    
+        database_configuration = render :template => <<-EOF
+        #{rails_env}:
+          adapter: #{self.send("db_adaptor_#{rails_env}")}
+          database: #{self.send("db_name_#{rails_env}")}
+          username: #{self.send("db_user_#{rails_env}")}
+          password: #{self.send("db_pass_#{rails_env}")}
+          host: #{self.send("db_host_#{rails_env}")}
+          socket: #{self.send("db_socket_#{rails_env}")}
+        EOF
+        run "mkdir -p #{deploy_to}/#{shared_dir}/config" 
+        put database_configuration, "#{deploy_to}/#{shared_dir}/config/database.yml" 
+      end
+  
+      desc "Link in the production database.yml" 
+      task :symlink_database_yml, :roles => :app do
+        # run "rm -f #{current_path}/config/database.yml"
+        run "ln -nfs #{deploy_to}/#{shared_dir}/config/database.yml #{release_path}/config/database.yml" 
       end
       
-      desc <<-DESC
-      deprecated: this function has been replaced by :before_setup and :after_setup
-      DESC
-      task :deprec_setup, :except => { :no_release => true } do
-        setup
+      desc "install the rmagic gem, and dependent image-magick library"
+      task :install_rmagick, :roles => [:app, :web] do
+        install_image_magic
+        gem.install 'rmagick'
       end
-
-      desc "creates paths required by Capistrano's :setup task"
-      task :before_setup, :except => { :no_release => true } do
-        setup_paths
-      end
-
-      desc "sets up and configures servers "
-      task :after_setup, :except => { :no_release => true } do
-        setup_servers
-      end
-
-  # database.yml stuff
-  #
-  # XXX DRY this up 
-  # I don't know how to let :gen_db_yml check if values have been set.
-  #
-  # if (self.respond_to?("db_host_#{rails_env}".to_sym)) # doesn't seem to work
-  
-  set :db_host_default, lambda { Capistrano::CLI.prompt 'Enter database host', 'localhost'}
-  set :db_host_staging, lambda { db_host_default }
-  set :db_host_production, lambda { db_host_default }
-  
-  set :db_name_default, lambda { Capistrano::CLI.prompt 'Enter database name', "#{application}_#{rails_env}" }
-  set :db_name_staging, lambda { db_name_default }
-  set :db_name_production, lambda { db_name_default }
-  
-  set :db_user_default, lambda { Capistrano::CLI.prompt 'Enter database user', 'root' }
-  set :db_user_staging, lambda { db_user_default }
-  set :db_user_production, lambda { db_user_default }
-  
-  set :db_pass_default, lambda { Capistrano::CLI.prompt 'Enter database pass', '' }
-  set :db_pass_staging, lambda { db_pass_default }
-  set :db_pass_production, lambda { db_pass_default }
-  
-  set :db_adaptor_default, lambda { Capistrano::CLI.prompt 'Enter database adaptor', 'mysql' }
-  set :db_adaptor_staging, lambda { db_adaptor_default }
-  set :db_adaptor_production, lambda { db_adaptor_default }
-  
-  set :db_socket_default, lambda { Capistrano::CLI.prompt('Enter database socket', '')}
-  set :db_socket_staging, lambda { db_socket_default }
-  set :db_socket_production, lambda { db_socket_default }
-
-
-  task :generate_database_yml, :roles => :app do    
-    database_configuration = render :template => <<-EOF
-#{rails_env}:
-  adapter: #{self.send("db_adaptor_#{rails_env}")}
-  database: #{self.send("db_name_#{rails_env}")}
-  username: #{self.send("db_user_#{rails_env}")}
-  password: #{self.send("db_pass_#{rails_env}")}
-  host: #{self.send("db_host_#{rails_env}")}
-  socket: #{self.send("db_socket_#{rails_env}")}
-EOF
-    run "mkdir -p #{deploy_to}/#{shared_dir}/config" 
-    put database_configuration, "#{deploy_to}/#{shared_dir}/config/database.yml" 
-  end
-  
-  task :after_update_code, :roles => :app do
-    symlink_database_yml unless database_yml_in_scm
-  end
-  
-  desc "Link in the production database.yml" 
-  task :symlink_database_yml, :roles => :app do
-    # run "rm -f #{current_path}/config/database.yml"
-    run "ln -nfs #{deploy_to}/#{shared_dir}/config/database.yml #{release_path}/config/database.yml" 
-  end
+      
+      # XXX deprecated?
+      # desc "Start the processes on the application server by calling start_app."
+      # task :spinner, :roles => :app do
+      #   start_app
+      # end
   
     end
   end

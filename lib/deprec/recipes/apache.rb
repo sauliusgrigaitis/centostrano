@@ -33,36 +33,9 @@ Capistrano::Configuration.instance(:must_exist).load do
       
       desc "Install apache"
       task :install do
-        version = 'httpd-2.2.6'
-        set :src_package, {
-          :file => version + '.tar.gz',   
-          :md5sum => 'd050a49bd7532ec21c6bb593b3473a5d  httpd-2.2.6.tar.gz', 
-          :dir => version,  
-          :url => "http://www.apache.org/dist/httpd/#{version}.tar.gz",
-          :unpack => "tar zxf #{version}.tar.gz;",
-          :configure => %w(
-            ./configure
-            --enable-mods-shared=all
-            --enable-proxy 
-            --enable-proxy-balancer 
-            --enable-proxy-http 
-            --enable-rewrite  
-            --enable-cache 
-            --enable-headers 
-            --enable-ssl 
-            --enable-deflate 
-            --with-included-apr   #_so_this_recipe_doesn't_break_when_rerun
-            --enable-dav          #_for_subversion_
-            --enable-so           #_for_subversion_
-            ;
-            ).reject{|arg| arg.match '#'}.join(' '),
-          :make => 'make;',
-          :install => 'make install;',
-          :post_install => 'install -b support/apachectl /etc/init.d/httpd;'
-        }
         install_deps
-        deprec2.download_src(src_package, src_dir)
-        deprec2.install_from_src(src_package, src_dir)
+        deprec2.download_src(SRC_PACKAGES[:apache], src_dir)
+        deprec2.install_from_src(SRC_PACKAGES[:apache], src_dir)
       end
       
       # install dependencies for apache
@@ -70,12 +43,34 @@ Capistrano::Configuration.instance(:must_exist).load do
         puts "This function should be overridden by your OS plugin!"
         apt.install( {:base => %w(build-essential zlib1g-dev zlib1g openssl libssl-dev)}, :stable )
       end
+      
+      SYSTEM_CONFIG_FILES[:apache] = [
+        
+      ]
+
+      PROJECT_CONFIG_FILES[:apache] = [
+        
+        {:template => "httpd-vhost-app.conf.erb",
+         :path => 'conf/httpd-vhost-app.conf',
+         :mode => '0755',
+         :owner => 'root:root'}
+      ]
 
       desc "Generate configuration file(s) for apache from template(s)"
-      task :config_gen, :roles => :web do
-        deprec2.render('apache', 'httpd.conf.erb', 'httpd.conf')
-        if apache_ssl_enabled
-          deprec2.render('apache', 'httpd-ssl.conf.erb', 'httpd.conf')
+      task :config_gen, :roles => :scm do
+        config_gen_system
+        config_gen_project
+      end
+
+      task :config_gen_system, :roles => :scm do
+        SYSTEM_CONFIG_FILES[:apache].each do |file|
+          deprec2.render('apache', file[:template], file[:path])
+        end
+      end
+
+      task :config_gen_project, :roles => :scm do
+        PROJECT_CONFIG_FILES[:apache].each do |file|
+          deprec2.render('apache', file[:template], file[:path])
         end
       end
 

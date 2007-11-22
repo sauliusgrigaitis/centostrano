@@ -17,7 +17,8 @@ Capistrano::Configuration.instance(:must_exist).load do
   # We will symlink each projects trac dir into this dir for tracd to find
 
   # project
-  set(:trac_home_url) { 'http://' + domain.sub(/^.*?\./, 'trac.') + '/' }
+  set(:trac_domain) { domain.sub(/^.*?\./, 'trac.') }
+  set(:trac_home_url) { "http://#{trac_domain}/" }
   set(:trac_desc) { application } 
   
   # Settings only used for generating trac.ini for this project
@@ -78,7 +79,7 @@ Capistrano::Configuration.instance(:must_exist).load do
     {:template => 'apache_vhost.conf.erb',
      :path => "conf/trac_apache_vhost.conf",
      :mode => '0644',
-     :owner => 'root:root'},
+     :owner => 'root:root'}
   ]
   
   desc "Generate config files for trac"
@@ -172,7 +173,8 @@ Capistrano::Configuration.instance(:must_exist).load do
   end
   
   task :deactivate_project, :roles => :scm do
-    sudo "update-rc.d -f tracd remove"
+    # XXX unlink project config
+    # XXX restart tracd
   end
   
   desc "Create backup of trac repository"
