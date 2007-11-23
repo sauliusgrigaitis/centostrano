@@ -2,7 +2,8 @@
 
 require 'rubygems'
 require 'hoe'
-require './lib/deprec.rb'
+$:.unshift(File.dirname(__FILE__) + "/lib")
+require 'deprec/version'
 
 Hoe.new('deprec', Deprec::VERSION) do |p|
   p.rubyforge_name = 'deprec'
