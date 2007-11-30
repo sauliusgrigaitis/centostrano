@@ -17,10 +17,15 @@ Capistrano::Configuration.instance(:must_exist).load do
   SYSTEM_CONFIG_FILES  = {} # e.g. httpd.conf
   PROJECT_CONFIG_FILES = {} # e.g. projectname-httpd-vhost.conf
   
+  # For each service, the details of the file to download and options
+  # to configure, build and install the service
+  SRC_PACKAGES = {}
+  
   # Server options
   CHOICES_WEBSERVER = [:nginx, :apache, :none]
   CHOICES_APPSERVER = [:mongrel, :webrick, :none]
   CHOICES_DATABASE  = [:mysql, :postgres, :none]
+  
   
   # Server defaults
   default :web_server_type, :apache
