@@ -29,13 +29,50 @@ Capistrano::Configuration.instance(:must_exist).load do
       set :apache_ssl_ip, nil
       set :apache_ssl_forward_all, false
       set :apache_ssl_chainfile, false
-      set :apache_vhost_dir, '/usr/local/apache2/conf/apps/'
+      set :apache_docroot, '/usr/local/apache2/htdocs'
+      set :apache_vhost_dir, '/usr/local/apache2/conf/apps'
+      set :apache_config_file, '/usr/local/apache2/conf/httpd.conf'
+      
+      SRC_PACKAGES[:apache] = {
+        :filename => 'httpd-2.2.6.tar.gz',   
+        :md5sum => "d050a49bd7532ec21c6bb593b3473a5d  httpd-2.2.6.tar.gz", 
+        :dir => 'httpd-2.2.6',  
+        :url => "http://www.apache.org/dist/httpd/httpd-2.2.6.tar.gz",
+        :unpack => "tar zxf httpd-2.2.6.tar.gz;",
+        :configure => %w(
+          ./configure
+          --enable-mods-shared=all
+          --enable-proxy 
+          --enable-proxy-balancer 
+          --enable-proxy-http 
+          --enable-rewrite  
+          --enable-cache 
+          --enable-headers 
+          --enable-ssl 
+          --enable-deflate 
+          --with-included-apr   #_so_this_recipe_doesn't_break_when_rerun
+          --enable-dav          #_for_subversion_
+          --enable-so           #_for_subversion_
+          ;
+          ).reject{|arg| arg.match '#'}.join(' '),
+        :make => 'make;',
+        :install => 'make install;',
+        :post_install => 'install -b support/apachectl /etc/init.d/httpd;'
+      }
       
       desc "Install apache"
       task :install do
         install_deps
         deprec2.download_src(SRC_PACKAGES[:apache], src_dir)
         deprec2.install_from_src(SRC_PACKAGES[:apache], src_dir)
+        setup_vhost_dir
+        install_index_page
+      end
+      
+      # Create dir for vhost config files
+      task :setup_vhost_dir do
+        deprec2.mkdir(apache_vhost_dir, :owner => 'root', :group => group, :mode => '0775', :via => :sudo)
+        deprec2.append_to_file_if_missing(apache_config_file, 'Include conf/apps/')
       end
       
       # install dependencies for apache
@@ -45,7 +82,8 @@ Capistrano::Configuration.instance(:must_exist).load do
       end
       
       SYSTEM_CONFIG_FILES[:apache] = [
-        
+        # They're generated and put in place during install
+        # I may put them in here at some point
       ]
 
       PROJECT_CONFIG_FILES[:apache] = [
@@ -57,37 +95,35 @@ Capistrano::Configuration.instance(:must_exist).load do
       ]
 
       desc "Generate configuration file(s) for apache from template(s)"
-      task :config_gen, :roles => :scm do
+      task :config_gen, :roles => :web do
         config_gen_system
         config_gen_project
       end
 
-      task :config_gen_system, :roles => :scm do
+      task :config_gen_system, :roles => :web do
         SYSTEM_CONFIG_FILES[:apache].each do |file|
-          deprec2.render('apache', file[:template], file[:path])
+          deprec2.render_template('apache', file)
         end
       end
 
-      task :config_gen_project, :roles => :scm do
+      task :config_gen_project, :roles => :web do
         PROJECT_CONFIG_FILES[:apache].each do |file|
-          deprec2.render('apache', file[:template], file[:path])
+          deprec2.render_template('apache', file)
         end
       end
+      
+      desc "Push apache config files to server"
+      task :config, :roles => :scm do
+        config_system
+        config_project
+      end
 
-      desc "Configure Apache. This uses the :use_sudo
-      variable to determine whether to use sudo or not. By default, :use_sudo is
-      set to true."
-      task :config, :roles => :web do
+      task :config_system, :roles => :scm do
+        deprec2.push_configs(:apache, SYSTEM_CONFIG_FILES[:apache])
+      end
 
-        put 'foo', "#{shared_path}/config/httpd.conf", :mode => 0644
-  
-        # if apache_ssl_enabled
-        #   file = File.join(File.dirname(__FILE__), "templates", "httpd-ssl.conf")
-        #   ssl_buffer = render :template => File.read(file)
-        #   buffer += ssl_buffer
-        # end
-  
-        # deprec.append_to_file_if_missing('/usr/local/apache2/conf/httpd.conf', 'NameVirtualHost *:80')
+      task :config_project, :roles => :scm do
+        deprec2.push_configs(:apache, PROJECT_CONFIG_FILES[:apache])
       end
 
       desc "Start Apache"
@@ -115,9 +151,9 @@ Capistrano::Configuration.instance(:must_exist).load do
         send(run_method, "update-rc.d httpd defaults")
       end
       
-      desc "Set apache not to start on boot"
+      desc "Set apache to not start on boot"
       task :deactivate, :roles => :web do
-        send(run_method, "update-rc.d httpd remove")
+        send(run_method, "update-rc.d -f httpd remove")
       end
       
       task :backup, :roles => :web do
@@ -128,20 +164,13 @@ Capistrano::Configuration.instance(:must_exist).load do
         # not yet implemented
       end
 
-      task :setup_apache, :roles => :web do
-        set :apache_path, '/usr/local/apache2'
-        apps_dir = "#{apache_path}/conf/apps"
-        sudo "test -d #{apps_dir} || sudo mkdir -p #{apps_dir}"
-        sudo "chgrp #{group} #{apps_dir}"
-        sudo "chmod g+w #{apps_dir}"
-        inc_cmd = 'Include conf/apps/'
-        # XXX quick hack to permit me to add to file
-        sudo "chmod 766 #{apache_path}/conf/httpd.conf"
-        sudo "grep '#{inc_cmd}' #{apache_path}/conf/httpd.conf || sudo echo '#{inc_cmd}' >> #{apache_path}/conf/httpd.conf"
-        sudo "chmod 755 #{apache_path}/conf/httpd.conf"
-        index = '/usr/local/apache2/htdocs/index.html'
-        sudo "test ! -f #{index} || sudo mv #{index} #{index}.bak"
+      # Generate an index.html page  
+      task :install_index_page, :roles => :web do
+        deprec2.mkdir(apache_docroot, :user => :root, :group => :deploy, :mode => '0775', :via => :sudo)
+        put deprec2.render_template('apache', 'index.html.erb'), File.join(apache_docroot, 'index.html')
+        put deprec2.render_template('apache', 'master.css'), File.join(apache_docroot, 'master.css')
       end
+      
     end
   end
 end
