@@ -41,6 +41,17 @@ Capistrano::Configuration.instance(:must_exist).load do
         deprec2.as_root { passwd }
       end
       
+      desc "Add user to group"
+      task :add_user_to_group do
+        target_user = Capistrano::CLI.ui.ask "Which user?" do |q|
+          q.default = user if user.is_a?(String)
+        end
+        target_group = Capistrano::CLI.ui.ask "Add to which group?" do |q|
+          q.default = 'deploy'
+        end
+        deprec2.add_user_to_group(target_user, target_group)
+      end
+
       # desc "Create group"
       # task :add_group do
       #   target_group = Capistrano::CLI.ui.ask "Enter name for new group" 
