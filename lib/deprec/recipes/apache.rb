@@ -102,13 +102,13 @@ Capistrano::Configuration.instance(:must_exist).load do
 
       task :config_gen_system, :roles => :web do
         SYSTEM_CONFIG_FILES[:apache].each do |file|
-          deprec2.render_template('apache', file)
+          render_template(:apache, file)
         end
       end
 
       task :config_gen_project, :roles => :web do
         PROJECT_CONFIG_FILES[:apache].each do |file|
-          deprec2.render_template('apache', file)
+          render_template(:apache, file)
         end
       end
       
@@ -167,8 +167,8 @@ Capistrano::Configuration.instance(:must_exist).load do
       # Generate an index.html page  
       task :install_index_page, :roles => :web do
         deprec2.mkdir(apache_docroot, :user => :root, :group => :deploy, :mode => '0775', :via => :sudo)
-        put deprec2.render_template('apache', 'index.html.erb'), File.join(apache_docroot, 'index.html')
-        put deprec2.render_template('apache', 'master.css'), File.join(apache_docroot, 'master.css')
+        put render_template(:apache, :template => 'index.html.erb'), File.join(apache_docroot, 'index.html')
+        put render_template(:apache, :template => 'master.css'), File.join(apache_docroot, 'master.css')
       end
       
     end
