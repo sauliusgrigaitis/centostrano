@@ -16,18 +16,32 @@ module Deprec2
     delete temporary_location
   end
   
-  # Render template (usually a config file)
-  # If :dest is given, the output is written to that file
-  # Otherwise it is returned as a string
+  # Render template (usually a config file) 
+  # 
+  # Usually we render it to a file on the local filesystem.
+  # This way, we keep a copy of the config file under source control.
+  # We can make manual changes if required and push to new hosts.
+  #
+  # If the options hash contains :path then it's written to that path.
+  # If it contains :remote => true, the file will instead be written to remote targets
+  # If options[:path] and options[:remote] are missing, it just returns the rendered
+  # template as a string (good for debugging).
   #
   #  XXX I would like to get rid of :render_template_to_file
   #  XXX Perhaps pass an option to this function to write to remote
   #
-  def render_template(app, template, options={})
+  def render_template(app, options={})
+    template = options[:template]
     path = options[:path] || nil
     remote = options[:remote] || false
     mode = options[:mode] || 0755
     owner = options[:owner] || nil
+    
+    # replace this with a check for the file
+    if ! template
+      puts "render_template() requires a value for the template!"
+      return false 
+    end
     
     template = ERB.new(IO.read(File.join(@@template_dir, app, template)))
     rendered_template = template.result(binding)
@@ -53,6 +67,7 @@ module Deprec2
     end
   end
   
+  
   # Copy configs to server(s). Note there is no :pull task. No changes should 
   # be made to configs on the servers so why would you need to pull them back?
   def push_configs(app, files)
@@ -71,6 +86,7 @@ module Deprec2
       sudo "chown #{file[:owner]} #{full_remote_path}"
     end
   end
+
 
   def append_to_file_if_missing(filename, value, options={})
     # XXX sort out single quotes in 'value' - they'l break command!
