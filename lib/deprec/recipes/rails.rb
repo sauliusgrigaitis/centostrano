@@ -3,6 +3,9 @@ Capistrano::Configuration.instance(:must_exist).load do
   set :database_yml_in_scm, true
   set :app_symlinks, nil
   
+  # run "rake db:create" # waiting for Rails2
+  
+  
   # Hook into the default capistrano deploy tasks
   before 'deploy:setup', :except => { :no_release => true } do
     top.deprec.rails.setup_paths
