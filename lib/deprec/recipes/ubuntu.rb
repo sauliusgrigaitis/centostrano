@@ -70,30 +70,7 @@ Capistrano::Configuration.instance(:must_exist).load do
   task :install_postfix do
     apt.install({:base => ['postfix']}, :stable)
   end
-  
-  # desc "write network config to server"
-  # task :network_configure do
-    # set :ethernet_interfaces,  [{
-    #                        :num => 0, 
-    #                        :type => 'static', 
-    #                        :ipaddr => '10.0.100.125', 
-    #                        :netmask => '255.255.255.0',
-    #                        :gateway => '10.0.100.1',
-    #                        :dns1 => '203.8.183.1',
-    #                        :dns2 => '4.2.2.1'
-    #                        }]
-                          
-  #   deprec.render_template_to_file('interfaces.rhtml', '/etc/network/interfaces')
-  # end
-  
-  # desc "configure hostname on server"
-  # task :hostname_configure do
-  #   # update /etc/hostname
-  #   # update /etc/hosts
-  # end
-  
-  
-  
+
   # XXX write function to enable/disable a service
   # XXX update-rc.d lighttpd remove
   # XXX update-rc.d -n httpd defaults
