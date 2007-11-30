@@ -1,5 +1,58 @@
 require 'capistrano'
 
+DEPREC_TEMPLATES_BASE = File.join(File.dirname(__FILE__), '..', 'templates')
+
+# Render template (usually a config file) 
+# 
+# Usually we render it to a file on the local filesystem.
+# This way, we keep a copy of the config file under source control.
+# We can make manual changes if required and push to new hosts.
+#
+# If the options hash contains :path then it's written to that path.
+# If it contains :remote => true, the file will instead be written to remote targets
+# If options[:path] and options[:remote] are missing, it just returns the rendered
+# template as a string (good for debugging).
+#
+#  XXX I would like to get rid of :render_template_to_file
+#  XXX Perhaps pass an option to this function to write to remote
+#
+def render_template(app, options={})
+  template = options[:template]
+  path = options[:path] || nil
+  remote = options[:remote] || false
+  mode = options[:mode] || 0755
+  owner = options[:owner] || nil
+  
+  # replace this with a check for the file
+  if ! template
+    puts "render_template() requires a value for the template!"
+    return false 
+  end
+  
+  template = ERB.new(IO.read(File.join(DEPREC_TEMPLATES_BASE, app.to_s, template)))
+  rendered_template = template.result(binding)
+  
+  if remote 
+    # render to remote machine
+    puts 'You need to specify a path to render the template to!' unless path
+    exit unless path
+    sudo "test -d #{File.dirname(path)} || sudo mkdir -p #{File.dirname(path)}"
+    std.su_put rendered_template, path, '/tmp/', :mode => mode
+    sudo "chown #{owner} #{path}" if defined?(owner)
+  elsif path 
+    # render to local file
+    full_path = File.join('config', app.to_s, path)
+    path_dir = File.dirname(full_path)
+    File.rename(full_path, "#{full_path}.bak") if File.exists?(full_path)
+    system "mkdir -p #{path_dir}" if ! File.directory?(path_dir)
+    File.open(full_path, 'w'){|f| f.write rendered_template }
+    puts "#{full_path} written"
+  else
+    # render to string
+    return rendered_template
+  end
+end
+
 module Deprec2
   DEPREC_TEMPLATES_BASE = File.join(File.dirname(__FILE__), '..', 'templates')
   @@template_dir = File.join(File.dirname(__FILE__), '..', 'templates')
@@ -16,56 +69,7 @@ module Deprec2
     delete temporary_location
   end
   
-  # Render template (usually a config file) 
-  # 
-  # Usually we render it to a file on the local filesystem.
-  # This way, we keep a copy of the config file under source control.
-  # We can make manual changes if required and push to new hosts.
-  #
-  # If the options hash contains :path then it's written to that path.
-  # If it contains :remote => true, the file will instead be written to remote targets
-  # If options[:path] and options[:remote] are missing, it just returns the rendered
-  # template as a string (good for debugging).
-  #
-  #  XXX I would like to get rid of :render_template_to_file
-  #  XXX Perhaps pass an option to this function to write to remote
-  #
-  def render_template(app, options={})
-    template = options[:template]
-    path = options[:path] || nil
-    remote = options[:remote] || false
-    mode = options[:mode] || 0755
-    owner = options[:owner] || nil
-    
-    # replace this with a check for the file
-    if ! template
-      puts "render_template() requires a value for the template!"
-      return false 
-    end
-    
-    template = ERB.new(IO.read(File.join(@@template_dir, app, template)))
-    rendered_template = template.result(binding)
-    
-    if remote 
-      # render to remote machine
-      puts 'You need to specify a path to render the template to!' unless path
-      exit unless path
-      sudo "test -d #{File.dirname(path)} || sudo mkdir -p #{File.dirname(path)}"
-      std.su_put rendered_template, path, '/tmp/', :mode => mode
-      sudo "chown #{owner} #{path}" if defined?(owner)
-    elsif path 
-      # render to local file
-      full_path = File.join('config', app, path)
-      path_dir = File.dirname(full_path)
-      File.rename(full_path, "#{full_path}.bak") if File.exists?(full_path)
-      system "mkdir -p #{path_dir}" if ! File.directory?(path_dir)
-      File.open(full_path, 'w'){|f| f.write rendered_template }
-      puts "#{full_path} written"
-    else
-      # render to string
-      return rendered_template
-    end
-  end
+
   
   
   # Copy configs to server(s). Note there is no :pull task. No changes should 
