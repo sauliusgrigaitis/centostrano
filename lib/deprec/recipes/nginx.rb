@@ -82,13 +82,13 @@ Capistrano::Configuration.instance(:must_exist).load do
   
   task :config_gen_system, :roles => :web do
     SYSTEM_CONFIG_FILES[:nginx].each do |file|
-      deprec2.render('nginx', file[:template], file[:path])
+      render_template(:nginx, file)
     end
   end
   
   # task :config_gen_project, :roles => :web do
   #   PROJECT_CONFIG_FILES[:nginx].each do |file|
-  #     deprec2.render('nginx', file[:template], file[:path])
+  #     render_template(:nginx, file)
   #   end
   # end
   

@@ -90,13 +90,13 @@ Capistrano::Configuration.instance(:must_exist).load do
   
   task :config_gen_system, :roles => :scm do
     SYSTEM_CONFIG_FILES[:trac].each do |file|
-      deprec2.render('trac', file[:template], file[:path])
+      render_template(:trac, file)
     end
   end
   
   task :config_gen_project, :roles => :scm do
     PROJECT_CONFIG_FILES[:trac].each do |file|
-      deprec2.render('trac', file[:template], file[:path])
+      render_template(:trac, file)
     end
   end
   
