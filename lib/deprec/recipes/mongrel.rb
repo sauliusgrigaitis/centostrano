@@ -8,16 +8,14 @@ Capistrano::Configuration.instance(:must_exist).load do
       set :mongrel_address, "127.0.0.1"
       set :mongrel_environment, "production"
       set :mongrel_conf, nil
-      set :mongrel_user, nil
-      set :mongrel_group, nil
       set :mongrel_prefix, nil
   
       set :mongrel_user_prefix,  'mongrel_'
-      set :mongrel_user, lambda {mongrel_user_prefix + application}
+      set(:mongrel_user) {mongrel_user_prefix + application}
       set :mongrel_group_prefix,  'app_'
-      set :mongrel_group, lambda {mongrel_group_prefix + application}
+      set (:mongrel_group) {mongrel_group_prefix + application}
       
-      desc "Install example"
+      desc "Install mongrel"
       task :install, :roles => :app do
         gem2.select 'mongrel'                # mongrel requires we select a version
         gem2.install 'mongrel_cluster'
@@ -69,10 +67,10 @@ Capistrano::Configuration.instance(:must_exist).load do
       
       desc "create user and group for mongel to run as"
       task :create_mongrel_user_and_group, :roles => :app do
-        set :mongrel_user, 'mongrel_' + application if mongrel_user.nil?
-        set :mongrel_group, 'app_' + application if mongrel_group.nil?
-        deprec.groupadd(mongrel_group) 
-        deprec.useradd(mongrel_user, :group => mongrel_group, :homedir => false)
+        deprec2.groupadd(mongrel_group) 
+        deprec2.useradd(mongrel_user, :group => mongrel_group, :homedir => false)
+        # Set the primary group for the mongrel user (in case user already existed
+        # when previous command was run)
         sudo "usermod --gid #{mongrel_group} #{mongrel_user}"
       end
       
