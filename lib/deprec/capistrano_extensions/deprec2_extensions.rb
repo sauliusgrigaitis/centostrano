@@ -15,25 +15,61 @@ module Deprec2
     sudo "cp #{temporary_location} #{destination_file_name}"
     delete temporary_location
   end
-
-  # def render_template_to_local_file(template_name, dest_file, templates_dir = DEPREC_TEMPLATES_BASE)
-  #   file = File.join(templates_dir, template_name)
-  #   buffer = render :template => File.read(file)
-  #   Dir.mkdir(File.basename(file)) if ! File.directory?(File.basename(file))
-  #   File.rename(dest_file, "#{dest_file.bak}") if File.exists(dest_file)
-  #   File.open(dest_file, 'w') do |file|
-  #     file.write(buffer)
-  #   end
-  # end 
   
-  def render(app, tmpl, dest)
-    tmpl = ERB.new(IO.read(File.join(@@template_dir, app, tmpl)))
-    full_dest = File.join('config', app, dest)
-    dest_dir = File.dirname(full_dest)
-    File.rename(full_dest, "#{full_dest}.bak") if File.exists?(full_dest)
-    system "mkdir -p #{dest_dir}" if ! File.directory?(dest_dir)
-    File.open(full_dest, 'w'){|f| f.write tmpl.result(binding) }
-    puts "#{full_dest} written"
+  # Render template (usually a config file)
+  # If :dest is given, the output is written to that file
+  # Otherwise it is returned as a string
+  #
+  #  XXX I would like to get rid of :render_template_to_file
+  #  XXX Perhaps pass an option to this function to write to remote
+  #
+  def render_template(app, template, options={})
+    path = options[:path] || nil
+    remote = options[:remote] || false
+    mode = options[:mode] || 0755
+    owner = options[:owner] || nil
+    
+    template = ERB.new(IO.read(File.join(@@template_dir, app, template)))
+    rendered_template = template.result(binding)
+    
+    if remote 
+      # render to remote machine
+      puts 'You need to specify a path to render the template to!' unless path
+      exit unless path
+      sudo "test -d #{File.dirname(path)} || sudo mkdir -p #{File.dirname(path)}"
+      std.su_put rendered_template, path, '/tmp/', :mode => mode
+      sudo "chown #{owner} #{path}" if defined?(owner)
+    elsif path 
+      # render to local file
+      full_path = File.join('config', app, path)
+      path_dir = File.dirname(full_path)
+      File.rename(full_path, "#{full_path}.bak") if File.exists?(full_path)
+      system "mkdir -p #{path_dir}" if ! File.directory?(path_dir)
+      File.open(full_path, 'w'){|f| f.write rendered_template }
+      puts "#{full_path} written"
+    else
+      # render to string
+      return rendered_template
+    end
+  end
+  
+  # Copy configs to server(s). Note there is no :pull task. No changes should 
+  # be made to configs on the servers so why would you need to pull them back?
+  def push_configs(app, files)
+    app = app.to_s
+    files.each do |file|
+      # If the file path is relative we will prepend a path to this projects
+      # own config directory for this service.
+      if file[:path][0,1] != '/'
+        full_remote_path = File.join(deploy_to, app, file[:path]) 
+      else
+        full_remote_path = file[:path]
+      end
+      full_local_path = File.join('config', app, file[:path])
+      sudo "test -d #{File.dirname(full_remote_path)} || sudo mkdir -p #{File.dirname(full_remote_path)}"
+      std.su_put File.read(full_local_path), full_remote_path, '/tmp/', :mode=>file['mode']
+      sudo "chown #{file[:owner]} #{full_remote_path}"
+    end
   end
 
   def append_to_file_if_missing(filename, value, options={})
@@ -47,30 +83,6 @@ module Deprec2
     '
     END
   end
-
-  # ##
-  # # Update a users crontab
-  # #
-  # # user: which users crontab should be affected
-  # # entry: the entry as it would appear in the crontab (e.g. '*/15 * * * * sleep 5')
-  # # action: :add or :remove
-  # #
-  # def update_user_crontab(user, entry, action = :add)
-  #   # we don't want capistrano exiting if crontab doesn't yet exist 
-  #   cur_crontab = capture "crontab -u #{user} -l || exit 0"
-  #   if cur_crontab.include?(entry)
-  #     if action == :remove
-  #       sudo "crontab -u #{user} -l | grep -v #{entry} | sudo crontab -u #{user} -"
-  #     end
-  #   else
-  #     if action == :add
-  #       new_crontab = cur_crontab.chomp + entry
-  #       puts new_crontab
-  #       sudo "echo '#{new_crontab}' | sudo crontab -u #{user} -"
-  #     end
-  #   end
-  # end
-
 
   # create new user account on target system
   def useradd(user, options={})
@@ -106,6 +118,8 @@ module Deprec2
     # XXX removed the extra 'sudo' from after the '||' - need something else
     invoke_command "sh -c 'test -d #{path} || mkdir -p -m#{options[:mode]} #{path}'",
     :via => via
+    invoke_command "chown -R #{options[:owner]} #{path}",
+    :via => via if options[:owner]
     invoke_command "chgrp -R #{options[:group]} #{path}",
     :via => via if options[:group]
     invoke_command "chown -R #{user} #{path}",
@@ -235,24 +249,7 @@ module Deprec2
     end
   end
   
-  # Copy configs to server(s). Note there is no :pull task. No changes should 
-  # be made to configs on the servers so why would you need to pull them back?
-  def push_configs(app, files)
-    app = app.to_s
-    files.each do |file|
-      # If the file path is relative we will prepend a path to this projects
-      # own config directory for this service.
-      if file[:path][0,1] != '/'
-        full_remote_path = File.join(deploy_to, app, file[:path]) 
-      else
-        full_remote_path = file[:path]
-      end
-      full_local_path = File.join('config', app, file[:path])
-      sudo "test -d #{File.dirname(full_remote_path)} || sudo mkdir -p #{File.dirname(full_remote_path)}"
-      std.su_put File.read(full_local_path), full_remote_path, '/tmp/', :mode=>file['mode']
-      sudo "chown #{file[:owner]} #{full_remote_path}"
-    end
-  end
+
 
   private
 
