@@ -17,7 +17,7 @@ Capistrano::Configuration.instance(:must_exist).load do
   configuration files. These should be kept under source control.            
   The can be pushed to the server with the :config task.
   DESC
-  task :config_gen, :roles => :web do
+  task :config_gen do
     # generate config from template
   end
   
