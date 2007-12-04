@@ -16,7 +16,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       end
       
       desc "Generate config file(s) for #{server} server from template(s)"
-      task :config_gen, :roles => server do
+      task :config_gen do
       end
       
       desc "Deploy configuration files(s) for #{server} server"

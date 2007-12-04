@@ -83,20 +83,20 @@ Capistrano::Configuration.instance(:must_exist).load do
   ]
   
   desc "Generate config files for trac"
-  task :config_gen, :roles => :scm do
+  task :config_gen do
     config_gen_system
     config_gen_project
   end
   
-  task :config_gen_system, :roles => :scm do
+  task :config_gen_system do
     SYSTEM_CONFIG_FILES[:trac].each do |file|
-      render_template(:trac, file)
+      deprec2.render_template(:trac, file)
     end
   end
   
-  task :config_gen_project, :roles => :scm do
+  task :config_gen_project do
     PROJECT_CONFIG_FILES[:trac].each do |file|
-      render_template(:trac, file)
+      deprec2.render_template(:trac, file)
     end
   end
   

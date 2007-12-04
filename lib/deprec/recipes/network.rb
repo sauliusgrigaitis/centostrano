@@ -22,17 +22,17 @@ Capistrano::Configuration.instance(:must_exist).load do
 
         {:template => "interfaces.erb",
           :path => '/etc/network/interfaces',
-          :mode => 0644,
+          :mode => '0644',
           :owner => 'root:root'},
 
         {:template => "hosts.erb",
          :path => '/etc/hosts',
-         :mode => 0644,
+         :mode => '0644',
          :owner => 'root:root'},
 
         {:template => "hostname.erb",
          :path => '/etc/hostname',
-         :mode => 0644,
+         :mode => '0644',
          :owner => 'root:root'}
     
        ]
@@ -40,7 +40,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       desc "Update system networking configuration"
       task :config, :roles => :vmgz do
         SYSTEM_CONFIG_FILES[:network].each do |file|
-          render_template(:network, file.merge(:remote=>true))
+          deprec2.render_template(:network, file.merge(:remote=>true))
         end
       end
       

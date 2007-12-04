@@ -75,18 +75,18 @@ Capistrano::Configuration.instance(:must_exist).load do
   configuration files. These should be kept under source control.            
   The can be pushed to the server with the :config task.
   DESC
-  task :config_gen, :roles => :scm do
+  task :config_gen do
     config_gen_system
     # config_gen_project
   end
   
-  task :config_gen_system, :roles => :web do
+  task :config_gen_system do
     SYSTEM_CONFIG_FILES[:nginx].each do |file|
       render_template(:nginx, file)
     end
   end
   
-  # task :config_gen_project, :roles => :web do
+  # task :config_gen_project do
   #   PROJECT_CONFIG_FILES[:nginx].each do |file|
   #     render_template(:nginx, file)
   #   end

@@ -95,20 +95,20 @@ Capistrano::Configuration.instance(:must_exist).load do
       ]
 
       desc "Generate configuration file(s) for apache from template(s)"
-      task :config_gen, :roles => :web do
+      task :config_gen do
         config_gen_system
         config_gen_project
       end
 
-      task :config_gen_system, :roles => :web do
+      task :config_gen_system do
         SYSTEM_CONFIG_FILES[:apache].each do |file|
-          render_template(:apache, file)
+          deprec2.render_template(:apache, file)
         end
       end
 
-      task :config_gen_project, :roles => :web do
+      task :config_gen_project do
         PROJECT_CONFIG_FILES[:apache].each do |file|
-          render_template(:apache, file)
+          deprec2.render_template(:apache, file)
         end
       end
       
@@ -166,7 +166,7 @@ Capistrano::Configuration.instance(:must_exist).load do
 
       # Generate an index.html page  
       task :install_index_page, :roles => :web do
-        deprec2.mkdir(apache_docroot, :user => :root, :group => :deploy, :mode => '0775', :via => :sudo)
+        deprec2.mkdir(apache_docroot, :owner => :root, :group => :deploy, :mode => '0775', :via => :sudo)
         put render_template(:apache, :template => 'index.html.erb'), File.join(apache_docroot, 'index.html')
         put render_template(:apache, :template => 'master.css'), File.join(apache_docroot, 'master.css')
       end

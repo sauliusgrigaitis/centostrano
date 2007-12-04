@@ -31,7 +31,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       # Configuration
       
       desc "Generate configuration file(s) for mysql from template(s)"
-      task :config_gen, :roles => :db do
+      task :config_gen do
       end
       
       desc 'Deploy configuration files(s) for mysql' 

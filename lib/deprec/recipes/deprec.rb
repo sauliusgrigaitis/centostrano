@@ -115,14 +115,10 @@ Capistrano::Configuration.instance(:must_exist).load do
       y variables
     end
     
-    task :moo do
-      puts SRC_PACKAGES.collect{|sp| sp['url']}.join(' ')
-    end
-    
     task :setup_src_dir do
-      deprec2.groupadd(src_dir)
+      deprec2.groupadd(group_src)
       deprec2.add_user_to_group(user, group_src)
-      deprec2.mkdir(src_dir, :mode => 0775, :group => group_src, :via => :sudo)
+      deprec2.create_src_dir
     end
      
   end

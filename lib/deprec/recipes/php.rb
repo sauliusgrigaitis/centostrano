@@ -55,7 +55,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       end
       
       desc "generate config file for php"
-      task :config_gen, :roles => :web do
+      task :config_gen do
         # not yet implemented
       end
       
