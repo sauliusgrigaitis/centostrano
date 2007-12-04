@@ -1,61 +1,61 @@
 require 'capistrano'
 
-DEPREC_TEMPLATES_BASE = File.join(File.dirname(__FILE__), '..', 'templates')
-
-# Render template (usually a config file) 
-# 
-# Usually we render it to a file on the local filesystem.
-# This way, we keep a copy of the config file under source control.
-# We can make manual changes if required and push to new hosts.
-#
-# If the options hash contains :path then it's written to that path.
-# If it contains :remote => true, the file will instead be written to remote targets
-# If options[:path] and options[:remote] are missing, it just returns the rendered
-# template as a string (good for debugging).
-#
-#  XXX I would like to get rid of :render_template_to_file
-#  XXX Perhaps pass an option to this function to write to remote
-#
-def render_template(app, options={})
-  template = options[:template]
-  path = options[:path] || nil
-  remote = options[:remote] || false
-  mode = options[:mode] || 0755
-  owner = options[:owner] || nil
-  
-  # replace this with a check for the file
-  if ! template
-    puts "render_template() requires a value for the template!"
-    return false 
-  end
-  
-  template = ERB.new(IO.read(File.join(DEPREC_TEMPLATES_BASE, app.to_s, template)))
-  rendered_template = template.result(binding)
-  
-  if remote 
-    # render to remote machine
-    puts 'You need to specify a path to render the template to!' unless path
-    exit unless path
-    sudo "test -d #{File.dirname(path)} || sudo mkdir -p #{File.dirname(path)}"
-    std.su_put rendered_template, path, '/tmp/', :mode => mode
-    sudo "chown #{owner} #{path}" if defined?(owner)
-  elsif path 
-    # render to local file
-    full_path = File.join('config', app.to_s, path)
-    path_dir = File.dirname(full_path)
-    File.rename(full_path, "#{full_path}.bak") if File.exists?(full_path)
-    system "mkdir -p #{path_dir}" if ! File.directory?(path_dir)
-    File.open(full_path, 'w'){|f| f.write rendered_template }
-    puts "#{full_path} written"
-  else
-    # render to string
-    return rendered_template
-  end
-end
+# DEPREC_TEMPLATES_BASE = File.join(File.dirname(__FILE__), '..', 'templates')
 
 module Deprec2
   DEPREC_TEMPLATES_BASE = File.join(File.dirname(__FILE__), '..', 'templates')
   @@template_dir = File.join(File.dirname(__FILE__), '..', 'templates')
+
+  # Render template (usually a config file) 
+  # 
+  # Usually we render it to a file on the local filesystem.
+  # This way, we keep a copy of the config file under source control.
+  # We can make manual changes if required and push to new hosts.
+  #
+  # If the options hash contains :path then it's written to that path.
+  # If it contains :remote => true, the file will instead be written to remote targets
+  # If options[:path] and options[:remote] are missing, it just returns the rendered
+  # template as a string (good for debugging).
+  #
+  #  XXX I would like to get rid of :render_template_to_file
+  #  XXX Perhaps pass an option to this function to write to remote
+  #
+  def render_template(app, options={})
+    template = options[:template]
+    path = options[:path] || nil
+    remote = options[:remote] || false
+    mode = options[:mode] || 0755
+    owner = options[:owner] || nil
+  
+    # replace this with a check for the file
+    if ! template
+      puts "render_template() requires a value for the template!"
+      return false 
+    end
+  
+    template = ERB.new(IO.read(File.join(DEPREC_TEMPLATES_BASE, app.to_s, template)))
+    rendered_template = template.result(binding)
+  
+    if remote 
+      # render to remote machine
+      puts 'You need to specify a path to render the template to!' unless path
+      exit unless path
+      sudo "test -d #{File.dirname(path)} || sudo mkdir -p #{File.dirname(path)}"
+      std.su_put rendered_template, path, '/tmp/', :mode => mode.to_i
+      sudo "chown #{owner} #{path}" if defined?(owner)
+    elsif path 
+      # render to local file
+      full_path = File.join('config', app.to_s, path)
+      path_dir = File.dirname(full_path)
+      File.rename(full_path, "#{full_path}.bak") if File.exists?(full_path)
+      system "mkdir -p #{path_dir}" if ! File.directory?(path_dir)
+      File.open(full_path, 'w'){|f| f.write rendered_template }
+      puts "#{full_path} written"
+    else
+      # render to string
+      return rendered_template
+    end
+  end
 
   def render_template_to_file(template_name, destination_file_name, templates_dir = DEPREC_TEMPLATES_BASE)
     template_name += '.conf' if File.extname(template_name) == '' # XXX this to be removed
@@ -68,9 +68,6 @@ module Deprec2
     sudo "cp #{temporary_location} #{destination_file_name}"
     delete temporary_location
   end
-  
-
-  
   
   # Copy configs to server(s). Note there is no :pull task. No changes should 
   # be made to configs on the servers so why would you need to pull them back?
@@ -132,29 +129,22 @@ module Deprec2
   # set permissions and ownership
   # XXX move mode, path and
   def mkdir(path, options={})
-    options[:mode] ||= '0755'
     via = options.delete(:via) || :run
     # XXX need to make sudo commands wrap the whole command (sh -c ?)
     # XXX removed the extra 'sudo' from after the '||' - need something else
-    invoke_command "sh -c 'test -d #{path} || mkdir -p -m#{options[:mode]} #{path}'",
-    :via => via
-    invoke_command "chown -R #{options[:owner]} #{path}",
-    :via => via if options[:owner]
-    invoke_command "chgrp -R #{options[:group]} #{path}",
-    :via => via if options[:group]
-    invoke_command "chown -R #{user} #{path}",
-    :via => via if options[:user]
+    invoke_command "sh -c 'test -d #{path} || mkdir -p #{path}'", :via => via
+    invoke_command "chmod #{options[:mode]} #{path}", :via => via if options[:mode]
+    invoke_command "chown -R #{options[:owner]} #{path}", :via => via if options[:owner]
+    invoke_command "chgrp -R #{options[:group]} #{path}", :via => via if options[:group]
   end
-
+  
+  def create_src_dir
+    mkdir(src_dir, :mode => '0775', :group => group_src, :via => :sudo)
+  end
+  
   # download source package if we don't already have it
   def download_src(src_package, src_dir)
-    deprec2.groupadd(group)
-    invoke_command "test -d #{src_dir} || sudo mkdir #{src_dir}",
-    :via => run_method
-    invoke_command "chgrp -R #{group} #{src_dir}",
-    :via => run_method
-    invoke_command "chmod -R g+w #{src_dir}",
-    :via => run_method
+    create_src_dir
     # check if file exists and if we have an MD5 hash or bytecount to compare 
     # against if so, compare and decide if we need to download again
     if defined?(src_package[:md5sum])
@@ -197,7 +187,6 @@ module Deprec2
     '
     SUDO
   end
-
 
 
   ##
