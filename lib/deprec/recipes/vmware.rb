@@ -1,52 +1,61 @@
 Capistrano::Configuration.instance(:must_exist).load do 
+    
+  set :vm_dir, '/var/vm'
   
   namespace :deprec do
     
     namespace :vmware_server do # XXX still needs testing
-
-      set :vm_dir, '/var/vm'
-      set :stemserver, 'stemserver_ubuntu_6.06.1'
   
-      # task :install_my_package do
-      #   packages = {:base => %w{build-essential libdb2 xinetd}}
-      #   packages[:base] << 'linux-headers-$(uname -r)'
-      #   apt.install(packages, :stable)
-      # end
-  
+      desc "This is a bit dodgy as it only works on ubuntu 7.10 server amd64"
       task :install do
-        version = 'VMware-server-1.0.1-29996'
-        set :src_package, {
-          :file => version + '.tar.gz',
+        
+        SRC_PACKAGES[:vmware_server] = {
+          :filename => 'VMware-server-1.0.4-56528.tar.gz',   
+          :md5sum => "60ec55cd66b77fb202d88bee79baebdf  VMware-server-1.0.4-56528.tar.gz", 
           :dir => 'vmware-server-distrib',  
-          :url => "http://10.0.100.45/download/vmware/#{version}.tar.gz",
-          :unpack => "tar zxf #{version}.tar.gz;",
-        }
-        # pre-requisites on Ubuntu
-        disable_cdrom_install
-        enable_universe
-        packages = {:base => %w{build-essential libdb2 xinetd}}
-        packages[:base] << 'linux-headers-$(uname -r)'
-        apt.install(packages, :stable)
-    
-    
-        # sudo apt-get install build-essential x-window-system-core
-    
-        deprec.download_src(src_package, src_dir)
-        deprec.install_from_src(src_package, src_dir)
+          :url => "needs to be copied manually to /usr/local/src",
+          :unpack => "tar zxf VMware-server-1.0.4-56528.tar.gz;"        }
+        
+        install_deps
+        deprec2.download_src(SRC_PACKAGES[:vmware_server], src_dir)
+        deprec2.install_from_src(SRC_PACKAGES[:vmware_server], src_dir)
+        
         puts    
         puts "IMPORTANT"
-        puts "manually run the following command:"
+        puts "manually run the following commands:"
+        puts "sudo aptitude install ia32-libs # if you're using amd64 version of ubuntu"
+        puts "cd #{src_dir}/vmware-server-distrib"
+        puts "sudo ./vmware-install.pl;"
         puts "sudo /usr/bin/vmware-config.pl"
         puts
       end
     
-      desc :install_deps do
+      task :install_deps do
+        enable_universe
+        
+        # packages = {:base => %w{build-essential libdb2 xinetd}}
+        # packages[:base] << 'linux-headers-$(uname -r)'
+        # apt.install(packages, :stable)
+        
+        # sudo apt-get install build-essential x-window-system-core
+        
         # packages = {:base => %w(build-essential xinetd
         #     libx11-6 libx11-dev libxtst6 xlibs-dev xinetd wget
         #     xinetd gcc binutils-doc cpp-doc make manpages-dev autoconf 
         #     automake1.9 libtool flex bison gdb gcc-doc
         # )}
-        packages = {:base => %w{build-essential libdb2 xinetd}}
+        
+        # gutsy?
+        #
+        # sudo "apt-get install linux-headers-`uname -r` build-essential xinetd"
+        # sudo aptitude install libx11-6 libx11-dev libxtst6 xlibs-dev xinetd wget
+        # sudo aptitude install linux-headers-`uname -r` build-essential
+        # sudo aptitude install xinetd ia32-libs
+        # sudo aptitude install gcc binutils-doc cpp-doc make manpages-dev autoconf 
+        # sudo aptitude install automake1.9 libtool flex bison gdb gcc-doc
+        
+        packages = {:base => %w{build-essential xinetd x-window-system-core}}
+        packages[:base] << 'linux-headers-$(uname -r)'
         apt.install( packages, :stable )
       end
       
@@ -56,16 +65,19 @@ Capistrano::Configuration.instance(:must_exist).load do
     namespace :vmware_mui do # XXX still needs testing
 
       task :install do
-        version = 'VMware-mui-1.0.1-29996'
-        src_package = {
-          :file => version + '.tar.gz',
-          :dir => 'vmware-mui-distrib',  
-          :url => "http://10.0.100.45/download/vmware/#{version}.tar.gz",
-          :unpack => "tar zxf #{version}.tar.gz;",
-          :install => './vmware-install.pl;'
+        
+        SRC_PACKAGES[:vmware_mui] = {
+          :filename => 'VMware-mui-1.0.4-56528.tar.gz',   
+          :md5sum => "6b13063d8ea83c2280549d33da92c476  VMware-mui-1.0.4-56528.tar.gz", 
+          :dir => 'vmware-server-distrib',  
+          :url => "needs to be copied manually to /usr/local/src",
+          :unpack => "tar zxf VMware-mui-1.0.4-56528.tar.gz;"        
         }
-        deprec.download_src(src_package, src_dir)
-        deprec.unpack_src(src_package, src_dir)
+        
+        install_deps
+        deprec2.download_src(SRC_PACKAGES[:vmware_mui], src_dir)
+        deprec2.install_from_src(SRC_PACKAGES[:vmware_mui], src_dir)
+        
         # XXX work out how to do this interactive through capistrano
         puts
         puts "IMPORTANT - you need to log in and run the following commands"
@@ -81,8 +93,10 @@ Capistrano::Configuration.instance(:must_exist).load do
         #     xinetd gcc binutils-doc cpp-doc make manpages-dev autoconf 
         #     automake1.9 libtool flex bison gdb gcc-doc
         # )}
-        packages = {:base => %w{build-essential libdb2 xinetd}}
-        apt.install( packages, :stable )
+        
+        # not sure we need this
+        # packages = {:base => %w{build-essential libdb2 xinetd}}
+        # apt.install( packages, :stable )
       end
       
       task :activate, :roles => :vmhost do
