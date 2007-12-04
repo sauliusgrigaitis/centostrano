@@ -2,25 +2,52 @@ Capistrano::Configuration.instance(:must_exist).load do
   namespace :deprec do
     namespace :users do
       
-      desc "Create user account"
+      # desc "Create user account"
+      # task :add do
+      #   target_user = Capistrano::CLI.ui.ask "Enter userid for new user" do |q|
+      #     q.default = user
+      #   end
+      #   deprec2.useradd(target_user, :shell => '/bin/bash')
+      #   puts "Setting password for new account"
+      #   deprec2.invoke_with_input("passwd #{target_user}", /UNIX password/)
+      # end
+      
+      desc "Create account"
       task :add do
         target_user = Capistrano::CLI.ui.ask "Enter userid for new user" do |q|
           q.default = user
         end
-        deprec2.useradd(target_user, :shell => '/bin/bash')
-        puts "Setting password for new account"
-        deprec2.invoke_with_input("passwd #{target_user}", /UNIX password/)
-      end
-      
-      desc "Create admin account"
-      task :add_admin do
-        target_user = Capistrano::CLI.ui.ask "Enter userid for new user" 
+        make_admin = Capistrano::CLI.ui.ask "Should this be an admin account?" do |q|
+          q.default = 'no'
+        end
+        if File.readable?("ssh/authorized_keys/#{target_user}")
+          copy_keys = Capistrano::CLI.ui.ask "I've found an authorized_keys file for #{target_user}. Should I copy it out?" do |q|
+            q.default = 'yes'
+          end
+        end
+        
         deprec2.useradd(target_user, :shell => '/bin/bash')
         puts "Setting pasword for new account"
         deprec2.invoke_with_input("passwd #{target_user}", /UNIX password/)
-        deprec2.groupadd('admin')
-        deprec2.add_user_to_group(target_user, 'admin')
-        deprec2.append_to_file_if_missing('/etc/sudoers', '%admin ALL=(ALL) ALL')
+        
+        if make_admin.grep(/y/i)
+          deprec2.groupadd('admin')
+          deprec2.add_user_to_group(target_user, 'admin')
+          deprec2.append_to_file_if_missing('/etc/sudoers', '%admin ALL=(ALL) ALL')
+        end
+        
+        if copy_keys.grep(/y/i)
+          deprec2.mkdir "/home/#{target_user}/.ssh", :mode => '0700', :owner => "#{target_user}.users", :via => :sudo
+          std.su_put File.read("ssh/authorized_keys/#{target_user}"), "/home/#{target_user}/.ssh/authorized_keys", '/tmp/', :mode => 0600
+          sudo "chown #{target_user}.users /home/#{target_user}/.ssh/authorized_keys"
+        end
+        
+      end
+      
+      desc "Create account"
+      task :add_admin do
+        puts 'deprecated! use deprec:users:add'
+        add
       end
       
       desc "Create admin user (as root)"
