@@ -23,21 +23,39 @@ Capistrano::Configuration.instance(:must_exist).load do
 
       desc "Sets up authorized_keys file on remote server"
       task :setup_keys do
-        unless ssh_options[:keys]  
-          puts <<-ERROR
+        
+        default(:target_user) { 
+          Capistrano::CLI.ui.ask "Setup keys for which user?" do |q|
+            q.default = user
+          end
+        }
+        
+        if target_user == user
+          
+          unless ssh_options[:keys]  
+            puts <<-ERROR
 
-          You need to define the name of your SSH key(s)
-          e.g. ssh_options[:keys] = %w(/Users/your_username/.ssh/id_rsa)
+            You need to define the name of your SSH key(s)
+            e.g. ssh_options[:keys] = %w(/Users/your_username/.ssh/id_rsa)
 
-          You can put this in your .caprc file in your home directory.
+            You can put this in your .caprc file in your home directory.
 
-          ERROR
-          exit
+            ERROR
+            exit
+          end
+        
+          deprec2.mkdir '.ssh', :mode => '0700'
+          put(ssh_options[:keys].collect{|key| File.read(key+'.pub')}.join("\n"),
+            '.ssh/authorized_keys', :mode => 0600 )
+          
+        else  
+          
+          deprec2.mkdir "/home/#{target_user}/.ssh", :mode => '0700', :owner => "#{target_user}.users", :via => :sudo
+          std.su_put File.read("config/ssh/authorized_keys/#{target_user}"), "/home/#{target_user}/.ssh/authorized_keys", '/tmp/', :mode => 0600
+          sudo "chown #{target_user}.users /home/#{target_user}/.ssh/authorized_keys"
+          
         end
         
-        deprec2.mkdir '.ssh', :mode => '0700'
-        put(ssh_options[:keys].collect{|key| File.read(key+'.pub')}.join("\n"),
-          '.ssh/authorized_keys', :mode => 0600 )
       end      
     end
   end

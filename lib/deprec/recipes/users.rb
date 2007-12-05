@@ -16,11 +16,12 @@ Capistrano::Configuration.instance(:must_exist).load do
       task :add do
         target_user = Capistrano::CLI.ui.ask "Enter userid for new user" do |q|
           q.default = user
-        end
+        end 
         make_admin = Capistrano::CLI.ui.ask "Should this be an admin account?" do |q|
           q.default = 'no'
         end
-        if File.readable?("ssh/authorized_keys/#{target_user}")
+        copy_keys = false
+        if File.readable?("config/ssh/authorized_keys/#{target_user}")
           copy_keys = Capistrano::CLI.ui.ask "I've found an authorized_keys file for #{target_user}. Should I copy it out?" do |q|
             q.default = 'yes'
           end
@@ -36,10 +37,9 @@ Capistrano::Configuration.instance(:must_exist).load do
           deprec2.append_to_file_if_missing('/etc/sudoers', '%admin ALL=(ALL) ALL')
         end
         
-        if copy_keys.grep(/y/i)
-          deprec2.mkdir "/home/#{target_user}/.ssh", :mode => '0700', :owner => "#{target_user}.users", :via => :sudo
-          std.su_put File.read("ssh/authorized_keys/#{target_user}"), "/home/#{target_user}/.ssh/authorized_keys", '/tmp/', :mode => 0600
-          sudo "chown #{target_user}.users /home/#{target_user}/.ssh/authorized_keys"
+        if copy_keys && copy_keys.grep(/y/i)
+          set :target_user, target_user
+          top.deprec.ssh.setup_keys
         end
         
       end
