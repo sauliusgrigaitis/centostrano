@@ -21,6 +21,7 @@ require "#{File.dirname(__FILE__)}/recipes/memcache"
 require "#{File.dirname(__FILE__)}/recipes/network"
 require "#{File.dirname(__FILE__)}/recipes/vmware"
 require "#{File.dirname(__FILE__)}/recipes/coraid"
+require "#{File.dirname(__FILE__)}/recipes/nagios"
 
 # this will be pulled out into ubuntu plugin
 require "#{File.dirname(__FILE__)}/recipes/ubuntu"
