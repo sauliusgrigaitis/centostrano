@@ -45,10 +45,52 @@ Capistrano::Configuration.instance(:must_exist).load do
       end
       
       SYSTEM_CONFIG_FILES[:nagios] = [
-	    {:template => 'hosts.cfg.erb',
-	     :path => '/usr/local/nagios/etc/objects/hosts.cfg',
-	     :mode => '0664',
-	     :owner => 'nagios:nagios'}
+        
+        {:template => 'nagios.cfg.erb',
+        :path => '/usr/local/nagios/etc/nagios.cfg',
+        :mode => '0664',
+        :owner => 'nagios:nagios'},
+
+        {:template => 'cgi.cfg.erb',
+        :path => '/usr/local/nagios/etc/cgi.cfg',
+        :mode => '0664',
+        :owner => 'nagios:nagios'},
+
+        {:template => 'htpasswd.users',
+        :path => '/usr/local/nagios/etc/htpasswd.users',
+        :mode => '0664',
+        :owner => 'nagios:nagios'},
+
+        {:template => 'templates.cfg.erb',
+        :path => '/usr/local/nagios/etc/objects/templates.cfg',
+        :mode => '0664',
+        :owner => 'nagios:nagios'},
+        
+        {:template => 'commands.cfg.erb',
+        :path => '/usr/local/nagios/etc/objects/commands.cfg',
+        :mode => '0664',
+        :owner => 'nagios:nagios'},
+        
+        {:template => 'timeperiods.cfg.erb',
+        :path => '/usr/local/nagios/etc/objects/timeperiods.cfg',
+        :mode => '0664',
+        :owner => 'nagios:nagios'},
+        
+        {:template => 'localhost.cfg.erb',
+        :path => '/usr/local/nagios/etc/objects/localhost.cfg',
+        :mode => '0664',
+        :owner => 'nagios:nagios'},
+        
+        {:template => 'contacts.cfg.erb',
+        :path => '/usr/local/nagios/etc/objects/contacts.cfg',
+        :mode => '0664',
+        :owner => 'nagios:nagios'},
+        
+        {:template => 'hosts.cfg.erb',
+        :path => '/usr/local/nagios/etc/objects/hosts.cfg',
+        :mode => '0664',
+        :owner => 'nagios:nagios'}
+        
       ]
 
       PROJECT_CONFIG_FILES[:nagios] = [
