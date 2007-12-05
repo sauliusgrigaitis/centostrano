@@ -142,7 +142,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       end
 
       desc "Reload Apache"
-      task :reload_apache, :roles => :web do
+      task :reload, :roles => :web do
         send(run_method, "#{apache_ctl} reload")
       end
 
