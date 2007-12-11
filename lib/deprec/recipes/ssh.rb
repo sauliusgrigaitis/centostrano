@@ -5,7 +5,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       SYSTEM_CONFIG_FILES[:ssh] = [
         
         {:template => "sshd_config.erb",
-         :path => '/etc/ssh/sshd_config_foo',
+         :path => '/etc/ssh/sshd_config',
          :mode => '0644',
          :owner => 'root:root'}
       ]
