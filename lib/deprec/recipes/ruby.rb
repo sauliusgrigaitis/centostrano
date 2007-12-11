@@ -2,43 +2,58 @@ Capistrano::Configuration.instance(:must_exist).load do
 
   namespace :deprec do
     namespace :ruby do
-    
-    task :install do
-      version = 'ruby-1.8.6'
-      set :src_package, {
-        :file => version + '.tgz',
-        :md5sum => 'b5680acaa019c80ea44fe87cc2e227da  rubygems-0.9.4.tgz',
-        :dir => version,
-        :url => "http://rubyforge.org/frs/download.php/20989/rubygems-0.9.4.tgz",
-        :unpack => "tar zxf #{version}.tgz;",
-        :make => './configure;',
+      
+      SRC_PACKAGES[:ruby] = {
+        :filename => 'ruby-1.8.6-p110.tar.gz',   
+        :md5sum => "5d9f903eae163cda2374ef8fdba5c0a5  ruby-1.8.6-p110.tar.gz", 
+        :dir => 'ruby-1.8.6-p110',  
+        :url => "ftp://ftp.ruby-lang.org/pub/ruby/1.8/ruby-1.8.6-p110.tar.gz",
+        :unpack => "tar zxf ruby-1.8.6-p110.tar.gz;",
+        :configure => %w(
+          ./configure
+          ;
+          ).reject{|arg| arg.match '#'}.join(' '),
         :make => 'make;',
         :install => 'make install;'
       }
-      deprec2.download_src(src_package, src_dir)
-      deprec2.install_from_src(src_package, src_dir)
-    end
-    
+      
+      task :install do
+        install_deps
+        deprec2.download_src(SRC_PACKAGES[:ruby], src_dir)
+        deprec2.install_from_src(SRC_PACKAGES[:ruby], src_dir)
+      end
+      
+      task :install_deps do
+        apt.install( {:base => %w(build-essential)}, :stable )
+      end
+
     end
   end
+  
   
   namespace :deprec do
     namespace :rubygems do
   
+      SRC_PACKAGES[:rubygems] = {
+        :filename => 'rubygems-0.9.5.tgz',   
+        :md5sum => "91f7036a724e34cc66dd8d09348733d9  rubygems-0.9.5.tgz", 
+        :dir => 'ruby-1.8.6-p110',  
+        :url => "http://rubyforge.org/frs/download.php/28174/rubygems-0.9.5.tgz",
+        :unpack => "tar zxf rubygems-0.9.5.tgz;",
+        :install => '/usr/bin/ruby1.8 setup.rb;'
+      }
+      
       task :install do
-        version = 'rubygems-0.9.4'
-        set :src_package, {
-          :file => version + '.tgz',
-          :md5sum => 'b5680acaa019c80ea44fe87cc2e227da  rubygems-0.9.4.tgz',
-          :dir => version,
-          :url => "http://rubyforge.org/frs/download.php/20989/rubygems-0.9.4.tgz",
-          :unpack => "tar zxf #{version}.tgz;",
-          :install => '/usr/bin/ruby1.8 setup.rb;'
-        }
-        deprec2.download_src(src_package, src_dir)
-        deprec2.install_from_src(src_package, src_dir)
+        install_deps
+        deprec2.download_src(SRC_PACKAGES[:ruby], src_dir)
+        deprec2.install_from_src(SRC_PACKAGES[:ruby], src_dir)
         gem2.upgrade
         gem2.update_system
+      end
+      
+      task :install_deps do
+        # we need ruby but don't currently have a mechanism to check 
+        # whether we've installed it.
       end
       
     end 
