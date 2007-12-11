@@ -17,6 +17,8 @@ Capistrano::Configuration.instance(:must_exist).load do
       # end
         
       set(:apache_server_name) { domain }
+      set :apache_user, 'daemon' # XXX this is not yet being inserted into httpd.conf!
+                                 # I've added it for deprec:nagios:install
       set :apache_conf, nil
       set :apache_default_vhost, false
       set :apache_default_vhost_conf, nil
@@ -77,7 +79,6 @@ Capistrano::Configuration.instance(:must_exist).load do
       
       # install dependencies for apache
       task :install_deps do
-        puts "This function should be overridden by your OS plugin!"
         apt.install( {:base => %w(build-essential zlib1g-dev zlib1g openssl libssl-dev)}, :stable )
       end
       
@@ -113,16 +114,16 @@ Capistrano::Configuration.instance(:must_exist).load do
       end
       
       desc "Push apache config files to server"
-      task :config, :roles => :scm do
+      task :config, :roles => :web do
         config_system
         config_project
       end
 
-      task :config_system, :roles => :scm do
+      task :config_system, :roles => :web do
         deprec2.push_configs(:apache, SYSTEM_CONFIG_FILES[:apache])
       end
 
-      task :config_project, :roles => :scm do
+      task :config_project, :roles => :web do
         deprec2.push_configs(:apache, PROJECT_CONFIG_FILES[:apache])
       end
 
@@ -167,8 +168,8 @@ Capistrano::Configuration.instance(:must_exist).load do
       # Generate an index.html page  
       task :install_index_page, :roles => :web do
         deprec2.mkdir(apache_docroot, :owner => :root, :group => :deploy, :mode => '0775', :via => :sudo)
-        put render_template(:apache, :template => 'index.html.erb'), File.join(apache_docroot, 'index.html')
-        put render_template(:apache, :template => 'master.css'), File.join(apache_docroot, 'master.css')
+        put deprec2.render_template(:apache, :template => 'index.html.erb'), File.join(apache_docroot, 'index.html')
+        put deprec2.render_template(:apache, :template => 'master.css'), File.join(apache_docroot, 'master.css')
       end
       
     end
