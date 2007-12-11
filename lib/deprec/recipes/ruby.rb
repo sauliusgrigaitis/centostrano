@@ -37,16 +37,16 @@ Capistrano::Configuration.instance(:must_exist).load do
       SRC_PACKAGES[:rubygems] = {
         :filename => 'rubygems-0.9.5.tgz',   
         :md5sum => "91f7036a724e34cc66dd8d09348733d9  rubygems-0.9.5.tgz", 
-        :dir => 'ruby-1.8.6-p110',  
+        :dir => 'rubygems-0.9.5',  
         :url => "http://rubyforge.org/frs/download.php/28174/rubygems-0.9.5.tgz",
         :unpack => "tar zxf rubygems-0.9.5.tgz;",
-        :install => '/usr/bin/ruby1.8 setup.rb;'
+        :install => 'ruby setup.rb;'
       }
       
       task :install do
         install_deps
-        deprec2.download_src(SRC_PACKAGES[:ruby], src_dir)
-        deprec2.install_from_src(SRC_PACKAGES[:ruby], src_dir)
+        deprec2.download_src(SRC_PACKAGES[:rubygems], src_dir)
+        deprec2.install_from_src(SRC_PACKAGES[:rubygems], src_dir)
         gem2.upgrade
         gem2.update_system
       end
