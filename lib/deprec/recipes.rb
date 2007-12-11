@@ -20,8 +20,9 @@ require "#{File.dirname(__FILE__)}/recipes/postfix"
 require "#{File.dirname(__FILE__)}/recipes/memcache"
 require "#{File.dirname(__FILE__)}/recipes/network"
 require "#{File.dirname(__FILE__)}/recipes/vmware"
-require "#{File.dirname(__FILE__)}/recipes/coraid"
+require "#{File.dirname(__FILE__)}/recipes/aoe"
 require "#{File.dirname(__FILE__)}/recipes/nagios"
+require "#{File.dirname(__FILE__)}/recipes/xen"
 
 # this will be pulled out into ubuntu plugin
 require "#{File.dirname(__FILE__)}/recipes/ubuntu"
