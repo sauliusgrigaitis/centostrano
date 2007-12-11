@@ -13,7 +13,7 @@ Capistrano::Configuration.instance(:must_exist).load do
   task :enable_universe do
     # ruby is not installed by default or else we'd use 
     # sudo "ruby -pi.bak -e \"gsub(/#\s?(.*universe$)/, '\1')\" sources.list"
-    sudo 'perl -pi -e \'s/#\s?(.*dapper universe$)/\1/g\' /etc/apt/sources.list'
+    sudo 'perl -pi -e \'s/#\s?(.* universe$)/\1/g\' /etc/apt/sources.list'
     apt.update
   end
   
@@ -21,7 +21,7 @@ Capistrano::Configuration.instance(:must_exist).load do
   task :disable_universe do
     # ruby is not installed by default or else we'd use 
     # sudo "ruby -pi.bak -e \"gsub(/#\s?(.*universe$)/, '\1')\" sources.list"
-    sudo 'perl -pi -e \'s/^([^#]*dapper universe)/#\1/g\' /etc/apt/sources.list'
+    sudo 'perl -pi -e \'s/^([^#]* universe)/#\1/g\' /etc/apt/sources.list'
     apt.update
   end
   
