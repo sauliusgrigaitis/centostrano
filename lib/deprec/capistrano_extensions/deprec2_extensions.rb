@@ -47,7 +47,16 @@ module Deprec2
       # render to local file
       full_path = File.join('config', app.to_s, path)
       path_dir = File.dirname(full_path)
-      File.rename(full_path, "#{full_path}.bak") if File.exists?(full_path)
+      if File.exists?(full_path)
+        puts
+        puts "About to write #{full_path}"
+        if overwrite?
+          File.delete(full_path)
+        else
+          puts "Not overwriting #{full_path}"
+          return false
+        end
+      end
       system "mkdir -p #{path_dir}" if ! File.directory?(path_dir)
       File.open(full_path, 'w'){|f| f.write rendered_template }
       puts "#{full_path} written"
@@ -55,6 +64,35 @@ module Deprec2
       # render to string
       return rendered_template
     end
+  end
+  
+  def overwrite?
+    if defined?(overwrite_all)      
+      if overwrite_all == true
+        return true
+      else
+        return false
+      end
+    end
+    
+    # XXX add :always and :never later - not sure how to set persistent value from here
+    # response = Capistrano::CLI.ui.ask "File exists. Overwrite? ([y]es, [n]o, [a]lways, n[e]ver)" do |q|
+    response = Capistrano::CLI.ui.ask "File exists. Overwrite? ([y]es, [n]o)" do |q|
+      q.default = 'n'
+    end
+    
+    case response
+    when 'y'
+      return true
+    when 'n'
+      return false
+    # XXX add :always and :never later - not sure how to set persistent value from here  
+    # when 'a'
+    #   set :overwrite_all, true
+    # when 'e'
+    #   set :overwrite_all, false
+    end
+    
   end
 
   def render_template_to_file(template_name, destination_file_name, templates_dir = DEPREC_TEMPLATES_BASE)
@@ -113,10 +151,10 @@ module Deprec2
   end
 
   # create a new group on target system
-  def groupadd(group)
+  def groupadd(group, options={})
+    via = options.delete(:via) || run_method
     # XXX I don't like specifying the path to groupadd - need to sort out paths before long
-    invoke_command "grep '#{group}:' /etc/group || sudo /usr/sbin/groupadd #{group}",
-    :via => run_method
+    invoke_command "grep '#{group}:' /etc/group || sudo /usr/sbin/groupadd #{group}", :via => via
   end
 
   # add group to the list of groups this user belongs to
@@ -135,6 +173,7 @@ module Deprec2
     invoke_command "sh -c 'test -d #{path} || mkdir -p #{path}'", :via => via
     invoke_command "chmod #{options[:mode]} #{path}", :via => via if options[:mode]
     invoke_command "chown -R #{options[:owner]} #{path}", :via => via if options[:owner]
+    groupadd(options[:group], :via => via) if options[:group]
     invoke_command "chgrp -R #{options[:group]} #{path}", :via => via if options[:group]
   end
   
@@ -152,7 +191,7 @@ module Deprec2
     end
     # XXX replace with invoke_command
     sudo <<-SUDO
-    sh -c "cd #{src_dir} && test -f #{src_package[:file]} #{md5_clause} || wget --quiet --timestamping #{src_package[:url]}"
+    sh -c "cd #{src_dir} && test -f #{src_package[:filename]} #{md5_clause} || wget --quiet --timestamping #{src_package[:url]}"
     SUDO
   end
 
