@@ -227,12 +227,12 @@ Capistrano::Configuration.instance(:must_exist).load do
   # Link the trac repos for this project into the master trac repos dir
   # We do this so we can use trac for multiple projects on the same server
   task :symlink_project, :roles => :scm do
-    sudo "sudo ln -sf ../../#{application}/trac #{tracd_parent_dir}/#{application}"
+    sudo "ln -sf ../../#{application}/trac #{tracd_parent_dir}/#{application}"
   end
   
   task :unlink_project, :roles => :scm do
     link = "#{tracd_parent_dir}/#{application}"
-    sudo "test -h #{link} && unlink #{link} || true"
+    sudo "test -h #{link} && sudo unlink #{link} || true"
   end
   
   task :symlink_apache_vhost, :roles => :scm do
