@@ -1,3 +1,5 @@
+# not working yet! - mike
+
 Capistrano::Configuration.instance(:must_exist).load do 
   namespace :deprec do
     namespace :gfs do
@@ -19,7 +21,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       
       desc "Install GFS utilities"
       task :task_name, :roles => roles_this_task_affects do
-        # sudo apt-get install gfs2-tools clvm cman # (plus redhat-cluster-suite?)
+        apt.install( {:base => %w(redhat-cluster-suite)}, :stable )
       end
       
     end
