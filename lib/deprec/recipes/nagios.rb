@@ -161,13 +161,16 @@ Capistrano::Configuration.instance(:must_exist).load do
       end
 
       desc "Set Nagios to start on boot"
-      task :activate, :roles => :web do
+      task :activate, :roles => :nagios do
         send(run_method, "update-rc.d nagios defaults")
+        sudo "ln -sf #{deploy_to}/nagios/conf/nagios_apache_vhost.conf #{apache_vhost_dir}/nagios_#{application}.conf"
       end
       
       desc "Set Nagios to not start on boot"
-      task :deactivate, :roles => :web do
+      task :deactivate, :roles => :nagios do
         send(run_method, "update-rc.d -f nagios remove")
+        link = "#{apache_vhost_dir}/nagios_#{application}.conf"
+        sudo "test -h #{link} && sudo unlink #{link} || true"
       end
       
       task :backup, :roles => :web do
