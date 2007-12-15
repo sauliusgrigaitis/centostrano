@@ -21,6 +21,22 @@ Capistrano::Configuration.instance(:must_exist).load do
         deprec2.push_configs(:ssh, SYSTEM_CONFIG_FILES[:ssh])
       end
 
+      task :start do
+        send(run_method, "/etc/init.d/ssh reload")
+      end
+    
+      task :stop do
+        send(run_method, "/etc/init.d/ssh reload")
+      end
+    
+      task :restart do
+        send(run_method, "/etc/init.d/ssh restart")
+      end
+    
+      task :reload do
+        send(run_method, "/etc/init.d/ssh reload")
+      end
+      
       desc "Sets up authorized_keys file on remote server"
       task :setup_keys do
         
@@ -55,8 +71,8 @@ Capistrano::Configuration.instance(:must_exist).load do
           sudo "chown #{target_user}.users /home/#{target_user}/.ssh/authorized_keys"
           
         end
-        
-      end      
+      end
+      
     end
   end
 end
