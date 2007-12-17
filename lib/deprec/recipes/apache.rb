@@ -71,15 +71,15 @@ Capistrano::Configuration.instance(:must_exist).load do
         install_index_page
       end
       
+      # install dependencies for apache
+      task :install_deps do
+        apt.install( {:base => %w(zlib1g-dev zlib1g openssl libssl-dev)}, :stable )
+      end
+      
       # Create dir for vhost config files
       task :setup_vhost_dir do
         deprec2.mkdir(apache_vhost_dir, :owner => 'root', :group => group, :mode => '0775', :via => :sudo)
         deprec2.append_to_file_if_missing(apache_config_file, 'Include conf/apps/')
-      end
-      
-      # install dependencies for apache
-      task :install_deps do
-        apt.install( {:base => %w(build-essential zlib1g-dev zlib1g openssl libssl-dev)}, :stable )
       end
       
       SYSTEM_CONFIG_FILES[:apache] = [
@@ -168,8 +168,8 @@ Capistrano::Configuration.instance(:must_exist).load do
       # Generate an index.html page  
       task :install_index_page, :roles => :web do
         deprec2.mkdir(apache_docroot, :owner => :root, :group => :deploy, :mode => '0775', :via => :sudo)
-        put deprec2.render_template(:apache, :template => 'index.html.erb'), File.join(apache_docroot, 'index.html')
-        put deprec2.render_template(:apache, :template => 'master.css'), File.join(apache_docroot, 'master.css')
+        std.su_put deprec2.render_template(:apache, :template => 'index.html.erb'), File.join(apache_docroot, 'index.html')
+        std.su_put deprec2.render_template(:apache, :template => 'master.css'), File.join(apache_docroot, 'master.css')
       end
       
     end
