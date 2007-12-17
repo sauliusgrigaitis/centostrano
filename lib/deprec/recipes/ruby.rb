@@ -24,7 +24,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       end
       
       task :install_deps do
-        apt.install( {:base => %w(build-essential)}, :stable )
+        # pass
       end
 
     end
