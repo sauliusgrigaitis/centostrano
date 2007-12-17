@@ -189,6 +189,7 @@ module Deprec2
     if defined?(src_package[:md5sum])
       md5_clause = " && echo '#{src_package[:md5sum]}' | md5sum -c - "
     end
+    apt.install( {:base => %w(wget)}, :stable )
     # XXX replace with invoke_command
     sudo <<-SUDO
     sh -c "cd #{src_dir} && test -f #{src_package[:filename]} #{md5_clause} || wget --quiet --timestamping #{src_package[:url]}"
@@ -215,6 +216,7 @@ module Deprec2
   def install_from_src(src_package, src_dir)
     package_dir = File.join(src_dir, src_package[:dir])
     unpack_src(src_package, src_dir)
+    apt.install( {:base => %w(build-essential)}, :stable )
     # XXX replace with invoke_command
     sudo <<-SUDO
     sh -c '
