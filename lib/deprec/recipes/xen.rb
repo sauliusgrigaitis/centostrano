@@ -29,10 +29,6 @@ Capistrano::Configuration.instance(:must_exist).load do
          
       ]
       
-      # XXX failing for me at the moment - mike
-      # run manual 
-      # root@sm02:~# sudo aptitude install linux-image-xen bridge-utils libxen3.1 python-xen-3.1 xen-docs-3.1 xen-hypervisor-3.1 xen-ioemu-3.1 xen-tools xen-utils-3.1
-      
       desc "Install Xen"
       task :install, :roles => :dom0 do
         install_deps
@@ -40,7 +36,10 @@ Capistrano::Configuration.instance(:must_exist).load do
       end
       
       task :install_deps do
+        # for amd64 version of ubuntu 7.10
         apt.install( {:base => %w(build-essential linux-image-xen bridge-utils libxen3.1 python-xen-3.1 xen-docs-3.1 xen-hypervisor-3.1 xen-ioemu-3.1 xen-tools xen-utils-3.1)}, :stable )
+        # alternatively, for x86 version of ubuntu:
+        # apt-get install ubuntu-xen-server libc6-xen    
       end
       
       desc "Generate configuration file(s) for Xen from template(s)"
@@ -56,7 +55,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       end
       
       # Create new virtual machine
-      # xen-create-image --force --ip=192.168.1.31 --hostname=x1 --mac=00:16:3E:11:12:22
+      # xen-create-image --force --ip=192.168.1.31 --hostname=x1 --mac=00:16:3E:11:12:31
       
       # Start a virtual image (and open console to it)
       # xm create -c /etc/xen/x1.cfg
