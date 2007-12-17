@@ -24,20 +24,24 @@ Capistrano::Configuration.instance(:must_exist).load do
       desc "Install nagios"
       task :install do
         install_deps
-        deprec2.groupadd(nagios_group)
-        deprec2.useradd(nagios_user, :group => nagios_group, :homedir => false)
-        deprec2.groupadd(nagios_cmd_group)
-        deprec2.add_user_to_group(nagios, nagios_cmd_group)
+        create_nagios_user
         deprec2.add_user_to_group(nagios, apache_user)
         deprec2.mkdir('/usr/local/nagios/etc', :owner => "#{nagios_user}.#{nagios_group}", :via => :sudo)
         deprec2.mkdir('/usr/local/nagios/objects', :owner => "#{nagios_user}.#{nagios_group}", :via => :sudo)
         deprec2.download_src(SRC_PACKAGES[:nagios], src_dir)
         deprec2.install_from_src(SRC_PACKAGES[:nagios], src_dir)
       end
+      
+      task :create_nagios_user do
+        deprec2.groupadd(nagios_group)
+        deprec2.useradd(nagios_user, :group => nagios_group, :homedir => false)
+        deprec2.groupadd(nagios_cmd_group)
+        deprec2.add_user_to_group(nagios, nagios_cmd_group)
+      end
          
       # Install dependencies for nagios
       task :install_deps do
-        apt.install( {:base => %w(build-essential)}, :stable )
+        # no special dependencies
       end
       
       SYSTEM_CONFIG_FILES[:nagios] = [
@@ -201,7 +205,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       :filename => 'nagios-plugins-1.4.10.tar.gz',   
       :md5sum => "c67841223864ae1626ab2adb2f0b4c9d  nagios-plugins-1.4.10.tar.gz", 
       :dir => 'nagios-plugins-1.4.10',  
-      :url => "wget http://osdn.dl.sourceforge.net/sourceforge/nagiosplug/nagios-plugins-1.4.10.tar.gz",
+      :url => "http://osdn.dl.sourceforge.net/sourceforge/nagiosplug/nagios-plugins-1.4.10.tar.gz",
       :unpack => "tar zxfv nagios-plugins-1.4.10.tar.gz;",
       :configure => "./configure --with-nagios-user=#{nagios_user} --with-nagios-group=#{nagios_group};",
       :make => 'make;',
@@ -216,6 +220,61 @@ Capistrano::Configuration.instance(:must_exist).load do
       end
       
     end
+    
+    
+    SRC_PACKAGES[:nrpe] = {
+      :filename => 'nrpe-2.10.tar.gz',   
+      :md5sum => "4558d8c18b994c8838dc2559e8e21cbc  nrpe-2.10.tar.gz", 
+      :dir => 'nrpe-2.10',  
+      :url => "http://easynews.dl.sourceforge.net/sourceforge/nagios/nrpe-2.10.tar.gz",
+      :unpack => "tar zxfv nrpe-2.10.tar.gz;",
+      :configure => "./configure --with-nagios-user=#{nagios_user} --with-nagios-group=#{nagios_group};",
+      :make => 'make all;',
+      :install => 'make install-plugin; make install-daemon; make install-daemon-config;'
+    }
+    
+    namespace :nrpe do
+    
+      task :install do
+        install_deps
+        top.deprec.nagios.create_nagios_user
+        deprec2.download_src(SRC_PACKAGES[:nrpe], src_dir)
+        deprec2.install_from_src(SRC_PACKAGES[:nrpe], src_dir)        
+      end
+      
+      task :install_deps do
+        apt.install( {:base => %w(xinetd libssl-dev)}, :stable )
+      end
+      
+      SYSTEM_CONFIG_FILES[:nrpe] = [
+        
+        {:template => 'nrpe.xinetd.erb',
+         :path => "/etc/xinetd.d/nrpe",
+         :mode => '0644',
+         :owner => 'root:root'},
+         
+        {:template => 'nrpe.cfg.erb',
+         :path => "/usr/local/nagios/etc/nrpe.cfg",
+         :mode => '0644',
+         :owner => 'nagios:nagios'} # XXX hard coded file owner is bad...
+      
+      ]
+      
+      desc "Generate configuration file(s) for nrpe from template(s)"
+      task :config_gen do
+        SYSTEM_CONFIG_FILES[:nrpe].each do |file|
+          deprec2.render_template(:nagios, file)
+        end
+      end
+      
+      desc "Push nagios config files to server"
+      task :config do
+        deprec2.push_configs(:nagios, SYSTEM_CONFIG_FILES[:nrpe])
+      end
+  
+    end
+    
+    
     
   end
 end
