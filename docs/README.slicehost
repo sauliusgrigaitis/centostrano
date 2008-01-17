@@ -1,14 +1,89 @@
 == Slicehost specific notes for deprec
 
-# Slicehost provides you with root login and password for your slice.
+# First, let's create a directory to manage all our host config details 
+# This supports as many hosts as you need to manage and will be the dir
+# you run your deprec commands from when managing the servers.
 
-# Change the root password!
-cap change_root_password_as_root # '_as_root' means run this as 'root' user
+mkdir -p sys/config		  # change 'sys' to whatever you want
+cd sys					  # 
+capify .				  # create Capfile and config/deploy.rb for Capistrano
+cap deprec:ssh:config_gen # prepare a place for public keys and ssh configs
 
-# Create an account with sudo access
-cap setup_admin_account_as_root 
+# If you have an authorized_keys file, copy it to a location where deprec
+# can find it. Deprec will then offer to copy it out to remote hosts when
+# you setup new accounts for yourself. If you don't have authorized_keys,
+# copy out your id_rsa.pub or id_dsa.pub.
+#
+# You can also put the authorized_keys of colleagues in this dir and deprec
+# will offer to copy them out when creating accounts for them too.
+#
+# We name these files using the username of their owner.
+#
+cp ~/.ssh/authorized_keys config/ssh/authorized_keys/${USER}
 
-# Copy your ssh keys to remote server to avoid having to type passwords
-cap setup_ssh_keys
+# Edit config/deploy.rb so it contains the following:
+
+	set :domain, 'your.slice.address' # IP or hostname
+	role :app, domain
+	role :web, domain
+	role :db,  domain, :primary => true
+
+
+# Define an environment variable for the server we'll be working on
+
+export HOST=<your.slice.address>
+
+
+# Change the root password you received for your new slice.
+
+cap deprec:users:passwd USER=root
+
+	Enter user to change password for  |root|
+	Password: 
+	Enter new UNIX password: 
+	Retype new UNIX password: 
+
+
+# Create an account with sudo access for mysql^H^Hself
+
+cap deprec:users:add USER=root 
+
+	Enter userid for new user  |root|
+	mbailey
+	Should this be an admin account?  |no|
+	yes
+	I've found an authorized_keys file for mbailey. Should I copy it out?  |yes|
+	Password: 
+	Setting pasword for new account
+	Enter new UNIX password: 
+	Retype new UNIX password: 
+
+
+# Create another account without sudo access for a colleague.
+# Notice how I longer need to specify USER=root? That's because I'm 
+# using the account I just created.
+
+cap deprec:users:add
+
+	Enter userid for new user  |mbailey|
+	ben
+	Should this be an admin account?  |no|
+	Password: 
+	Setting pasword for new account
+	Enter new UNIX password: 
+	Retype new UNIX password: 
+ 
+# I prefer to disallow ssh password based login for security reasons. I also turn off DNS
+# lookups by sshd as they are often responsible for a 2 second lag on login. Be warned that
+# turning off ssh passwords will prevent someone without an ssh key setup from logging in
+# so use this with caution. Deprec makes it painless to upload their key when you create
+# their account though so you've got no excuse to leave passwords turned on.
+#
+# You can upload the ssh configs currently residing in config/ssh/etc/ssh by running this:
+
+cap deprec:ssh:config
+cap deprec:ssh:restart
+
+
 
 now read README.quickstart
