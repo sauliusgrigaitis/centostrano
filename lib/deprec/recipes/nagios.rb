@@ -7,11 +7,11 @@ Capistrano::Configuration.instance(:must_exist).load do
       set :nagios_cmd_group, 'nagcmd' # Allow external commands to be submitted through the web interface
       
       SRC_PACKAGES[:nagios] = {
-        :filename => 'nagios-3.0b7.tar.gz',   
-        :md5sum => "3c3aaeddff040ba57c3c43553524b13f  nagios-3.0b7.tar.gz", 
-        :dir => 'nagios-3.0b7',  
-        :url => "http://osdn.dl.sourceforge.net/sourceforge/nagios/nagios-3.0b7.tar.gz",
-        :unpack => "tar zxfv nagios-3.0b7.tar.gz;",
+        :filename => 'nagios-3.0rc1.tar.gz',   
+        :md5sum => "d8b4fbf1c2527ddcc18a39372a41dba3  nagios-3.0rc1.tar.gz", 
+        :dir => 'nagios-3.0rc1',  
+        :url => "http://osdn.dl.sourceforge.net/sourceforge/nagios/nagios-3.0rc1.tar.gz",
+        :unpack => "tar zxfv nagios-3.0rc1.tar.gz;",
         :configure => %w(
           ./configure 
           --with-command-group=nagcmd
@@ -96,6 +96,16 @@ Capistrano::Configuration.instance(:must_exist).load do
         :mode => '0664',
         :owner => 'nagios:nagios'},
         
+        {:template => 'services.cfg.erb',
+        :path => '/usr/local/nagios/etc/objects/services.cfg',
+        :mode => '0664',
+        :owner => 'nagios:nagios'},
+        
+        {:template => 'localhost.cfg.erb',
+        :path => '/usr/local/nagios/etc/objects/localhost.cfg',
+        :mode => '0664',
+        :owner => 'nagios:nagios'},
+        
         {:template => 'nagios_apache_vhost.conf.erb',
          :path => "conf/nagios_apache_vhost.conf",
          :mode => '0644',
@@ -103,40 +113,17 @@ Capistrano::Configuration.instance(:must_exist).load do
       
       ]
 
-      PROJECT_CONFIG_FILES[:nagios] = [
-
-      ]
-
       desc "Generate configuration file(s) for nagios from template(s)"
       task :config_gen do
-        config_gen_system
-        config_gen_project
-      end
-
-      task :config_gen_system do
         SYSTEM_CONFIG_FILES[:nagios].each do |file|
-          deprec2.render_template(:nagios, file)
-        end
-      end
-
-      task :config_gen_project do
-        PROJECT_CONFIG_FILES[:nagios].each do |file|
           deprec2.render_template(:nagios, file)
         end
       end
       
       desc "Push nagios config files to server"
       task :config, :roles => :nagios do
-        config_system
-        config_project
-      end
-
-      task :config_system, :roles => :nagios do
         deprec2.push_configs(:nagios, SYSTEM_CONFIG_FILES[:nagios])
-      end
-
-      task :config_project, :roles => :nagios do
-        deprec2.push_configs(:nagios, PROJECT_CONFIG_FILES[:nagios])
+        sudo "ln -sf #{deploy_to}/nagios/conf/nagios_apache_vhost.conf /usr/local/apache2/conf/apps"
       end
 
       desc "Start Nagios"
@@ -215,19 +202,19 @@ Capistrano::Configuration.instance(:must_exist).load do
     namespace :nagios_plugins do
     
       task :install do
+        top.deprec.nagios.create_nagios_user
         deprec2.download_src(SRC_PACKAGES[:nagios_plugins], src_dir)
         deprec2.install_from_src(SRC_PACKAGES[:nagios_plugins], src_dir)        
       end
       
     end
     
-    
     SRC_PACKAGES[:nrpe] = {
-      :filename => 'nrpe-2.10.tar.gz',   
-      :md5sum => "4558d8c18b994c8838dc2559e8e21cbc  nrpe-2.10.tar.gz", 
-      :dir => 'nrpe-2.10',  
-      :url => "http://easynews.dl.sourceforge.net/sourceforge/nagios/nrpe-2.10.tar.gz",
-      :unpack => "tar zxfv nrpe-2.10.tar.gz;",
+      :filename => 'nrpe-2.11.tar.gz',   
+      :md5sum => "dcf3b7c5b7c94c0ba6cbb4999c1161f0  nrpe-2.11.tar.gz", 
+      :dir => 'nrpe-2.11',  
+      :url => "http://easynews.dl.sourceforge.net/sourceforge/nagios/nrpe-2.11.tar.gz",
+      :unpack => "tar zxfv nrpe-2.11.tar.gz;",
       :configure => "./configure --with-nagios-user=#{nagios_user} --with-nagios-group=#{nagios_group};",
       :make => 'make all;',
       :install => 'make install-plugin; make install-daemon; make install-daemon-config;'
@@ -239,11 +226,15 @@ Capistrano::Configuration.instance(:must_exist).load do
         install_deps
         top.deprec.nagios.create_nagios_user
         deprec2.download_src(SRC_PACKAGES[:nrpe], src_dir)
-        deprec2.install_from_src(SRC_PACKAGES[:nrpe], src_dir)        
+        deprec2.install_from_src(SRC_PACKAGES[:nrpe], src_dir)
+        # XXX this should only be run on the nrpe clients
+        # XXX currently it's run on the nagios server too 
+        # XXX shouldn't do any harm but we should split them up later 
+        deprec2.append_to_file_if_missing('/etc/services', 'nrpe            5666/tcp # NRPE')    
       end
       
       task :install_deps do
-        apt.install( {:base => %w(xinetd libssl-dev)}, :stable )
+        apt.install( {:base => %w(xinetd libssl-dev openssl)}, :stable )
       end
       
       SYSTEM_CONFIG_FILES[:nrpe] = [
@@ -257,6 +248,8 @@ Capistrano::Configuration.instance(:must_exist).load do
          :path => "/usr/local/nagios/etc/nrpe.cfg",
          :mode => '0644',
          :owner => 'nagios:nagios'} # XXX hard coded file owner is bad...
+                                    # It's done here because we aren't using 
+                                    # lazy eval in hash constant.
       
       ]
       
@@ -267,14 +260,24 @@ Capistrano::Configuration.instance(:must_exist).load do
         end
       end
       
-      desc "Push nagios config files to server"
+      desc "Push nrpe config files to server"
       task :config do
         deprec2.push_configs(:nagios, SYSTEM_CONFIG_FILES[:nrpe])
+        # XXX should really only do this on targets
+        sudo "/etc/init.d/xinetd restart"  
+      end
+      
+      task :test_local do
+        run "/usr/local/nagios/libexec/check_nrpe -H localhost"
+      end
+      
+      task :test_remote, :roles => :nagios do
+        target_host = Capistrano::CLI.ui.ask "target hostname"
+        run "/usr/local/nagios/libexec/check_nrpe -H #{target_host}"
       end
   
     end
-    
-    
+      
     
   end
 end
