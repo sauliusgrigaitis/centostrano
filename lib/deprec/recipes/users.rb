@@ -49,11 +49,6 @@ Capistrano::Configuration.instance(:must_exist).load do
         puts 'deprecated! use deprec:users:add'
         add
       end
-      
-      desc "Create admin user (as root)"
-      task :add_admin_as_root do
-        deprec2.as_root { add_admin }
-      end
   
       desc "Change user password"
       task :passwd do
@@ -61,11 +56,6 @@ Capistrano::Configuration.instance(:must_exist).load do
           q.default = user if user.is_a?(String)
         end
         deprec2.invoke_with_input("passwd #{target_user}", /UNIX password/) 
-      end
-      
-      desc "Change user password (as root)"
-      task :passwd_as_root do
-        deprec2.as_root { passwd }
       end
       
       desc "Add user to group"
