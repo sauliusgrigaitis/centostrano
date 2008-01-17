@@ -7,6 +7,11 @@ Capistrano::Configuration.instance(:must_exist).load do
         {:template => "sshd_config.erb",
          :path => '/etc/ssh/sshd_config',
          :mode => '0644',
+         :owner => 'root:root'},
+         
+        {:template => "ssh_config.erb",
+         :path => '/etc/ssh/ssh_config',
+         :mode => '0644',
          :owner => 'root:root'}
       ]
       
@@ -14,6 +19,9 @@ Capistrano::Configuration.instance(:must_exist).load do
         SYSTEM_CONFIG_FILES[:ssh].each do |file|
           deprec2.render_template(:ssh, file)
         end
+        auth_keys_dir = 'config/ssh/authorized_keys'
+        puts "Creating #{auth_keys_dir}"
+        Dir.mkdir(auth_keys_dir)
       end
       
       desc "Push apache config files to server"
