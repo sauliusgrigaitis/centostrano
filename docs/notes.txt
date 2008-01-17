@@ -8,3 +8,6 @@ task :dump do
   require 'yaml'
   y variables
 end
+
+# update timezone on gutsy
+# dpkg-reconfigure tzdata
