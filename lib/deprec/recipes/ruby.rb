@@ -11,6 +11,7 @@ Capistrano::Configuration.instance(:must_exist).load do
         :unpack => "tar zxf ruby-1.8.6-p110.tar.gz;",
         :configure => %w(
           ./configure
+          --with-readline-dir=/usr/local
           ;
           ).reject{|arg| arg.match '#'}.join(' '),
         :make => 'make;',
@@ -18,13 +19,8 @@ Capistrano::Configuration.instance(:must_exist).load do
       }
       
       task :install do
-        install_deps
         deprec2.download_src(SRC_PACKAGES[:ruby], src_dir)
         deprec2.install_from_src(SRC_PACKAGES[:ruby], src_dir)
-      end
-      
-      task :install_deps do
-        # pass
       end
 
     end
@@ -48,7 +44,10 @@ Capistrano::Configuration.instance(:must_exist).load do
         deprec2.download_src(SRC_PACKAGES[:rubygems], src_dir)
         deprec2.install_from_src(SRC_PACKAGES[:rubygems], src_dir)
         gem2.upgrade
-        gem2.update_system
+        # If we want to selfupdate then we need to 
+        # create symlink as latest gems version is broken
+        # gem2.update_system
+        # sudo ln -s /usr/bin/gem1.8 /usr/bin/gem
       end
       
       task :install_deps do
