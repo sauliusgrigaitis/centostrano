@@ -2,17 +2,12 @@ Capistrano::Configuration.instance(:must_exist).load do
   namespace :deprec do
     namespace :mysql do
       
-      # Configuration parameters
-      set :mysql_init_script, '/etc/init.d/mysql'
-      
-      
       # Installation
       
       desc "Install mysql"
       task :install, :roles => :db do
         install_deps
-        apt.install( {:base => %w(build-essential mysql-server mysql-client)}, :stable )
-        symlink_mysql_sockfile
+        symlink_mysql_sockfile # XXX still needed?
       end
       
       task :symlink_mysql_sockfile, :roles => :db do
@@ -27,40 +22,52 @@ Capistrano::Configuration.instance(:must_exist).load do
         apt.install( {:base => %w(mysql-server mysql-client)}, :stable )
       end
       
-      
       # Configuration
+      
+      SYSTEM_CONFIG_FILES[:mysql] = [
+        
+        {:template => "my.cnf.erb",
+         :path => '/etc/mysql/my.cnf',
+         :mode => '0644',
+         :owner => 'root:root'}
+      ]
       
       desc "Generate configuration file(s) for mysql from template(s)"
       task :config_gen do
+        SYSTEM_CONFIG_FILES[:mysql].each do |file|
+          deprec2.render_template(:mysql, file)
+        end
       end
       
-      desc 'Deploy configuration files(s) for mysql' 
+      desc "Push trac config files to server"
       task :config, :roles => :db do
+        deprec2.push_configs(:mysql, SYSTEM_CONFIG_FILES[:mysql])
       end
       
       task :activate, :roles => :db do
+        send(run_method, "update-rc.d mysql defaults")
       end  
       
       task :deactivate, :roles => :db do
+        send(run_method, "update-rc.d -f mysql remove")
       end
-      
       
       # Control
             
       task :start, :roles => :db do
-        send(run_method, "#{mysql_init_script} start")
+        send(run_method, "/etc/init.d/mysql start")
       end
       
       task :stop, :roles => :db do
-        send(run_method, "#{mysql_init_script} stop")
+        send(run_method, "/etc/init.d/mysql stop")
       end
       
       task :restart, :roles => :db do
-        send(run_method, "#{mysql_init_script} restart")
+        send(run_method, "/etc/init.d/mysql restart")
       end
       
       task :reload, :roles => :db do
-        send(run_method, "#{mysql_init_script} reload")
+        send(run_method, "/etc/init.d/mysql reload")
       end
       
       
@@ -73,3 +80,27 @@ Capistrano::Configuration.instance(:must_exist).load do
     end
   end
 end
+
+#
+# Setup replication
+#
+
+# setup user for repl
+# GRANT REPLICATION SLAVE ON *.* TO 'repl'@'%.yourdomain.com' IDENTIFIED BY 'slavepass';
+
+# get current position of binlog
+# mysql> FLUSH TABLES WITH READ LOCK;
+# Query OK, 0 rows affected (0.00 sec)
+# 
+# mysql> SHOW MASTER STATUS;
+# +------------------+----------+--------------+------------------+
+# | File             | Position | Binlog_Do_DB | Binlog_Ignore_DB |
+# +------------------+----------+--------------+------------------+
+# | mysql-bin.000012 |      296 |              |                  | 
+# +------------------+----------+--------------+------------------+
+# 1 row in set (0.00 sec)
+# 
+# # get current data
+# mysqldump --all-databases --master-data >dbdump.db
+# 
+# UNLOCK TABLES;
