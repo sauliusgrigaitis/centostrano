@@ -27,7 +27,7 @@ module Gem
   # * doesn't install documentation
   # * installs all required dependencies automatically.
   #
-  GEM_INSTALL="gem install -y --no-rdoc --no-ri"
+  GEM_INSTALL="gem install --no-rdoc --no-ri"
   GEM_UPDATE=GEM_INSTALL.sub("install", "update")
 
   # Upgrade the *gem* system to the latest version. Runs via *sudo*
