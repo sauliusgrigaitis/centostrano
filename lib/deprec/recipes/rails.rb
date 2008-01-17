@@ -39,34 +39,42 @@ Capistrano::Configuration.instance(:must_exist).load do
     namespace :rails do
       
       desc <<-DESC
-      install_rails_stack takes a stock standard ubuntu 'dapper' 6.06.1 server
-      and installs everything needed to be a rails machine
+      install_rails_stack takes a stock standard ubuntu 'gutsy' 7.10 server
+      and installs everything needed to be a Rails machine
       DESC
       task :install_rails_stack do
-        setup_user_perms
-        top.deprec.ubuntu.enable_universe       # we need  packages from 'universe' repository
-        top.deprec.ubuntu.disable_cdrom_install # don't want to have to insert cdrom
-        top.deprec.ubuntu.install_packages_for_rails # install ubuntu packages 
-        top.deprec.ruby.install_rubygems
+        # setup_user_perms
+        top.deprec.nginx.install
+        top.deprec.nginx.config_gen
+        top.deprec.nginx.config
+        
+        top.deprec.mongrel.install
+        # top.deprec.mongrel.config_gen
+        # top.deprec.mongrel.config
+        
+        top.deprec.ruby.install      
+        top.deprec.rubygems.install      
         install_gems 
-        puts "Installing #{web_server_type}"
-        deprec.web.install
-        puts "Installing #{app_server_type}"
-        deprec.app.install
-        puts "Installing #{db_server_type}"
-        deprec.db.install
+        # puts "Installing #{web_server_type}"
+        # deprec.web.install
+        # puts "Installing #{app_server_type}"
+        # deprec.app.install
+        # puts "Installing #{db_server_type}"
+        # deprec.db.install
+      end
+      
+      # install some required ruby gems
+      task :install_gems do
+        gem2.install 'rails'
+        gem2.install 'mysql'
+        gem2.install 'rails'
+        gem2.install 'builder' # XXX ? needed ?
       end
       
       # create deployment group and add current user to it
       task :setup_user_perms do
         deprec2.groupadd(group)
         deprec2.add_user_to_group(user, group)
-      end
-      
-      # install some required ruby gems
-      task :install_gems do
-        gem2.install 'rails'
-        gem2.install 'builder'
       end
       
       # setup extra paths required for deployment
