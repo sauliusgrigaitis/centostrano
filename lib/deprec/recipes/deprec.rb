@@ -93,7 +93,8 @@ Capistrano::Configuration.instance(:must_exist).load do
   default :src_dir, '/usr/local/src' # 3rd party src on servers lives here
   default(:web_server_aliases) { domain.match(/^www/) ? [] : ["www.#{domain}"] }    
 
-  on :load, 'deprec:connect_canonical_tasks' 
+  # XXX for some reason this is causing "before deprec:rails:install" to be executed twice
+  # on :load, 'deprec:connect_canonical_tasks' 
 
   namespace :deprec do
 
