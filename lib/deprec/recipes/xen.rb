@@ -37,7 +37,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       
       task :install_deps do
         # for amd64 version of ubuntu 7.10
-        apt.install( {:base => %w(build-essential linux-image-xen bridge-utils libxen3.1 python-xen-3.1 xen-docs-3.1 xen-hypervisor-3.1 xen-ioemu-3.1 xen-tools xen-utils-3.1)}, :stable )
+        apt.install( {:base => %w(linux-image-xen bridge-utils libxen3.1 python-xen-3.1 xen-docs-3.1 xen-hypervisor-3.1 xen-ioemu-3.1 xen-tools xen-utils-3.1 lvm2)}, :stable )
         # alternatively, for x86 version of ubuntu:
         # apt-get install ubuntu-xen-server libc6-xen    
       end
@@ -63,3 +63,12 @@ Capistrano::Configuration.instance(:must_exist).load do
     end
   end
 end
+
+# Stop the 'incrementing ethX problem'
+#
+# Ubuntu stores the MAC addresses of the NICs it sees. If you change an ethernet card (real or virtual)
+# it will assign is a new ethX address. That's why you'll sometimes find eth2 but no eth1.
+# Your domU's should have a MAC address assigned in their config file but if you come across this problem, 
+# fix it with this:
+#
+# sudo rm /etc/udev/rules.d/70-persistent-net.rules
