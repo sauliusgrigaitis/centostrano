@@ -5,7 +5,7 @@ Capistrano::Configuration.instance(:must_exist).load do
     SRC_PACKAGES[:aoe] = {
       :filename => 'aoe6-56.tar.gz',   
       :md5sum => "93689aaad32f647a788c15c82bd0158e  aoe6-56.tar.gz", 
-      :dir => 'aoe6-55',  
+      :dir => 'aoe6-56',  
       :url => "http://www.coraid.com/support/linux/aoe6-56.tar.gz",
       :unpack => "tar zxf aoe6-56.tar.gz;",
       :make => 'make;',
@@ -49,7 +49,7 @@ Capistrano::Configuration.instance(:must_exist).load do
     end
 
     
-    SRC_PACKAGES[:coraid_ethernet_console] = {
+    SRC_PACKAGES[:cec] = {
       :filename => 'cec-8.tgz',   
       :md5sum => "7899dc549f9a368e532f9c39ed819f71  cec-8.tgz", 
       :dir => 'cec-8',  
@@ -59,12 +59,12 @@ Capistrano::Configuration.instance(:must_exist).load do
       :install => 'make install;'
     }
     
-    namespace :coraid_ethernet_console do
+    namespace :cec do
   
       desc "install CEC (Coraid Ethernet Console)"
       task :install do
-        deprec2.download_src(SRC_PACKAGES[:coraid_ethernet_console], src_dir)
-        deprec2.install_from_src(SRC_PACKAGES[:coraid_ethernet_console], src_dir)
+        deprec2.download_src(SRC_PACKAGES[:cec], src_dir)
+        deprec2.install_from_src(SRC_PACKAGES[:cec], src_dir)
       end
       
     end
