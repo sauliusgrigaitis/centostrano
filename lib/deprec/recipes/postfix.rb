@@ -3,21 +3,32 @@ Capistrano::Configuration.instance(:must_exist).load do
   namespace :deprec do
     namespace :postfix do
       
-      desc "Install example"
+      desc "Install Postfix"
       task :install, :roles => :web do
         install_deps
       end
       
+      # Install dependencies for Postfix
       task :install_deps do
-        apt.install( {:base => %w(build-essential postfix)}, :stable )
+        apt.install( {:base => %w(postfix)}, :stable )
       end
       
       SYSTEM_CONFIG_FILES[:postfix] = [
         
-        {:template => "example.conf.erb",
-         :path => '/etc/example/example.conf',
-         :mode => '0755',
-         :owner => 'root:root'}
+        {:template => "main.cf.erb",
+         :path => '/etc/postfix/main.cf',
+         :mode => '0644',
+         :owner => 'root:root'},
+         
+        {:template => "master.cf.erb",
+         :path => '/etc/postfix/master.cf',
+         :mode => '0644',
+         :owner => 'root:root'},
+          
+         {:template => "dynamicmaps.cf.erb",
+          :path => '/etc/postfix/dynamicmaps.cf',
+          :mode => '0644',
+          :owner => 'root:root'}
          
       ]
       
