@@ -33,7 +33,7 @@ module Deprec2
       return false 
     end
   
-    template = ERB.new(IO.read(File.join(DEPREC_TEMPLATES_BASE, app.to_s, template)))
+    template = ERB.new(IO.read(File.join(DEPREC_TEMPLATES_BASE, app.to_s, template)), nil, '-')
     rendered_template = template.result(binding)
   
     if remote 
