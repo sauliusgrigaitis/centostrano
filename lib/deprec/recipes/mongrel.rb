@@ -2,50 +2,140 @@ Capistrano::Configuration.instance(:must_exist).load do
   
   namespace :deprec do
     namespace :mongrel do
-      
+        
       set :mongrel_servers, 2
       set :mongrel_port, 8000
       set :mongrel_address, "127.0.0.1"
-      set :mongrel_environment, "production"
-      set :mongrel_conf, nil
-      set :mongrel_prefix, nil
-  
+      set(:mongrel_environment) { rails_env }
+      set :mongrel_conf_dir, '/etc/mongrel_cluster'
+      set(:mongrel_conf) { "/etc/mongrel_cluster/#{application}.yml" }  
       set :mongrel_user_prefix,  'mongrel_'
-      set(:mongrel_user) {mongrel_user_prefix + application}
+      set(:mongrel_user) { mongrel_user_prefix + application }
       set :mongrel_group_prefix,  'app_'
-      set (:mongrel_group) {mongrel_group_prefix + application}
+      set(:mongrel_group) { mongrel_group_prefix + application }
+
+      
+      # Install 
       
       desc "Install mongrel"
       task :install, :roles => :app do
         gem2.select 'mongrel'                # mongrel requires we select a version
         gem2.install 'mongrel_cluster'
+        create_mongrel_user_and_group
       end
+    
+    
+      # Configure
       
-      desc "Generate configuration file(s) for XXX from template(s)"
+      SYSTEM_CONFIG_FILES[:mongrel] = [
+
+        {:template => 'mongrel_cluster-init-script',
+         :path => '/etc/init.d/mongrel_cluster',
+         :mode => '0755',
+         :owner => 'root:root'}
+      
+      ]
+        
+      PROJECT_CONFIG_FILES[:mongrel] = [
+
+        {:template => 'mongrel_cluster.yml',
+         :path => 'cluster.yml',
+         :mode => '0644',
+         :owner => 'root:root'}
+      
+      ]
+       
+      desc "Generate configuration file(s) for mongrel from template(s)"
       task :config_gen do
+        config_gen_system
+        config_gen_project
       end
       
-      desc 'Deploy configuration files(s) for XXX' 
-      task :config, :roles => :app do
+      task :config_gen_system do
+        SYSTEM_CONFIG_FILES[:mongrel].each do |file|
+          deprec2.render_template(:mongrel, file)
+        end  
       end
+      
+      task :config_gen_project do
+        PROJECT_CONFIG_FILES[:mongrel].each do |file|
+          deprec2.render_template(:mongrel, file)
+        end  
+      end
+      
+      desc 'Deploy configuration files(s) for mongrel' 
+      task :config do
+        config_system
+        config_project
+      end
+      
+      task :config_system do
+        deprec2.push_configs(:mongrel, SYSTEM_CONFIG_FILES[:mongrel])
+      end
+      
+      task :config_project do
+        deprec2.push_configs(:mongrel, PROJECT_CONFIG_FILES[:mongrel])
+        symlink_mongrel_cluster
+      end
+      
+      task :symlink_mongrel_cluster, :roles => :web do
+        deprec2.mkdir(mongrel_conf_dir, :via => :sudo)
+        sudo "ln -sf #{deploy_to}/mongrel/cluster.yml #{mongrel_conf}"
+      end
+      
+      
+      # Control
       
       desc "Start application server."
       task :start, :roles => :app do
-        # start_mongrel_cluster
+        send(run_method, "mongrel_rails cluster::start -C #{mongrel_conf}")
       end
       
+      desc "Stop application server."
       task :stop, :roles => :app do
+        send(run_method, "mongrel_rails cluster::stop -C #{mongrel_conf}")
       end
       
       desc "Restart application server."
       task :restart, :roles => :app do
-        sudo "/etc/init.d/mongrel_cluster restart"
+        send(run_method, "mongrel_rails cluster::restart -C #{mongrel_conf}")
       end
       
       task :activate, :roles => :app do
+        activate_system        
+        activate_project
       end  
       
+      task :activate_system, :roles => :app do
+        send(run_method, "update-rc.d mongrel_cluster defaults")
+      end
+      
+      task :activate_project, :roles => :app do
+        symlink_mongrel_cluster
+      end
+      
       task :deactivate, :roles => :app do
+        puts
+        puts "******************************************************************"
+        puts
+        puts "Danger!"
+        puts
+        puts "Do you want to deactivate just this project or all mongrel"
+        puts "clusters on this server? Try a more granular command:"
+        puts
+        puts "cap deprec:mongrel:deactivate_system  # disable all clusters"
+        puts "cap deprec:mongrel:deactivate_project # disable only this project"
+        puts
+        puts "******************************************************************"
+        puts
+      end
+      
+      task :deactivate_system, :roles => :app do
+        send(run_method, "update-rc.d -f mongrel_cluster remove")
+      end
+      
+      task :deactivate_project, :roles => :app do
+        send(run_method, "update-rc.d -f mongrel_cluster remove")
       end
       
       task :backup, :roles => :app do
@@ -54,16 +144,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       task :restore, :roles => :app do
       end
       
-      desc "Setup application server."
-      task :setup, :roles => :app  do
-        set :mongrel_environment, rails_env
-        set :mongrel_port, apache_proxy_port
-        set :mongrel_servers, apache_proxy_servers
-        create_mongrel_user_and_group
-        install_mongrel_start_script
-        setup_mongrel_cluster_path
-        configure_mongrel_cluster
-      end
+
       
       desc "create user and group for mongel to run as"
       task :create_mongrel_user_and_group, :roles => :app do

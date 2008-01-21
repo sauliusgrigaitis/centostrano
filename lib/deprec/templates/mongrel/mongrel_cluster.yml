@@ -1,22 +1,10 @@
 --- 
-port: <%= mongrel_port %>
-servers: <%= mongrel_servers %>
-docroot: public    
-environment: <%= mongrel_environment %>
-cwd: /data/<%= @username %>/current
-log_file: /var/log/engineyard/mongrel/<%= @username %>/mongrel.log
-pid_file: /data/<%= @username %>/shared/log/mongrel.pid
 user: <%= mongrel_user %>
+cwd: <%= current_path %>
+log_file: log/mongrel.log
+port: "<%= mongrel_port.to_s %>"
+environment: <%= mongrel_environment %>
 group: <%= mongrel_group %>
-
-set :mongrel_servers, 2
-set :mongrel_port, 8000
-set :mongrel_address, "127.0.0.1"
-set :mongrel_environment, "production"
-set :mongrel_conf, nil
-set :mongrel_user, nil
-set :mongrel_group, nil
-set :mongrel_prefix, nil
-
-
-
+address: <%= mongrel_address %>
+pid_file: tmp/pids/mongrel.pid
+servers: <%= mongrel_servers.to_s %>
