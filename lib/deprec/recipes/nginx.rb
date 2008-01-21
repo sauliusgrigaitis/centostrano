@@ -4,6 +4,7 @@ Capistrano::Configuration.instance(:must_exist).load do
   set :nginx_server_name, nil
   set :nginx_user,  'nginx'
   set :nginx_group, 'nginx'
+  set :nginx_vhost_dir, '/usr/local/nginx/conf/vhosts'
   
   # Configuration summary
   #   + threads are not used
@@ -75,10 +76,12 @@ Capistrano::Configuration.instance(:must_exist).load do
     {:template => 'mime.types.erb',
      :path => "/usr/local/nginx/conf/mime.types",
      :mode => '0644',
+     :owner => 'root:root'},
+     
+    {:template => 'nothing.conf',
+     :path => "/usr/local/nginx/conf/vhosts/nothing.conf",
+     :mode => '0644',
      :owner => 'root:root'}
-  ]
-  
-  PROJECT_CONFIG_FILES[:nginx] = [
   ]
   
   desc <<-DESC
@@ -92,12 +95,6 @@ Capistrano::Configuration.instance(:must_exist).load do
       deprec2.render_template(:nginx, file)
     end
   end
-  
-  # task :config_gen_project do
-  #   PROJECT_CONFIG_FILES[:nginx].each do |file|
-  #     render_template(:nginx, file)
-  #   end
-  # end
   
   desc "Push trac config files to server"
   task :config, :roles => :web do

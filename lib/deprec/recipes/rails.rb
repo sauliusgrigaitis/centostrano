@@ -8,6 +8,7 @@ Capistrano::Configuration.instance(:must_exist).load do
   
   # Hook into the default capistrano deploy tasks
   before 'deploy:setup', :except => { :no_release => true } do
+    top.deprec.rails.setup_user_perms
     top.deprec.rails.setup_paths
   end
   
@@ -35,26 +36,53 @@ Capistrano::Configuration.instance(:must_exist).load do
     end
   end
   
+  
+  PROJECT_CONFIG_FILES[:nginx] = [
+  
+    {:template => 'rails_nginx_vhost.conf.erb',
+     :path => "rails_nginx_vhost.conf", 
+     :mode => '0644',
+     :owner => 'root:root'}
+  ]
+  
   namespace :deprec do
     namespace :rails do
+      
+      task :config_gen do
+        PROJECT_CONFIG_FILES[:nginx].each do |file|
+          deprec2.render_template(:nginx, file)
+        end
+      end
+      
+      task :config do
+        deprec2.push_configs(:nginx, PROJECT_CONFIG_FILES[:nginx])
+      end
+      
+      task :symlink_nginx_vhost, :roles => :web do
+        sudo "ln -sf #{deploy_to}/nginx/rails_nginx_vhost.conf #{nginx_vhost_dir}/#{application}.conf"
+      end
       
       desc <<-DESC
       install_rails_stack takes a stock standard ubuntu 'gutsy' 7.10 server
       and installs everything needed to be a Rails machine
       DESC
       task :install_rails_stack do
+        
+        install_deps
+        
         # setup_user_perms
         top.deprec.nginx.install
         top.deprec.nginx.config_gen
         top.deprec.nginx.config
         
+        top.deprec.ruby.install      
+        top.deprec.rubygems.install      
+        install_gems 
+        
         top.deprec.mongrel.install
         # top.deprec.mongrel.config_gen
         # top.deprec.mongrel.config
         
-        top.deprec.ruby.install      
-        top.deprec.rubygems.install      
-        install_gems 
         # puts "Installing #{web_server_type}"
         # deprec.web.install
         # puts "Installing #{app_server_type}"
@@ -63,12 +91,15 @@ Capistrano::Configuration.instance(:must_exist).load do
         # deprec.db.install
       end
       
+      task :install_deps do
+        apt.install( {:base => %w(libmysqlclient15-dev)}, :stable )
+      end
+      
       # install some required ruby gems
       task :install_gems do
-        gem2.install 'rails'
         gem2.install 'mysql'
         gem2.install 'rails'
-        gem2.install 'builder' # XXX ? needed ?
+        # gem2.install 'builder' # XXX ? needed ?
       end
       
       # create deployment group and add current user to it
@@ -101,9 +132,10 @@ Capistrano::Configuration.instance(:must_exist).load do
 
       desc "Setup web server."
       task :setup_web, :roles => :web  do
-        set :apache_server_name, domain unless apache_server_name
-        setup_apache
-        configure_apache
+        # set :apache_server_name, domain unless apache_server_name
+        # setup_apache
+        # configure_apache
+        top.deprec.nginx.config_gen_project
       end
       
       desc "Setup public symlink directories"
