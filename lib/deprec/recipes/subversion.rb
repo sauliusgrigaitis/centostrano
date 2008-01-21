@@ -32,58 +32,25 @@ Capistrano::Configuration.instance(:must_exist).load do
   
   set(:svn_backup_dir) { File.join(backup_dir, 'svn') }
   
-  # XXX requires apache to have already been installed...
-  desc "install Subversion version control system"
+  desc "Install Subversion"
   task :install, :roles => :scm do
-    # svn 1.4 server improves on 1.3 and is backwards compatible with 1.3 clients
-    # http://subversion.tigris.org/svn_1.4_releasenotes.html
-    #
-    # We're using FSFS instead of BerkeleyDB. Read why below:
-    # http://svnbook.red-bean.com/nightly/en/svn-book.html#svn.reposadmin.basics.backends
-    #
-    # NOTE: we're bulding the python bindings for trac
-    # ./subversion/bindings/swig/INSTALL
-    #
-    version = 'subversion-1.4.5'
-    set :src_package, {
-      :file => version + '.tar.gz',   
-      :md5sum => '3caf1d93e13ed09d76c42eff0f52dfaf  subversion-1.4.5.tar.gz', 
-      :dir => version,  
-      :url => "http://subversion.tigris.org/downloads/#{version}.tar.gz",
-      :unpack => "tar zxf #{version}.tar.gz;",
-      :configure => %w(
-        ./configure 
-        --prefix=/usr/local
-        --with-apxs=/usr/local/apache2/bin/apxs
-        --with-apr=/usr/local/apache2 
-        --with-apr-util=/usr/local/apache2
-        PYTHON=/usr/bin/python
-        ;
-        ).reject{|arg| arg.match '#'}.join(' ') , # DRY this up
-      :make => 'make;',
-      :install => 'make install;',
-      :post_install => '
-        make swig-py; 
-        make install-swig-py;
-        echo /usr/local/lib/svn-python > /usr/lib/python2.4/site-packages/subversion.pth;
-        '
-    }
-    enable_universe
     install_deps
     # XXX should really check if apache has already been installed
     # XXX can do that when we move to rake
-    deprec2.download_src(src_package, src_dir)
-    deprec2.install_from_src(src_package, src_dir)
+    # deprec2.download_src(src_package, src_dir)
+    # deprec2.install_from_src(src_package, src_dir)
   end
   
-  desc "install dependencies for apache"
+  desc "install dependencies for Subversion"
   task :install_deps do
-    puts "This function should be overridden by your OS plugin!"
-    apt.install( {:base => %w(build-essential wget libneon25 libneon25-dev swig python-dev libexpat1-dev)}, :stable )
+    apt.install( {:base => %w(subversion)}, :stable )
+    # XXX deprec1 - was building from source to get subversion-1.4.5 onto dapper. Compiled swig bindings for trac
+    # apt.install( {:base => %w(build-essential wget libneon25 libneon25-dev swig python-dev libexpat1-dev)}, :stable )
   end
   
   desc "grant a user access to svn repos"
   task :grant_user_access, :roles => :scm do
+    # creates account, scm_group and adds account to group
     deprec2.useradd(svn_account)
     deprec2.groupadd(scm_group) 
     deprec2.add_user_to_group(svn_account, scm_group)
