@@ -236,7 +236,7 @@ Capistrano::Configuration.instance(:must_exist).load do
   end
   
   task :symlink_apache_vhost, :roles => :scm do
-    sudo "sudo ln -sf #{deploy_to}/trac/conf/trac_apache_vhost.conf #{apache_vhost_dir}/#{application}-trac.conf"
+    sudo "ln -sf #{deploy_to}/trac/conf/trac_apache_vhost.conf #{apache_vhost_dir}/#{application}-trac.conf"
   end
   
   task :unlink_apache_vhost, :roles => :scm do
