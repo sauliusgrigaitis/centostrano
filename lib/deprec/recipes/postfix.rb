@@ -28,6 +28,11 @@ Capistrano::Configuration.instance(:must_exist).load do
          {:template => "dynamicmaps.cf.erb",
           :path => '/etc/postfix/dynamicmaps.cf',
           :mode => '0644',
+          :owner => 'root:root'},
+          
+         {:template => "aliases.erb",
+          :path => '/etc/aliases',
+          :mode => '0644',
           :owner => 'root:root'}
          
       ]
@@ -42,15 +47,27 @@ Capistrano::Configuration.instance(:must_exist).load do
       desc 'Deploy configuration files(s) for XXX' 
       task :config, :roles => :mail do
         deprec2.push_configs(:postfix, SYSTEM_CONFIG_FILES[:postfix])
+        send(run_method, "/usr/bin/newaliases")
       end
       
-      task :start, :roles => :web do
+      desc "Start Postfix"
+      task :start, :roles => :mail do
+        send(run_method, "/etc/init.d/postfix start")
       end
-      
-      task :stop, :roles => :web do
+
+      desc "Stop Postfix"
+      task :stop, :roles => :mail do
+        send(run_method, "/etc/init.d/postfix stop")
       end
-      
-      task :restart, :roles => :web do
+
+      desc "Restart Postfix"
+      task :restart, :roles => :mail do
+        send(run_method, "/etc/init.d/postfix restart")
+      end
+
+      desc "Reload Postfix"
+      task :reload, :roles => :mail do
+        send(run_method, "/etc/init.d/postfix reload")
       end
       
       task :activate, :roles => :web do
