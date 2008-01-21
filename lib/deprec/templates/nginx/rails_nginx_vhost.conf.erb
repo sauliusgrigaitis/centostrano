@@ -1,0 +1,40 @@
+upstream <%= application %> {
+<% mongrel_servers.times do |counter| -%>
+  <%= "server 127.0.0.1:#{8000+counter};"  %>
+<% end -%>
+}
+
+server {
+    listen       80;
+    server_name  <%= domain %>; # blocks.lemonbaxter.com.au assets0.lemonbaxter.com.au assets1.lemonbaxter.com.au assets2.lemonbaxter.com assets3.lemonbaxter.com;
+    root <%= deploy_to %>/current/public;
+    access_log <%= deploy_to %>/shared/log/<%= domain %>-access.log;
+    client_max_body_size  50M;
+
+        if (-f $document_root/maintenance.html){
+                rewrite  ^(.*)$  /maintenance.html last;
+                break;
+        }
+        location / {
+                proxy_set_header  X-Real-IP  $remote_addr;
+                proxy_set_header  X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header Host $http_host;
+                proxy_redirect false;
+
+                if (-f $request_filename/index.html) {
+                        rewrite (.*) $1/index.html break;
+                }
+                if (-f $request_filename.html) {
+                        rewrite (.*) $1.html break;
+                }       
+                if (!-f $request_filename) {
+                        proxy_pass http://<%= application %>;
+                        break;
+                }
+        }
+
+        error_page   500 502 503 504  /50x.html;
+        location = /50x.html {
+                root   html;
+        }
+}
