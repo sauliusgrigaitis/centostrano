@@ -3,7 +3,7 @@ unless Capistrano::Configuration.respond_to?(:instance)
 end
 require "#{File.dirname(__FILE__)}/recipes/deprec"
 require "#{File.dirname(__FILE__)}/recipes/deprecated"
-require "#{File.dirname(__FILE__)}/recipes/canonical"
+# require "#{File.dirname(__FILE__)}/recipes/canonical"
 require "#{File.dirname(__FILE__)}/recipes/users"
 require "#{File.dirname(__FILE__)}/recipes/ssh"
 require "#{File.dirname(__FILE__)}/recipes/nginx"
@@ -21,7 +21,4 @@ require "#{File.dirname(__FILE__)}/recipes/memcache"
 require "#{File.dirname(__FILE__)}/recipes/network"
 require "#{File.dirname(__FILE__)}/recipes/aoe"
 require "#{File.dirname(__FILE__)}/recipes/nagios"
-require "#{File.dirname(__FILE__)}/recipes/xen"
-
-# this will be pulled out into ubuntu plugin
-require "#{File.dirname(__FILE__)}/recipes/ubuntu"
+# require "#{File.dirname(__FILE__)}/recipes/xen"
