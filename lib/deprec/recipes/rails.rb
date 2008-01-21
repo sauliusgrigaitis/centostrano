@@ -56,6 +56,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       
       task :config do
         deprec2.push_configs(:nginx, PROJECT_CONFIG_FILES[:nginx])
+        symlink_nginx_vhost
       end
       
       task :symlink_nginx_vhost, :roles => :web do
