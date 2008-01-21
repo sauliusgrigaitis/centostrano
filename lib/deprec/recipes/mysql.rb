@@ -10,16 +10,16 @@ Capistrano::Configuration.instance(:must_exist).load do
         symlink_mysql_sockfile # XXX still needed?
       end
       
+      # Install dependencies for Mysql
+      task :install_deps, :roles => :db do
+        apt.install( {:base => %w(mysql-server mysql-client)}, :stable )
+      end
+      
       task :symlink_mysql_sockfile, :roles => :db do
         # rails puts "socket: /tmp/mysql.sock" into config/database.yml
         # this is not the location for our ubuntu's mysql socket file
         # so we create this link to make deployment using rails defaults simpler
         sudo "ln -sf /var/run/mysqld/mysqld.sock /tmp/mysql.sock"
-      end
-      
-      desc "Install dependencies for Mysql"
-      task :install_deps, :roles => :db do
-        apt.install( {:base => %w(mysql-server mysql-client)}, :stable )
       end
       
       # Configuration
@@ -53,19 +53,23 @@ Capistrano::Configuration.instance(:must_exist).load do
       end
       
       # Control
-            
+      
+      desc "Start Mysql"
       task :start, :roles => :db do
         send(run_method, "/etc/init.d/mysql start")
       end
       
+      desc "Stop Mysql"
       task :stop, :roles => :db do
         send(run_method, "/etc/init.d/mysql stop")
       end
       
+      desc "Restart Mysql"
       task :restart, :roles => :db do
         send(run_method, "/etc/init.d/mysql restart")
       end
       
+      desc "Reload Mysql"
       task :reload, :roles => :db do
         send(run_method, "/etc/init.d/mysql reload")
       end
@@ -76,7 +80,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       
       task :restore, :roles => :db do
       end
-      
+            
     end
   end
 end
