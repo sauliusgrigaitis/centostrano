@@ -35,7 +35,7 @@ Capistrano::Configuration.instance(:must_exist).load do
   namespace :deploy do
     task :restart do
       top.deprec.mongrel.restart
-      top.deprec.apache.restart
+      top.deprec.nginx.restart
     end
   end
 
@@ -57,7 +57,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       end
 
       task :install_deps do
-        apt.install( {:base => %w(libmysqlclient15-dev sqlite3  libsqlite3-ruby libsqlite3-dev)}, :stable )
+        apt.install( {:base => %w(libmysqlclient15-dev sqlite3 libsqlite3-ruby libsqlite3-dev)}, :stable )
       end
 
       # install some required ruby gems
@@ -95,11 +95,6 @@ Capistrano::Configuration.instance(:must_exist).load do
         sudo "test -d #{shared_path}/config || sudo mkdir -p #{shared_path}/config"
         sudo "chgrp -R #{group} #{deploy_to}"
         sudo "chmod -R g+w #{deploy_to}"
-      end
-
-      desc "setup and configure servers"
-      task :setup_servers do
-        setup_db
       end
 
       # Setup database server.
@@ -178,27 +173,41 @@ Capistrano::Configuration.instance(:must_exist).load do
       DESC
       task :install_rails_stack do
 
-        install_deps
-
-        # setup_user_perms
+        # Nginx as our web frontend
         top.deprec.nginx.install
         top.deprec.nginx.config_gen
         top.deprec.nginx.config
+        
+        # Subversion
+        top.deprec.svn.install
 
+        # Ruby
         top.deprec.ruby.install      
         top.deprec.rubygems.install      
-        install_gems 
-
+        
+        # Mongrel as our app server
         top.deprec.mongrel.install
-        # top.deprec.mongrel.config_gen
-        # top.deprec.mongrel.config
+        top.deprec.mongrel.config_gen_system
+        top.deprec.mongrel.config_system
 
-        # puts "Installing #{web_server_type}"
-        # deprec.web.install
-        # puts "Installing #{app_server_type}"
-        # deprec.app.install
-        # puts "Installing #{db_server_type}"
-        # deprec.db.install
+        # Install mysql
+        # top.deprec.mysql.install
+        # top.deprec.mysql.start
+        
+        # Install rails
+        top.deprec.rails.install
+      end
+      
+      desc "setup and configure servers"
+      task :setup_servers do
+
+        top.deprec.nginx.activate        
+        top.deprec.mongrel.config_gen
+        top.deprec.mongrel.config
+        top.deprec.mongrel.create_mongrel_user_and_group
+        top.deprec.mongrel.activate
+        top.deprec.rails.config_gen
+        top.deprec.rails.config
       end
     end
 

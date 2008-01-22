@@ -7,6 +7,19 @@ to log into the remote server manually. Capistrano does all the work.
 
 - Mike
 
+*** deprec2 ***
+
+cap deprec:rails:install_rails_stack
+cap setup
+cap deploy
+cap deprec:db:create
+cap deprec:db:migrate
+cap deprec:nginx:restart
+cap deprec:mongrel:restart
+
+
+***************
+
 
 # Install deprec on workstation
 sudo gem install deprec --include-dependencies

@@ -126,6 +126,10 @@ Capistrano::Configuration.instance(:must_exist).load do
     Setup server to start nginx on boot.
   DESC
   task :activate, :roles => :web do
+    activate_system
+  end
+  
+  task :activate_system, :roles => :web do
     send(run_method, "update-rc.d nginx defaults")
   end
   

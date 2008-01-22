@@ -31,7 +31,7 @@ cp ~/.ssh/authorized_keys config/ssh/authorized_keys/${USER}
 
 # Define an environment variable for the server we'll be working on
 
-export HOST=<your.slice.address>
+export HOSTS=<your.slice.address>
 
 
 # Change the root password you received for your new slice.
