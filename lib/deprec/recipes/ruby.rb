@@ -3,6 +3,9 @@ Capistrano::Configuration.instance(:must_exist).load do
   namespace :deprec do
     namespace :ruby do
       
+      ext_zlib = 'cd ext/zlib; ruby extconf.rb; make;  make test; make install;'
+      ext_openssl = 'cd ext/openssl; ruby extconf.rb; make;  make test; make install;'
+      
       SRC_PACKAGES[:ruby] = {
         :filename => 'ruby-1.8.6-p110.tar.gz',   
         :md5sum => "5d9f903eae163cda2374ef8fdba5c0a5  ruby-1.8.6-p110.tar.gz", 
@@ -15,12 +18,18 @@ Capistrano::Configuration.instance(:must_exist).load do
           ;
           ).reject{|arg| arg.match '#'}.join(' '),
         :make => 'make;',
-        :install => 'make install;'
+        :install => 'make install;',
+        :post_install => "#{ext_zlib} #{ext_openssl}"
       }
-      
+  
       task :install do
+        install_deps
         deprec2.download_src(SRC_PACKAGES[:ruby], src_dir)
         deprec2.install_from_src(SRC_PACKAGES[:ruby], src_dir)
+      end
+      
+      task :install_deps do
+        apt.install( {:base => %w(zlib1g-dev libssl-dev)}, :stable )
       end
 
     end
@@ -43,16 +52,15 @@ Capistrano::Configuration.instance(:must_exist).load do
         install_deps
         deprec2.download_src(SRC_PACKAGES[:rubygems], src_dir)
         deprec2.install_from_src(SRC_PACKAGES[:rubygems], src_dir)
-        gem2.upgrade
+        # gem2.upgrade #  you may not want to upgrade your gems right now
         # If we want to selfupdate then we need to 
         # create symlink as latest gems version is broken
         # gem2.update_system
         # sudo ln -s /usr/bin/gem1.8 /usr/bin/gem
       end
       
+      # install dependencies for rubygems
       task :install_deps do
-        # we need ruby but don't currently have a mechanism to check 
-        # whether we've installed it.
       end
       
     end 
