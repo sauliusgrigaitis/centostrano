@@ -1,2 +1,0 @@
-the CRUD of System Administration - by mike bailey <mike@bailey.net.au>
-
