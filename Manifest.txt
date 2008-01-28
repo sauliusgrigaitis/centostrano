@@ -4,7 +4,6 @@ History.txt
 LICENCE
 Manifest.txt
 README.txt
-Rakefile
 THANKS
 TODO.txt
 bin/deprec
@@ -13,18 +12,8 @@ docs/README.quickstart
 docs/README.slicehost
 docs/ROADMAP.txt
 docs/building_edge_capistrano.txt
-docs/deprec_banner.gif
 docs/nagios.txt
-docs/no_soup_for_you.txt
 docs/notes.txt
-docs/notes_on_each_app/apache.txt
-docs/notes_on_each_app/mongrel.txt
-docs/notes_on_each_app/mysql.txt
-docs/notes_on_each_app/nginx.txt
-docs/notes_on_each_app/postfix.txt
-docs/notes_on_each_app/postgres.txt
-docs/notes_on_each_app/subversion.txt
-docs/notes_on_each_app/trac.txt
 docs/the_CRUD_of_system_administraion.txt
 lib/deprec.rb
 lib/deprec/capistrano_extensions/deprec2_extensions.rb
@@ -105,7 +94,6 @@ lib/deprec/templates/postfix/aliases.erb
 lib/deprec/templates/postfix/dynamicmaps.cf.erb
 lib/deprec/templates/postfix/main.cf.erb
 lib/deprec/templates/postfix/master.cf.erb
-lib/deprec/templates/postfix/postfix_main.conf
 lib/deprec/templates/ssh/ssh_config.erb
 lib/deprec/templates/ssh/sshd_config.erb
 lib/deprec/templates/subversion/svn.apache.vhost.erb
