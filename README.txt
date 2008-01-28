@@ -42,18 +42,13 @@ deprec - Deployment Recipes for Capistrano
 	2. postgres
 	?  2
 	about to install nginx, mongrel, postgres
-	
-dep2 has canonical task names, linked through to system specific settings
-So users can remember a simple set regardless of the implementation chosen.
 
-deprec:web:install -> deprec:nginx:restart
-
-# dep2
-
-- rotates logs
-
-# dep2 now uses debian layout for apache configs
-
+# This is disabled for the moment
+#	
+# dep2 has canonical task names, linked through to system specific settings
+# So users can remember a simple set regardless of the implementation chosen.
+# 
+# deprec:web:install -> deprec:nginx:restart
 
 
 	

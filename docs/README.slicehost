@@ -1,4 +1,4 @@
-== Slicehost specific notes for deprec
+== Slicehost specific notes for deprec2
 
 # First, let's create a directory to manage all our host config details 
 # This supports as many hosts as you need to manage and will be the dir

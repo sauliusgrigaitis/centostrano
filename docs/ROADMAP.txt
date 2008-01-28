@@ -34,29 +34,30 @@ server04 - user 'fred' exists. Set type to 'admin'
   for a project however there are many ways to get this list.
 
 
-# plugin based support different distros, versions (and possibly OS's)
-
-While deprec was built to work with Ubuntu 6.06, some people have shown interest
-in using it with other distro's. I plan to move all of the Ubuntu specific code
-into a separate gem 'deprec_ubuntu' which deprec will load by default. This will
-mean anyone else can create and maintain plugins that allow the use of other linux
-distros (and perhaps other OS's).
-
-All platform dependent functions will be:
-
-- cap extensions, not tasks
-- plugins, not part of the deprec itself
-- loaded using gemplugins http://mongrel.rubyforge.org/gem_plugin_rdoc/index.html
-
-I'd like 'cap -T' to show the distros supported for each command when not arch independant.
+Plugin support for different distro's was too ambitious. I've tried other 
+distros and didn't like them much. I'm happy with Ubuntu at the moment and 
+# # plugin based support different distros, versions (and possibly OS's)
+# 
+# While deprec was built to work with Ubuntu 6.06, some people have shown interest
+# in using it with other distro's. I plan to move all of the Ubuntu specific code
+# into a separate gem 'deprec_ubuntu' which deprec will load by default. This will
+# mean anyone else can create and maintain plugins that allow the use of other linux
+# distros (and perhaps other OS's).
+# 
+# All platform dependent functions will be:
+# 
+# - cap extensions, not tasks
+# - plugins, not part of the deprec itself
+# - loaded using gemplugins http://mongrel.rubyforge.org/gem_plugin_rdoc/index.html
+# 
+# I'd like 'cap -T' to show the distros supported for each command when not arch independant.
 
 
 # add lots more useful tasks
 
 I'd like to extend deprec beyond just getting your rails app up and running.
 Anything I need that takes some time to do right will go in. If you've got 
-something you want added then write it and let me know. If I'm not interested, 
-put it in a plugin.
+something you want added then write it and let me know. 
 
 install and configure the following package groups: 
 - source control (svn, trac)
@@ -69,9 +70,5 @@ As I write, www.apache.org is serving at a crawling pace. I'd like to make it ea
 users to download and cache all required third party apps, gems, etc and have deprec
 use these.
 
-
-# move to using debian mode for apache
-
-This has been requested and is the default way ubuntu does it.
-I'm thinking it will allow easier management of the config files (module-enabled) 
-e.g. mods-enabled/dav_svn.conf
+Currently you can drop the tarballs into /usr/local/src on the target server and
+they'll get picked up automatically. I haven't looked at a simple way to cache the gems yet.

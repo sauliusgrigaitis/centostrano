@@ -1,4 +1,4 @@
-== svn # and trac
+== svn
 
 cap deprec:svn:install
 cap deprec:svn:setup
@@ -19,4 +19,8 @@ cap deprec:svn:setup
 # 
 # # your project will be viewable at http://yourdomain:8000/
 # # you can add other users with 'cap trac_user_add'
+
+== trac
+
+needs testing - may not work since I switched to using ubuntu svn
 

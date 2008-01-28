@@ -1,12 +1,3 @@
-== deprec quickstart (with svn, trac and deployment to apache/mongrel/mysql)
-
-Here are instructions that will take a fresh install of Ubuntu Dapper (6.06.1 server), create a working rails app, create an SVN repository and trac installation for it and deploy it using apache, mongrel and mysql.
-
-All commands below are run on your local host. You will *never* be requested 
-to log into the remote server manually. Capistrano does all the work.
-
-- Mike
-
 *** deprec2 ***
 
 cap deprec:rails:install_rails_stack
@@ -18,8 +9,20 @@ cap deprec:nginx:restart
 cap deprec:mongrel:restart
 
 
-***************
+*** end deprec2 ***
 
+#
+# Old notes - YMMV
+#
+
+== deprec quickstart (with svn, trac and deployment to apache/mongrel/mysql)
+
+Here are instructions that will take a fresh install of Ubuntu Dapper (6.06.1 server), create a working rails app, create an SVN repository and trac installation for it and deploy it using apache, mongrel and mysql.
+
+All commands below are run on your local host. You will *never* be requested 
+to log into the remote server manually. Capistrano does all the work.
+
+- Mike
 
 # Install deprec on workstation
 sudo gem install deprec --include-dependencies
