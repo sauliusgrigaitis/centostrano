@@ -41,7 +41,7 @@ Capistrano::Configuration.instance(:must_exist).load do
          
       # Install dependencies for nagios
       task :install_deps do
-        # no special dependencies
+        apt.install( {:base => %w(mailx)}, :stable )
       end
       
       SYSTEM_CONFIG_FILES[:nagios] = [
@@ -124,7 +124,29 @@ Capistrano::Configuration.instance(:must_exist).load do
       task :config, :roles => :nagios do
         deprec2.push_configs(:nagios, SYSTEM_CONFIG_FILES[:nagios])
         sudo "ln -sf #{deploy_to}/nagios/conf/nagios_apache_vhost.conf /usr/local/apache2/conf/apps"
+        config_check
       end
+      
+      desc "Run Nagios config check"
+      task :config_check, :roles => :nagios do
+        send(run_method, "/etc/init.d/nagios check")
+      end
+      
+      desc "Set Nagios to start on boot"
+      task :activate, :roles => :nagios do
+        send(run_method, "update-rc.d nagios defaults")
+        sudo "ln -sf #{deploy_to}/nagios/conf/nagios_apache_vhost.conf #{apache_vhost_dir}/nagios_#{application}.conf"
+      end
+      
+      desc "Set Nagios to not start on boot"
+      task :deactivate, :roles => :nagios do
+        send(run_method, "update-rc.d -f nagios remove")
+        link = "#{apache_vhost_dir}/nagios_#{application}.conf"
+        sudo "test -h #{link} && sudo unlink #{link} || true"
+      end
+      
+      
+      # Control
 
       desc "Start Nagios"
       task :start, :roles => :nagios do
@@ -144,24 +166,6 @@ Capistrano::Configuration.instance(:must_exist).load do
       desc "Reload Nagios"
       task :reload, :roles => :nagios do
         send(run_method, "/etc/init.d/nagios reload")
-      end
-      
-      desc "Run Nagios config check"
-      task :config_check, :roles => :nagios do
-        send(run_method, "/etc/init.d/nagios check")
-      end
-
-      desc "Set Nagios to start on boot"
-      task :activate, :roles => :nagios do
-        send(run_method, "update-rc.d nagios defaults")
-        sudo "ln -sf #{deploy_to}/nagios/conf/nagios_apache_vhost.conf #{apache_vhost_dir}/nagios_#{application}.conf"
-      end
-      
-      desc "Set Nagios to not start on boot"
-      task :deactivate, :roles => :nagios do
-        send(run_method, "update-rc.d -f nagios remove")
-        link = "#{apache_vhost_dir}/nagios_#{application}.conf"
-        sudo "test -h #{link} && sudo unlink #{link} || true"
       end
       
       task :backup, :roles => :web do
@@ -189,11 +193,11 @@ Capistrano::Configuration.instance(:must_exist).load do
     
     
     SRC_PACKAGES[:nagios_plugins] = {
-      :filename => 'nagios-plugins-1.4.10.tar.gz',   
-      :md5sum => "c67841223864ae1626ab2adb2f0b4c9d  nagios-plugins-1.4.10.tar.gz", 
-      :dir => 'nagios-plugins-1.4.10',  
-      :url => "http://osdn.dl.sourceforge.net/sourceforge/nagiosplug/nagios-plugins-1.4.10.tar.gz",
-      :unpack => "tar zxfv nagios-plugins-1.4.10.tar.gz;",
+      :filename => 'nagios-plugins-1.4.11.tar.gz',   
+      :md5sum => "042783a2180a6987e0b403870b3d01f7  nagios-plugins-1.4.11.tar.gz", 
+      :dir => 'nagios-plugins-1.4.11',  
+      :url => "http://osdn.dl.sourceforge.net/sourceforge/nagiosplug/nagios-plugins-1.4.11.tar.gz",
+      :unpack => "tar zxfv nagios-plugins-1.4.11.tar.gz;",
       :configure => "./configure --with-nagios-user=#{nagios_user} --with-nagios-group=#{nagios_group};",
       :make => 'make;',
       :install => 'make install;'
@@ -202,10 +206,17 @@ Capistrano::Configuration.instance(:must_exist).load do
     namespace :nagios_plugins do
     
       task :install do
+        install_deps
         top.deprec.nagios.create_nagios_user
         deprec2.download_src(SRC_PACKAGES[:nagios_plugins], src_dir)
         deprec2.install_from_src(SRC_PACKAGES[:nagios_plugins], src_dir)        
       end
+      
+      # Install dependencies for nagios plugins
+      task :install_deps do
+        apt.install( {:base => %w(libmysqlclient15-dev)}, :stable )
+      end
+      
       
     end
     
