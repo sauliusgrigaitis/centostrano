@@ -121,6 +121,30 @@ Capistrano::Configuration.instance(:must_exist).load do
       deprec2.add_user_to_group(user, group_src)
       deprec2.create_src_dir
     end
+    
+    # Download all packages used my deprec to your local host.
+    # You can then push them to /usr/local/src on target hosts
+    # to save time and bandwidth rather than repeatedly downloading
+    # from the distribution sites.
+    task :update_src do
+      SRC_PACKAGES.each{|key, src_package| 
+        current_dir = Dir.pwd
+        system "cd src/ && test -f #{src_package[:filename]} || wget --quiet --timestamping #{src_package[:url]}"
+        system "cd #{current_dir}"
+      }
+    end
+    
+    # todo
+    #
+    # Copy files from src/ to /usr/local/src/ on remote hosts
+    task :push_src do
+      SRC_PACKAGES.each do |key, src_package| 
+        file = File.join('src', src_package[:filename])
+        if File.exists?(file)
+          std.su_put(File.read(file), "#{src_dir}/#{src_package[:filename]}", '/tmp/')
+        end
+      end
+    end
      
   end
   
