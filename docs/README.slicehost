@@ -1,12 +1,20 @@
 == Slicehost specific notes for deprec2
 
-# First, let's create a directory to manage all our host config details 
+# I'll assume you have installed deprec version 2 or later. As this is currently
+# only available as a preview release it's not on thr rubyforge gem servers yet.
+# You can get it from www.deprec.org
+
+# Let's create a directory to manage all our host config details 
 # This supports as many hosts as you need to manage and will be the dir
 # you run your deprec commands from when managing the servers.
 
 mkdir -p sys/config		  # change 'sys' to whatever you want
 cd sys					  # 
 capify .				  # create Capfile and config/deploy.rb for Capistrano
+
+# You need to add the following to either your ~/.caprc file or to deploy.rb
+require 'deprec'"
+
 cap deprec:ssh:config_gen # prepare a place for public keys and ssh configs
 
 # If you have an authorized_keys file, copy it to a location where deprec
