@@ -20,8 +20,10 @@ Capistrano::Configuration.instance(:must_exist).load do
           deprec2.render_template(:ssh, file)
         end
         auth_keys_dir = 'config/ssh/authorized_keys'
-        puts "Creating #{auth_keys_dir}"
-        Dir.mkdir(auth_keys_dir)
+        if ! File.directory?(auth_keys_dir)
+          puts "Creating #{auth_keys_dir}"
+          Dir.mkdir(auth_keys_dir)
+        end
       end
       
       desc "Push ssh config files to server"
