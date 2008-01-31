@@ -1,3 +1,4 @@
+# Copyright 2006-2008 by Mike Bailey. All rights reserved.
 require 'capistrano'
 
 # DEPREC_TEMPLATES_BASE = File.join(File.dirname(__FILE__), '..', 'templates')
