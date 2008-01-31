@@ -4,7 +4,11 @@ require 'rubygems'
 
 SPEC = Gem::Specification.new do |spec|
   spec.name = 'deprec'
-  spec.version = '1.99.0'
+  spec.author = 'Mike Bailey'
+  spec.email = 'mike@bailey.net.au'
+  spec.homepage = 'http://www.deprec.org/'
+  spec.rubyforge_project = 'deprec'
+  spec.version = '1.99.1'
   spec.summary = 'deployment recipes for capistrano'
   spec.description = <<-EOF
       This project provides libraries of Capistrano tasks and extensions to 
