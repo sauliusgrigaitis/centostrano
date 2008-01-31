@@ -21,7 +21,6 @@ Capistrano::Configuration.instance(:must_exist).load do
       task :install, :roles => :app do
         gem2.select 'mongrel'                # mongrel requires we select a version
         gem2.install 'mongrel_cluster'
-        create_mongrel_user_and_group
       end
     
     
@@ -58,6 +57,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       end
       
       task :config_gen_project do
+        create_mongrel_user_and_group
         PROJECT_CONFIG_FILES[:mongrel].each do |file|
           deprec2.render_template(:mongrel, file)
         end  
