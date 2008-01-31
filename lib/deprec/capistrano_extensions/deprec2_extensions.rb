@@ -109,7 +109,7 @@ module Deprec2
   
   # Copy configs to server(s). Note there is no :pull task. No changes should 
   # be made to configs on the servers so why would you need to pull them back?
-  def push_configs(app, files)
+  def push_configs(app, files)   
     app = app.to_s
     files.each do |file|
       # If the file path is relative we will prepend a path to this projects
@@ -122,6 +122,14 @@ module Deprec2
       full_local_path = File.join('config', app, file[:path])
       sudo "test -d #{File.dirname(full_remote_path)} || sudo mkdir -p #{File.dirname(full_remote_path)}"
       std.su_put File.read(full_local_path), full_remote_path, '/tmp/', :mode=>file['mode']
+      #
+      # XXX work this in to check for per-host variants of config files
+      #
+      # servers = find_servers_for_task(current_task)
+      # servers.each do |server|
+      #   puts server(..., :hosts => server)
+      # end
+      #
       sudo "chown #{file[:owner]} #{full_remote_path}"
     end
   end
