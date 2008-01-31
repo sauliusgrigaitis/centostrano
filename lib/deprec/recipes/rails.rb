@@ -3,6 +3,9 @@ Capistrano::Configuration.instance(:must_exist).load do
   set :database_yml_in_scm, false
   set :app_symlinks, nil
   set :rails_env, 'production'
+  set :gems_for_project, nil # Array of gems to be installed for app
+  set :shared_dirs, nil # Array of directories that should be created under shared/
+                        # and linked to in the project
 
   # Hook into the default capistrano deploy tasks
   before 'deploy:setup', :except => { :no_release => true } do
@@ -22,6 +25,7 @@ Capistrano::Configuration.instance(:must_exist).load do
 
   after 'deploy:setup', :except => { :no_release => true } do
     top.deprec.rails.setup_servers
+    top.deprec.rails.create_config_dir
   end
 
   after 'deploy:symlink', :roles => :app do
@@ -70,16 +74,14 @@ Capistrano::Configuration.instance(:must_exist).load do
         gem2.install 'rails'
         gem2.install 'rspec' # seems to be required to run rake db:migrate (???)
         # gem2.install 'builder' # XXX ? needed ?
-        # install_gems_for_project
+        install_gems_for_project
       end
       
-      # XXX some gems might need 'gem2.select' or has that been phased out?
-      #
-      # task :install_gems_for_project do
-      #     if gems_for_project
-      #       gems_for_project.each { |gem| gem2.install(gem) }
-      #     end
-      # end
+      task :install_gems_for_project do
+          if gems_for_project
+            gems_for_project.each { |gem| gem2.install(gem) }
+          end
+      end
 
       task :config_gen do
         PROJECT_CONFIG_FILES[:nginx].each do |file|
@@ -96,6 +98,11 @@ Capistrano::Configuration.instance(:must_exist).load do
         sudo "ln -sf #{deploy_to}/nginx/rails_nginx_vhost.conf #{nginx_vhost_dir}/#{application}.conf"
       end
 
+
+      task :create_config_dir do
+        deprec2.mkdir("#{shared_path}/config", :group => group, :mode => '0775', :via => :sudo)
+      end
+      
       # create deployment group and add current user to it
       task :setup_user_perms do
         deprec2.groupadd(group)
@@ -127,7 +134,13 @@ Capistrano::Configuration.instance(:must_exist).load do
       desc "Symlink shared dirs."
       task :symlink_shared_dirs, :roles => [:app, :web] do
         if shared_dirs
-          shared_dirs.each { |dir| run "ln -nfs #{shared_path}/#{dir} #{current_path}/#{dir}" }
+          shared_dirs.each do |dir| 
+            path = File.split(dir)[0]
+            if path != '.'
+              deprec2.mkdir("#{current_path}/#{path}")
+            end
+            run "ln -nfs #{shared_path}/#{dir} #{current_path}/#{dir}" 
+          end
         end
       end
       
@@ -222,10 +235,10 @@ Capistrano::Configuration.instance(:must_exist).load do
       desc "setup and configure servers"
       task :setup_servers do
 
-        top.deprec.nginx.activate        
-        top.deprec.mongrel.config_gen
+        top.deprec.nginx.activate       
+        top.deprec.mongrel.create_mongrel_user_and_group 
+        top.deprec.mongrel.config_gen_project
         top.deprec.mongrel.config
-        top.deprec.mongrel.create_mongrel_user_and_group
         top.deprec.mongrel.activate
         top.deprec.rails.config_gen
         top.deprec.rails.config
