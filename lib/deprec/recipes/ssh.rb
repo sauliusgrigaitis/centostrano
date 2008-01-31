@@ -24,23 +24,27 @@ Capistrano::Configuration.instance(:must_exist).load do
         Dir.mkdir(auth_keys_dir)
       end
       
-      desc "Push apache config files to server"
+      desc "Push ssh config files to server"
       task :config do
         deprec2.push_configs(:ssh, SYSTEM_CONFIG_FILES[:ssh])
       end
 
+      desc "Start ssh"
       task :start do
         send(run_method, "/etc/init.d/ssh reload")
       end
     
+      desc "Stop ssh"
       task :stop do
         send(run_method, "/etc/init.d/ssh reload")
       end
     
+      desc "Restart ssh"
       task :restart do
         send(run_method, "/etc/init.d/ssh restart")
       end
     
+      desc "Reload ssh"
       task :reload do
         send(run_method, "/etc/init.d/ssh reload")
       end
