@@ -70,9 +70,11 @@ Capistrano::Configuration.instance(:must_exist).load do
         gem2.install 'rails'
         gem2.install 'rspec' # seems to be required to run rake db:migrate (???)
         # gem2.install 'builder' # XXX ? needed ?
-        install_gems_for_project
+        # install_gems_for_project
       end
       
+      # XXX some gems might need 'gem2.select' or has that been phased out?
+      #
       # task :install_gems_for_project do
       #     if gems_for_project
       #       gems_for_project.each { |gem| gem2.install(gem) }
