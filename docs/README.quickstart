@@ -1,7 +1,7 @@
 *** deprec2 ***
 
 cap deprec:rails:install_rails_stack
-cap setup
+cap deploy:setup
 cap deploy
 cap deprec:db:create
 cap deprec:db:migrate
