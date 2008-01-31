@@ -2,10 +2,7 @@ Capistrano::Configuration.instance(:must_exist).load do
 
   namespace :deprec do
     namespace :ruby do
-      
-      ext_zlib = 'cd ext/zlib; ruby extconf.rb; make;  make test; make install;'
-      ext_openssl = 'cd ext/openssl; ruby extconf.rb; make;  make test; make install;'
-      
+            
       SRC_PACKAGES[:ruby] = {
         :filename => 'ruby-1.8.6-p110.tar.gz',   
         :md5sum => "5d9f903eae163cda2374ef8fdba5c0a5  ruby-1.8.6-p110.tar.gz", 
@@ -18,8 +15,7 @@ Capistrano::Configuration.instance(:must_exist).load do
           ;
           ).reject{|arg| arg.match '#'}.join(' '),
         :make => 'make;',
-        :install => 'make install;',
-        :post_install => "#{ext_zlib} #{ext_openssl}"
+        :install => 'make install;'
       }
   
       task :install do
@@ -29,7 +25,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       end
       
       task :install_deps do
-        apt.install( {:base => %w(zlib1g-dev libssl-dev)}, :stable )
+        apt.install( {:base => %w(zlib1g-dev libssl-dev libncurses5-dev libreadline5-dev)}, :stable )
       end
 
     end
@@ -40,11 +36,11 @@ Capistrano::Configuration.instance(:must_exist).load do
     namespace :rubygems do
   
       SRC_PACKAGES[:rubygems] = {
-        :filename => 'rubygems-0.9.5.tgz',   
-        :md5sum => "91f7036a724e34cc66dd8d09348733d9  rubygems-0.9.5.tgz", 
-        :dir => 'rubygems-0.9.5',  
-        :url => "http://rubyforge.org/frs/download.php/28174/rubygems-0.9.5.tgz",
-        :unpack => "tar zxf rubygems-0.9.5.tgz;",
+        :filename => 'rubygems-1.0.1.tgz',   
+        :md5sum => "0d5851084955c327ee1dc9cbd631aa5f  rubygems-1.0.1.tgz", 
+        :dir => 'rubygems-1.0.1',  
+        :url => "http://rubyforge.org/frs/download.php/29548/rubygems-1.0.1.tgz",
+        :unpack => "tar zxf rubygems-1.0.1.tgz;",
         :install => 'ruby setup.rb;'
       }
       
