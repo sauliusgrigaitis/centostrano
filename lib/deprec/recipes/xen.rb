@@ -9,23 +9,23 @@ Capistrano::Configuration.instance(:must_exist).load do
                 
         {:template => "xend-config.sxp.erb",
         :path => '/etc/xen/xend-config.sxp',
-        :mode => '0644',
+        :mode => 0644,
         :owner => 'root:root'},
         
         {:template => "xen-tools.conf.erb",
          :path => '/etc/xen-tools/xen-tools.conf',
-         :mode => '0644',
+         :mode => 0644,
          :owner => 'root:root'},
          
         {:template => "xm.tmpl.erb",
          :path => '/etc/xen-tools/xm.tmpl',
-         :mode => '0644',
+         :mode => 0644,
          :owner => 'root:root'},
          
          # This one is a bugfix for gutsy 
         {:template => "15-disable-hwclock",
          :path => '/usr/lib/xen-tools/gutsy.d/15-disable-hwclock',
-         :mode => '0755',
+         :mode => 0755,
          :owner => 'root:root'}
          
       ]

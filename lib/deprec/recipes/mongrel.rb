@@ -31,7 +31,7 @@ Capistrano::Configuration.instance(:must_exist).load do
 
         {:template => 'mongrel_cluster-init-script',
          :path => '/etc/init.d/mongrel_cluster',
-         :mode => '0755',
+         :mode => 0755,
          :owner => 'root:root'}
       
       ]
@@ -40,7 +40,7 @@ Capistrano::Configuration.instance(:must_exist).load do
 
         {:template => 'mongrel_cluster.yml',
          :path => 'cluster.yml',
-         :mode => '0644',
+         :mode => 0644,
          :owner => 'root:root'}
       
       ]

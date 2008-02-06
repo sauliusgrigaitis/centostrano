@@ -49,67 +49,67 @@ Capistrano::Configuration.instance(:must_exist).load do
         
         {:template => 'nagios.cfg.erb',
         :path => '/usr/local/nagios/etc/nagios.cfg',
-        :mode => '0664',
+        :mode => 0664,
         :owner => 'nagios:nagios'},
 
         {:template => 'resource.cfg.erb',
         :path => '/usr/local/nagios/etc/resource.cfg',
-        :mode => '0660',
+        :mode => 0660,
         :owner => 'nagios:nagios'},
         
         {:template => 'cgi.cfg.erb',
         :path => '/usr/local/nagios/etc/cgi.cfg',
-        :mode => '0664',
+        :mode => 0664,
         :owner => 'nagios:nagios'},
 
         {:template => 'htpasswd.users',
         :path => '/usr/local/nagios/etc/htpasswd.users',
-        :mode => '0664',
+        :mode => 0664,
         :owner => 'nagios:nagios'},
 
         {:template => 'templates.cfg.erb',
         :path => '/usr/local/nagios/etc/objects/templates.cfg',
-        :mode => '0664',
+        :mode => 0664,
         :owner => 'nagios:nagios'},
         
         {:template => 'commands.cfg.erb',
         :path => '/usr/local/nagios/etc/objects/commands.cfg',
-        :mode => '0664',
+        :mode => 0664,
         :owner => 'nagios:nagios'},
         
         {:template => 'timeperiods.cfg.erb',
         :path => '/usr/local/nagios/etc/objects/timeperiods.cfg',
-        :mode => '0664',
+        :mode => 0664,
         :owner => 'nagios:nagios'},
         
         {:template => 'localhost.cfg.erb',
         :path => '/usr/local/nagios/etc/objects/localhost.cfg',
-        :mode => '0664',
+        :mode => 0664,
         :owner => 'nagios:nagios'},
         
         {:template => 'contacts.cfg.erb',
         :path => '/usr/local/nagios/etc/objects/contacts.cfg',
-        :mode => '0664',
+        :mode => 0664,
         :owner => 'nagios:nagios'},
         
         {:template => 'hosts.cfg.erb',
         :path => '/usr/local/nagios/etc/objects/hosts.cfg',
-        :mode => '0664',
+        :mode => 0664,
         :owner => 'nagios:nagios'},
         
         {:template => 'services.cfg.erb',
         :path => '/usr/local/nagios/etc/objects/services.cfg',
-        :mode => '0664',
+        :mode => 0664,
         :owner => 'nagios:nagios'},
         
         {:template => 'localhost.cfg.erb',
         :path => '/usr/local/nagios/etc/objects/localhost.cfg',
-        :mode => '0664',
+        :mode => 0664,
         :owner => 'nagios:nagios'},
         
         {:template => 'nagios_apache_vhost.conf.erb',
          :path => "conf/nagios_apache_vhost.conf",
-         :mode => '0644',
+         :mode => 0644,
          :owner => 'root:root'}
       
       ]
@@ -253,12 +253,12 @@ Capistrano::Configuration.instance(:must_exist).load do
         
         {:template => 'nrpe.xinetd.erb',
          :path => "/etc/xinetd.d/nrpe",
-         :mode => '0644',
+         :mode => 0644,
          :owner => 'root:root'},
          
         {:template => 'nrpe.cfg.erb',
          :path => "/usr/local/nagios/etc/nrpe.cfg",
-         :mode => '0644',
+         :mode => 0644,
          :owner => 'nagios:nagios'} # XXX hard coded file owner is bad...
                                     # It's done here because we aren't using 
                                     # lazy eval in hash constant.

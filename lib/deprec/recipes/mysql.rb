@@ -29,7 +29,7 @@ Capistrano::Configuration.instance(:must_exist).load do
         
         {:template => "my.cnf.erb",
          :path => '/etc/mysql/my.cnf',
-         :mode => '0644',
+         :mode => 0644,
          :owner => 'root:root'}
       ]
       

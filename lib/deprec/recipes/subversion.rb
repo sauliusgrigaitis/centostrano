@@ -67,7 +67,7 @@ Capistrano::Configuration.instance(:must_exist).load do
   task :create_repos, :roles => :scm do
     set :svn_account, top.user
     grant_user_access
-    deprec2.mkdir(repos_root, :mode => '2775', :group => scm_group, :via => :sudo)
+    deprec2.mkdir(repos_root, :mode => 02775, :group => scm_group, :via => :sudo)
     sudo "svnadmin verify #{repos_root} > /dev/null 2>&1 || sudo svnadmin create #{repos_root}"
     sudo "chmod -R g+w #{repos_root}"
   end

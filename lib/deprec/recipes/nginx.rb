@@ -49,22 +49,22 @@ Capistrano::Configuration.instance(:must_exist).load do
 
         {:template => 'nginx-init-script',
           :path => '/etc/init.d/nginx',
-          :mode => '0755',
+          :mode => 0755,
           :owner => 'root:root'},
 
         {:template => 'nginx.conf.erb',
           :path => "/usr/local/nginx/conf/nginx.conf",
-          :mode => '0644',
+          :mode => 0644,
           :owner => 'root:root'},
 
         {:template => 'mime.types.erb',
           :path => "/usr/local/nginx/conf/mime.types",
-          :mode => '0644',
+          :mode => 0644,
           :owner => 'root:root'},
 
         {:template => 'nothing.conf',
           :path => "/usr/local/nginx/conf/vhosts/nothing.conf",
-          :mode => '0644',
+          :mode => 0644,
           :owner => 'root:root'}
       ]
 

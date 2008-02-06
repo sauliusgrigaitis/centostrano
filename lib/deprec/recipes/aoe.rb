@@ -30,7 +30,7 @@ Capistrano::Configuration.instance(:must_exist).load do
 
         {:template => "aoetools.erb",
           :path => '/etc/default/aoetools',
-          :mode => '0644',
+          :mode => 0644,
           :owner => 'root:root'}
 
         ]

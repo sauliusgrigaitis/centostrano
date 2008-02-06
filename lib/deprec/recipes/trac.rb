@@ -67,19 +67,19 @@ Capistrano::Configuration.instance(:must_exist).load do
   SYSTEM_CONFIG_FILES[:trac] = [
     {:template => 'tracd-init.erb',
      :path => '/etc/init.d/tracd',
-     :mode => '0755',
+     :mode => 0755,
      :owner => 'root:root'}
   ]
   
   PROJECT_CONFIG_FILES[:trac] = [
     {:template => 'trac.ini.erb',
      :path => "conf/trac.ini",
-     :mode => '0644',
+     :mode => 0644,
      :owner => 'root:root'},
      
     {:template => 'apache_vhost.conf.erb',
      :path => "conf/trac_apache_vhost.conf",
-     :mode => '0644',
+     :mode => 0644,
      :owner => 'root:root'}
   ]
   

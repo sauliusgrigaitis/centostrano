@@ -52,7 +52,7 @@ Capistrano::Configuration.instance(:must_exist).load do
 
     {:template => 'rails_nginx_vhost.conf.erb',
       :path => "rails_nginx_vhost.conf", 
-      :mode => '0644',
+      :mode => 0644,
       :owner => 'root:root'}
     ]
 
@@ -101,13 +101,16 @@ Capistrano::Configuration.instance(:must_exist).load do
 
 
       task :create_config_dir do
-        deprec2.mkdir("#{shared_path}/config", :group => group, :mode => '0775', :via => :sudo)
+        deprec2.mkdir("#{shared_path}/config", :group => group, :mode => 0775, :via => :sudo)
       end
       
       # create deployment group and add current user to it
       task :setup_user_perms do
         deprec2.groupadd(group)
         deprec2.add_user_to_group(user, group)
+        # we've just added ourself to a group - need to teardown connection
+        # so that next command uses new session where we belong in group 
+        deprec2.teardown_connections
       end
 
       # Setup database server.
@@ -117,8 +120,8 @@ Capistrano::Configuration.instance(:must_exist).load do
 
       # setup extra paths required for deployment
       task :setup_paths, :roles => :app do
-        deprec2.mkdir(deploy_to, :mode => '0775', :group => group, :via => :sudo)
-        deprec2.mkdir(shared_path, :mode => '0775', :group => group, :via => :sudo)
+        deprec2.mkdir(deploy_to, :mode => 0775, :group => group, :via => :sudo)
+        deprec2.mkdir(shared_path, :mode => 0775, :group => group, :via => :sudo)
       end
       
       # Symlink list of files and dirs from shared to current

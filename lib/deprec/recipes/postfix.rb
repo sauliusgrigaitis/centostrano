@@ -18,22 +18,22 @@ Capistrano::Configuration.instance(:must_exist).load do
         
         {:template => "main.cf.erb",
          :path => '/etc/postfix/main.cf',
-         :mode => '0644',
+         :mode => 0644,
          :owner => 'root:root'},
          
         {:template => "master.cf.erb",
          :path => '/etc/postfix/master.cf',
-         :mode => '0644',
+         :mode => 0644,
          :owner => 'root:root'},
           
          {:template => "dynamicmaps.cf.erb",
           :path => '/etc/postfix/dynamicmaps.cf',
-          :mode => '0644',
+          :mode => 0644,
           :owner => 'root:root'},
           
          {:template => "aliases.erb",
           :path => '/etc/aliases',
-          :mode => '0644',
+          :mode => 0644,
           :owner => 'root:root'}
          
       ]

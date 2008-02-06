@@ -7,12 +7,12 @@ Capistrano::Configuration.instance(:must_exist).load do
         
         {:template => "sshd_config.erb",
          :path => '/etc/ssh/sshd_config',
-         :mode => '0644',
+         :mode => 0644,
          :owner => 'root:root'},
          
         {:template => "ssh_config.erb",
          :path => '/etc/ssh/ssh_config',
-         :mode => '0644',
+         :mode => 0644,
          :owner => 'root:root'}
       ]
       
@@ -75,13 +75,12 @@ Capistrano::Configuration.instance(:must_exist).load do
             exit
           end
         
-          deprec2.mkdir '.ssh', :mode => '0700'
-          put(ssh_options[:keys].collect{|key| File.read(key+'.pub')}.join("\n"),
-            '.ssh/authorized_keys', :mode => 0600 )
+          deprec2.mkdir '.ssh', :mode => 0700
+          put(ssh_options[:keys].collect{|key| File.read(key+'.pub')}.join("\n"), '.ssh/authorized_keys', :mode => 0600 )
           
         else  
           
-          deprec2.mkdir "/home/#{target_user}/.ssh", :mode => '0700', :owner => "#{target_user}.users", :via => :sudo
+          deprec2.mkdir "/home/#{target_user}/.ssh", :mode => 0700, :owner => "#{target_user}.users", :via => :sudo
           std.su_put File.read("config/ssh/authorized_keys/#{target_user}"), "/home/#{target_user}/.ssh/authorized_keys", '/tmp/', :mode => 0600
           sudo "chown #{target_user}.users /home/#{target_user}/.ssh/authorized_keys"
           

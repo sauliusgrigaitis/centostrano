@@ -35,7 +35,7 @@ Capistrano::Configuration.instance(:must_exist).load do
         
         {:template => "example.conf.erb",
          :path => '/etc/example/example.conf',
-         :mode => '0755',
+         :mode => 0755,
          :owner => 'root:root'}
          
       ]
@@ -44,7 +44,7 @@ Capistrano::Configuration.instance(:must_exist).load do
         
         {:template => "example.conf.erb",
          :path => 'conf/example.conf',
-         :mode => '0755',
+         :mode => 0755,
          :owner => 'root:root'}
       ]
       

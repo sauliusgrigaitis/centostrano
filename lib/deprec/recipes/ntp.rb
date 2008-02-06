@@ -23,7 +23,7 @@ Capistrano::Configuration.instance(:must_exist).load do
 
         {:template => 'ntp.conf.erb',
           :path => '/etc/ntp.conf',
-          :mode => '0755',
+          :mode => 0755,
           :owner => 'root:root'}
       ]
 
