@@ -164,8 +164,9 @@ Capistrano::Configuration.instance(:must_exist).load do
 
         sudo "chgrp -R #{mongrel_group} #{tmp_dir} #{shared_dir}"
         sudo "chmod -R g+w #{tmp_dir} #{shared_dir}" 
-        # set owner and group of mongrels file (if they exist)
+        # set owner and group of log files 
         files.each { |file|
+          sudo "touch #{file}"
           sudo "chown #{mongrel_user} #{file} || exit 0"   
           sudo "chgrp #{mongrel_group} #{file} || exit 0"  
         } 
