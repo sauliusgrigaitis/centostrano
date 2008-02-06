@@ -1,7 +1,7 @@
 .gitignore
 COPYING
 History.txt
-LICENCE
+LICENSE
 Manifest.txt
 README.txt
 THANKS
@@ -39,7 +39,6 @@ lib/deprec/recipes/nginx.rb
 lib/deprec/recipes/ntp.rb
 lib/deprec/recipes/php.rb
 lib/deprec/recipes/postfix.rb
-lib/deprec/recipes/postgres.rb
 lib/deprec/recipes/rails.rb
 lib/deprec/recipes/ruby.rb
 lib/deprec/recipes/ssh.rb
