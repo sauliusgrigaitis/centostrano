@@ -22,11 +22,22 @@ Capistrano::Configuration.instance(:must_exist).load do
          :mode => 0644,
          :owner => 'root:root'},
          
+        {:template => "xendomains.erb",
+         :path => '/etc/default/xendomains',
+         :mode => 0755,
+         :owner => 'root:root'},
+         
          # This one is a bugfix for gutsy 
         {:template => "15-disable-hwclock",
          :path => '/usr/lib/xen-tools/gutsy.d/15-disable-hwclock',
          :mode => 0755,
-         :owner => 'root:root'}
+         :owner => 'root:root'},
+         
+         # So is this - xendomains fails to shut down domains on system shutdown
+         {:template => "xend-init.erb",
+          :path => '/etc/init.d/xend',
+          :mode => 0755,
+          :owner => 'root:root'}
          
       ]
       
