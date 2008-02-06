@@ -1,7 +1,7 @@
 # Copyright 2006-2008 by Mike Bailey. All rights reserved.
 Capistrano::Configuration.instance(:must_exist).load do 
 
-  set :database_yml_in_scm, false
+  set :database_yml_in_scm, true
   set :app_symlinks, nil
   set :rails_env, 'production'
   set :gems_for_project, nil # Array of gems to be installed for app
@@ -108,6 +108,8 @@ Capistrano::Configuration.instance(:must_exist).load do
       task :setup_user_perms do
         deprec2.groupadd(group)
         deprec2.add_user_to_group(user, group)
+        deprec2.groupadd(mongrel_group)
+        deprec2.add_user_to_group(user, mongrel_group)
         # we've just added ourself to a group - need to teardown connection
         # so that next command uses new session where we belong in group 
         deprec2.teardown_connections
