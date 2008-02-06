@@ -120,7 +120,10 @@ Capistrano::Configuration.instance(:must_exist).load do
 
       desc "Restart Nginx"
       task :restart, :roles => :web do
-        send(run_method, "/etc/init.d/nginx restart")
+        # So that restart will work even if nginx is not running
+        # we call stop and ignore the return code. We then start it.
+        send(run_method, "/etc/init.d/nginx stop; exit")
+        send(run_method, "/etc/init.d/nginx start")
       end
 
       desc "Reload Nginx"
