@@ -79,7 +79,7 @@ Capistrano::Configuration.instance(:must_exist).load do
   # in that case, your use will need the correct privileges
   default :run_method, 'sudo' 
 
-  default(:backup_dir) { Capistrano.ui.ask 'directory to store backups'}  
+  default(:backup_dir) { Capistrano::CLI.ui.ask 'directory to store backups'}  
 
   # XXX rails deploy stuff
   default(:deploy_to)    { File.join( %w(/ var www apps) << application ) }
