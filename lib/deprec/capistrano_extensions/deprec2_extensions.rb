@@ -42,7 +42,7 @@ module Deprec2
       puts 'You need to specify a path to render the template to!' unless path
       exit unless path
       sudo "test -d #{File.dirname(path)} || sudo mkdir -p #{File.dirname(path)}"
-      std.su_put rendered_template, path, '/tmp/', :mode => mode.to_i
+      std.su_put rendered_template, path, '/tmp/', :mode => mode
       sudo "chown #{owner} #{path}" if defined?(owner)
     elsif path 
       # render to local file
@@ -122,16 +122,27 @@ module Deprec2
       end
       full_local_path = File.join('config', app, file[:path])
       sudo "test -d #{File.dirname(full_remote_path)} || sudo mkdir -p #{File.dirname(full_remote_path)}"
-      std.su_put File.read(full_local_path), full_remote_path, '/tmp/', :mode=>file['mode']
       #
       # XXX work this in to check for per-host variants of config files
       #
-      # servers = find_servers_for_task(current_task)
-      # servers.each do |server|
-      #   puts server(..., :hosts => server)
+      # if any variants of this file exist for this host (they have -hostname at end)
+      #   servers = find_servers_for_task(current_task)
+      #   servers.each do |server|
+      #     puts server(..., :hosts => server) # XXX find a way to restrict su_put to one host
+      #   end
+      # else
+      #   # just send them the normal way, it's quicker in parallel
+        std.su_put File.read(full_local_path), full_remote_path, '/tmp/', :mode=>file[:mode]
       # end
       #
       sudo "chown #{file[:owner]} #{full_remote_path}"
+    end
+  end
+  
+  def teardown_connections
+    sessions.keys.each do |server|
+         sessions[server].close
+         sessions.delete(server)
     end
   end
 
@@ -180,14 +191,14 @@ module Deprec2
     # XXX need to make sudo commands wrap the whole command (sh -c ?)
     # XXX removed the extra 'sudo' from after the '||' - need something else
     invoke_command "sh -c 'test -d #{path} || mkdir -p #{path}'", :via => via
-    invoke_command "chmod #{options[:mode]} #{path}", :via => via if options[:mode]
+    invoke_command "chmod #{sprintf("%3o",options[:mode]||0755)} #{path}", :via => via if options[:mode]
     invoke_command "chown -R #{options[:owner]} #{path}", :via => via if options[:owner]
     groupadd(options[:group], :via => via) if options[:group]
     invoke_command "chgrp -R #{options[:group]} #{path}", :via => via if options[:group]
   end
   
   def create_src_dir
-    mkdir(src_dir, :mode => '0775', :group => group_src, :via => :sudo)
+    mkdir(src_dir, :mode => 0775, :group => group_src, :via => :sudo)
   end
   
   # download source package if we don't already have it
