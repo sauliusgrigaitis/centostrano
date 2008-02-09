@@ -8,7 +8,7 @@ SPEC = Gem::Specification.new do |spec|
   spec.email = 'mike@bailey.net.au'
   spec.homepage = 'http://www.deprec.org/'
   spec.rubyforge_project = 'deprec'
-  spec.version = '1.99.2'
+  spec.version = '1.99.3'
   spec.summary = 'deployment recipes for capistrano'
   spec.description = <<-EOF
       This project provides libraries of Capistrano tasks and extensions to 
@@ -21,9 +21,10 @@ SPEC = Gem::Specification.new do |spec|
   # spec.required_ruby_version = '>= 1.6.8' # I don't know
   spec.add_dependency('capistrano', '> 2.0.0')
   candidates = Dir.glob("{bin,docs,lib,test,resources}/**/*") 
+  candidates.concat(%w(COPYING LICENSE README.txt THANKS))
   spec.files = candidates.delete_if do |item| 
     item.include?("CVS") || item.include?("rdoc") 
   end
-  spec.default_executable = "deprec"
-  spec.executables = ["deprec"]
+  spec.default_executable = "depify"
+  spec.executables = ["depify"]
 end
