@@ -13,9 +13,6 @@ cap deprec:mysql:config
 # Install your Rails app
 cap deploy:setup
 cap deploy
-	# you currently need to manually copy your database.yml to the host
-	# /var/www/apps/your_app_name/shared/config/database.yml
-	# this will be automated soon
 cap deprec:db:create
 cap deprec:db:migrate
 cap deprec:nginx:restart
