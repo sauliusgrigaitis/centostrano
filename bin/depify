@@ -34,8 +34,8 @@ def unindent(string)
   string.strip.gsub(/^#{indentation}/, "")
 end
 
-files = {
-  ".caprc" => unindent(<<-FILE),
+
+caprc = unindent(<<-FILE),
   # .caprc - Capistrano configs (added by deprec gem [www.deprec.org])
   #
   # Include settings that you want active whenever you use Capistrano
@@ -60,7 +60,8 @@ files = {
   # Stop some annoying warnings
   # ssh_options[:paranoid] = false
   FILE
-  
+
+files = {
   "Capfile" => unindent(<<-FILE),
     load 'deploy' if respond_to?(:namespace) # cap2 differentiator
     Dir['vendor/plugins/*/recipes/*.rb'].each { |plugin| load(plugin) }
@@ -96,13 +97,7 @@ files = {
   FILE
 }
 
-base = ARGV.shift
-files.each do |file, content|
-  if file == '.caprc'
-    file = File.join(ENV['HOME'], file)
-  else
-    file = File.join(base, file)
-  end
+def create_file(file, content)
   if !File.exists?(File.dirname(file))
     puts "[add] creating directory `#{File.dirname(file)}'"
     Dir.mkdir(File.dirname(file))
@@ -115,6 +110,20 @@ files.each do |file, content|
     puts "[add] writing `#{file}'"
     File.open(file, "w") { |f| f.write(content) }
   end
+end
+
+create_file(File.join(ENV['HOME'], '.caprc'), caprc)
+
+base = ARGV.shift
+config_dir = File.join(base,'config')
+if File.directory?(config_dir)
+  files.each do |file, content|
+    create_file(File.join(base, file), content)
+  end
+else
+  warn "[warn] directory `#{config_dir}' does not exist"
+  warn "[skip] '#{base}/Capfile'"
+  warn "[skip] '#{base}/config/deploy.rb'"
 end
 
 puts "[done] capified!"
