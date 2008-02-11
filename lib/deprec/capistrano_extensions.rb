@@ -1,11 +1,8 @@
 # Copyright 2006-2008 by Mike Bailey. All rights reserved.
 require 'capistrano'
 
-# DEPREC_TEMPLATES_BASE = File.join(File.dirname(__FILE__), '..', 'templates')
-
 module Deprec2
-  DEPREC_TEMPLATES_BASE = File.join(File.dirname(__FILE__), '..', 'templates')
-  @@template_dir = File.join(File.dirname(__FILE__), '..', 'templates')
+  DEPREC_TEMPLATES_BASE = File.join(File.dirname(__FILE__), 'templates')
 
   # Render template (usually a config file) 
   # 
