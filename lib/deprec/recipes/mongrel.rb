@@ -38,7 +38,7 @@ Capistrano::Configuration.instance(:must_exist).load do
         
       PROJECT_CONFIG_FILES[:mongrel] = [
 
-        {:template => 'mongrel_cluster.yml',
+        {:template => 'mongrel_cluster.yml.erb',
          :path => 'cluster.yml',
          :mode => 0644,
          :owner => 'root:root'}
@@ -58,7 +58,6 @@ Capistrano::Configuration.instance(:must_exist).load do
       end
       
       task :config_gen_project do
-        create_mongrel_user_and_group
         PROJECT_CONFIG_FILES[:mongrel].each do |file|
           deprec2.render_template(:mongrel, file)
         end  
@@ -75,6 +74,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       end
       
       task :config_project do
+        create_mongrel_user_and_group
         deprec2.push_configs(:mongrel, PROJECT_CONFIG_FILES[:mongrel])
         symlink_mongrel_cluster
       end
@@ -144,8 +144,6 @@ Capistrano::Configuration.instance(:must_exist).load do
       
       task :restore, :roles => :app do
       end
-      
-
       
       desc "create user and group for mongel to run as"
       task :create_mongrel_user_and_group, :roles => :app do
