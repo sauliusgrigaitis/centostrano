@@ -19,7 +19,7 @@ Capistrano::Configuration.instance(:must_exist).load do
         } 
       set(:heartbeat_auto_failback) { 
         Capistrano::CLI.ui.ask 'Should resource(s) automatically fail back to its "primary" node ' do |q|
-          q.default = 'no'
+          q.default = 'yes'
         end
       }
       
