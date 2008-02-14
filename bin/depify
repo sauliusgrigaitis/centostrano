@@ -126,4 +126,4 @@ else
   warn "[skip] '#{base}/config/deploy.rb'"
 end
 
-puts "[done] capified!"
+puts "[done] depified!"
