@@ -231,8 +231,8 @@ Capistrano::Configuration.instance(:must_exist).load do
         top.deprec.mongrel.config_system
 
         # Install mysql
-        # top.deprec.mysql.install
-        # top.deprec.mysql.start
+        top.deprec.mysql.install
+        top.deprec.mysql.start
         
         # Install rails
         top.deprec.rails.install
