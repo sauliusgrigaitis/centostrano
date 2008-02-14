@@ -1,0 +1,17 @@
+<% mongrel_servers.times do |counter| -%>
+  check process mongrel-<%=8000+counter%> with pidfile <%=deploy_to%>/shared/pids/mongrel.<%=8000+counter%>.pid
+	group mongrel
+	start program = "/usr/local/bin/ruby /usr/local/bin/mongrel_rails start -d -e production -p <%=8000+counter%> -a 127.0.0.1 -P <%= deploy_to %>/shared/pids/mongrel.<%=8000+counter%>.pid -c /var/www/apps/xman/current"
+	stop program = "/usr/local/bin/ruby /usr/local/bin/mongrel_rails stop stop -P /var/www/apps/xman/shared/pids/mongrel.<%=8000+counter%>.pid"
+	
+	if failed host 127.0.0.1 port <%=8000+counter%> protocol http
+    	with timeout 10 seconds
+    	then alert
+
+	if totalmem > 100 Mb then restart
+	if cpu > 60% for 2 cycles then alert
+	if cpu > 80% for 5 cycles then restart
+	if loadavg(5min) > 10 for 8 cycles then restart
+	if 3 restarts within 5 cycles then timeout
+
+<% end -%>
