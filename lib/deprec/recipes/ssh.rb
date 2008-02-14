@@ -30,6 +30,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       desc "Push ssh config files to server"
       task :config do
         deprec2.push_configs(:ssh, SYSTEM_CONFIG_FILES[:ssh])
+        restart
       end
 
       desc "Start ssh"
