@@ -4,6 +4,7 @@ cap deprec:svn:install
 cap deprec:svn:setup
 
 
+# XXX Not tested on deprec2
 # 
 # 
 # Installs subversion and trac software on server.
