@@ -28,9 +28,11 @@ Capistrano::Configuration.instance(:must_exist).load do
           end
         end
         
+        new_password = Capistrano::CLI.ui.ask("Enter new password for #{target_user}") { |q| q.echo = false }
+        
         deprec2.useradd(target_user, :shell => '/bin/bash')
-        puts "Setting pasword for new account"
-        deprec2.invoke_with_input("passwd #{target_user}", /UNIX password/)
+
+        deprec2.invoke_with_input("passwd #{target_user}", /UNIX password/, new_password)
         
         if make_admin.grep(/y/i)
           deprec2.groupadd('admin')
@@ -56,7 +58,9 @@ Capistrano::Configuration.instance(:must_exist).load do
         target_user = Capistrano::CLI.ui.ask "Enter user to change password for" do |q|
           q.default = user if user.is_a?(String)
         end
-        deprec2.invoke_with_input("passwd #{target_user}", /UNIX password/) 
+        new_password = Capistrano::CLI.ui.ask("Enter new password for #{target_user}") { |q| q.echo = false }
+  
+        deprec2.invoke_with_input("passwd #{target_user}", /UNIX password/, new_pasword) 
       end
       
       desc "Add user to group"
