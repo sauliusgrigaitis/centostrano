@@ -46,12 +46,13 @@ module Deprec2
       full_path = File.join('config', app.to_s, path)
       path_dir = File.dirname(full_path)
       if File.exists?(full_path)
-        puts
-        puts "About to write #{full_path}"
-        if overwrite?
+        if IO.read(full_path) == rendered_template
+          puts "[skip] File exists and is identical (#{full_path})."
+          return false
+        elsif overwrite?(full_path, rendered_template)
           File.delete(full_path)
         else
-          puts "Not overwriting #{full_path}"
+          puts "[skip] Not overwriting #{full_path}"
           return false
         end
       end
@@ -64,7 +65,7 @@ module Deprec2
     end
   end
   
-  def overwrite?
+  def overwrite?(full_path, rendered_template)
     if defined?(overwrite_all)      
       if overwrite_all == true
         return true
@@ -75,7 +76,8 @@ module Deprec2
     
     # XXX add :always and :never later - not sure how to set persistent value from here
     # response = Capistrano::CLI.ui.ask "File exists. Overwrite? ([y]es, [n]o, [a]lways, n[e]ver)" do |q|
-    response = Capistrano::CLI.ui.ask "File exists. Overwrite? ([y]es, [n]o)" do |q|
+    puts
+    response = Capistrano::CLI.ui.ask "File exists. Overwrite? ([y]es, [n]o, [d]iff)" do |q|
       q.default = 'n'
     end
     
@@ -84,6 +86,17 @@ module Deprec2
       return true
     when 'n'
       return false
+    when 'd'
+      require 'tempfile'
+      tf = Tempfile.new("deprec_diff") 
+      tf.puts(rendered_template)
+      tf.close
+      puts
+      puts "Running diff -u current_file new_file_if_you_overwrite"
+      puts
+      system "diff -u #{full_path} #{tf.path} | less"
+      puts
+      overwrite?(full_path, rendered_template)
     # XXX add :always and :never later - not sure how to set persistent value from here  
     # when 'a'
     #   set :overwrite_all, true
@@ -257,8 +270,8 @@ module Deprec2
   #
   #  run_with_input 'ssh-keygen ...', /^Are you sure you want to overwrite\?/
 
-  def run_with_input(shell_command, input_query=/^Password/)
-    handle_command_with_input(:run, shell_command, input_query)
+  def run_with_input(shell_command, input_query=/^Password/, response=nil)
+    handle_command_with_input(:run, shell_command, input_query, response)
   end
 
   ##
@@ -269,12 +282,12 @@ module Deprec2
   #
   # +input_query+ is a regular expression
 
-  def sudo_with_input(shell_command, input_query=/^Password/)
-    handle_command_with_input(:sudo, shell_command, input_query)
+  def sudo_with_input(shell_command, input_query=/^Password/, response=nil)
+    handle_command_with_input(:sudo, shell_command, input_query, response)
   end
 
-  def invoke_with_input(shell_command, input_query=/^Password/)
-    handle_command_with_input(run_method, shell_command, input_query)
+  def invoke_with_input(shell_command, input_query=/^Password/, response=nil)
+    handle_command_with_input(run_method, shell_command, input_query, response)
   end
 
   ##
@@ -330,15 +343,20 @@ module Deprec2
   # shell_command: The command to run
   # input_query: A regular expression matching a request for input: /^Please enter your password/
 
-  def handle_command_with_input(local_run_method, shell_command, input_query)
+  def handle_command_with_input(local_run_method, shell_command, input_query, response=nil)
     send(local_run_method, shell_command) do |channel, stream, data|
       logger.info data, channel[:host]
       if data =~ input_query
-        pass = ::Capistrano::CLI.password_prompt "#{data}"
-        channel.send_data "#{pass}\n"
+        if response
+          channel.send_data "#{response}\n"
+        else 
+          response = ::Capistrano::CLI.password_prompt "#{data}"
+          channel.send_data "#{response}\n"
+        end
       end
     end
   end
+  
   
 end
 
