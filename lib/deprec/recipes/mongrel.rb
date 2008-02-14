@@ -165,8 +165,9 @@ Capistrano::Configuration.instance(:must_exist).load do
         # set owner and group of log files 
         files.each { |file|
           sudo "touch #{file}"
-          sudo "chown #{mongrel_user} #{file} || exit 0"   
-          sudo "chgrp #{mongrel_group} #{file} || exit 0"  
+          sudo "chown #{mongrel_user} #{file}"   
+          sudo "chgrp #{mongrel_group} #{file}" 
+          sudo "chmod g+w #{file}"   
         } 
       end
       
