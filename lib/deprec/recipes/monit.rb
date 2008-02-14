@@ -4,13 +4,16 @@ Capistrano::Configuration.instance(:must_exist).load do
         
   set :monit_user,  'monit'
   set :monit_group, 'monit'
-    
+  set :monit_confd_dir, '/etc/monit.d'
+  
+  # Upstream changes: http://www.tildeslash.com/monit/dist/CHANGES.txt  
+  # Ubuntu package version = monit-4.8.1  
   SRC_PACKAGES[:monit] = {
-    :filename => 'monit-4.10.tar.gz',   
-    :md5sum => "76ca10ba7a3da3736b8540edca16c70a  monit-4.10.tar.gz", 
-    :dir => 'monit-4.10',  
-    :url => "http://www.tildeslash.com/monit/dist/monit-4.10.tar.gz",
-    :unpack => "tar zxf monit-4.10.tar.gz;",
+    :filename => 'monit-4.10.1.tar.gz',   
+    :md5sum => "d3143b0bbd79b53f1b019d2fc1dae656  monit-4.10.1.tar.gz", 
+    :dir => 'monit-4.10.1',  
+    :url => "http://www.tildeslash.com/monit/dist/monit-4.10.1.tar.gz",
+    :unpack => "tar zxf monit-4.10.1.tar.gz;",
     :configure => %w(
       ./configure
       ;
@@ -24,38 +27,29 @@ Capistrano::Configuration.instance(:must_exist).load do
     install_deps
     deprec2.download_src(SRC_PACKAGES[:monit], src_dir)
     deprec2.install_from_src(SRC_PACKAGES[:monit], src_dir)
-    create_monit_user
   end
   
   # install dependencies for monit
   task :install_deps do
-    apt.install( {:base => %w(flex bison)}, :stable )
-  end
-  
-  task :create_nginx_user do
-    deprec2.groupadd(nginx_group)
-    deprec2.useradd(nginx_user, :group => nginx_group, :homedir => false)
+    apt.install( {:base => %w(flex bison libssl-dev)}, :stable )
   end
     
-  SYSTEM_CONFIG_FILES[:nginx] = [
+  SYSTEM_CONFIG_FILES[:monit] = [
     
-    {:template => 'nginx-init-script',
-     :path => '/etc/init.d/nginx',
+    {:template => 'monit-init-script',
+     :path => '/etc/init.d/monit',
      :mode => 0755,
      :owner => 'root:root'},
      
-    {:template => 'nginx.conf.erb',
-     :path => "/usr/local/nginx/conf/nginx.conf",
-     :mode => 0644,
+    {:template => 'monitrc.erb',
+     :path => "/etc/monitrc",
+     :mode => 0700,
      :owner => 'root:root'},
       
-    {:template => 'mime.types.erb',
-     :path => "/usr/local/nginx/conf/mime.types",
-     :mode => 0644,
+    {:template => 'nothing',
+     :path => "/etc/monit.d/nothing",
+     :mode => 0700,
      :owner => 'root:root'}
-  ]
-  
-  PROJECT_CONFIG_FILES[:nginx] = [
   ]
   
   desc <<-DESC
@@ -65,64 +59,58 @@ Capistrano::Configuration.instance(:must_exist).load do
   The can be pushed to the server with the :config task.
   DESC
   task :config_gen do
-    SYSTEM_CONFIG_FILES[:nginx].each do |file|
-      deprec2.render_template(:nginx, file)
+    SYSTEM_CONFIG_FILES[:monit].each do |file|
+      deprec2.render_template(:monit, file)
     end
   end
   
-  # task :config_gen_project do
-  #   PROJECT_CONFIG_FILES[:nginx].each do |file|
-  #     render_template(:nginx, file)
-  #   end
-  # end
-  
-  desc "Push trac config files to server"
-  task :config, :roles => :web do
-    deprec2.push_configs(:nginx, SYSTEM_CONFIG_FILES[:nginx])
+  desc "Push monit config files to server"
+  task :config do
+    deprec2.push_configs(:monit, SYSTEM_CONFIG_FILES[:monit])
   end
 
-  desc "Start Nginx"
-  task :start, :roles => :web do
-    send(run_method, "/etc/init.d/nginx start")
+  desc "Start Monit"
+  task :start do
+    send(run_method, "/etc/init.d/monit start")
   end
 
-  desc "Stop Nginx"
-  task :stop, :roles => :web do
-    send(run_method, "/etc/init.d/nginx stop")
+  desc "Stop Monit"
+  task :stop do
+    send(run_method, "/etc/init.d/monit stop")
   end
 
-  desc "Restart Nginx"
-  task :restart, :roles => :web do
-    send(run_method, "/etc/init.d/nginx restart")
+  desc "Restart Monit"
+  task :restart do
+    send(run_method, "/etc/init.d/monit restart")
   end
 
-  desc "Reload Nginx"
-  task :reload, :roles => :web do
-    send(run_method, "/etc/init.d/nginx reload")
+  desc "Reload Monit"
+  task :reload do
+    send(run_method, "/etc/init.d/monit reload")
   end
    
   desc <<-DESC
-    Activate nginx start scripts on server.
-    Setup server to start nginx on boot.
+    Activate monit start scripts on server.
+    Setup server to start monit on boot.
   DESC
-  task :activate, :roles => :web do
-    send(run_method, "update-rc.d nginx defaults")
+  task :activate do
+    send(run_method, "update-rc.d monit defaults")
   end
   
   desc <<-DESC
-    Dectivate nginx start scripts on server.
-    Setup server to start nginx on boot.
+    Dectivate monit start scripts on server.
+    Setup server to start monit on boot.
   DESC
-  task :deactivate, :roles => :web do
-    send(run_method, "update-rc.d -f nginx remove")
+  task :deactivate do
+    send(run_method, "update-rc.d -f monit remove")
   end
   
-  task :backup, :roles => :web do
-    # there's nothing to backup for nginx
+  task :backup do
+    # there's nothing to backup for monit
   end
   
-  task :restore, :roles => :web do
-    # there's nothing to store for nginx
+  task :restore do
+    # there's nothing to restore for monit
   end
 
   end end
