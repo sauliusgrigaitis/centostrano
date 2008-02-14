@@ -1,5 +1,20 @@
 == SVN
 
+== 1.99.5 (Feb 12, 2008)
+
+* feature: When running config_gen,  if deprec discovers a file exists, checks 
+           whether the new file differs from the existing one. If they're 
+           identical, it skips it.
+
+		   If they differ, the user is presented with the options to overwrite 
+		   or not but now there's an extra option to view a diff of the changes 
+		   that would occur. [Mike Bailey]
+
+* change:  handle_command_with_input now accepts an optional response parameter.
+           This is useful if you need to change a password on many servers and 
+           don't want to have to keep entering the password at the prompt for
+           each box. [Mike Bailey]
+
 == 1.99.4 (Feb 11, 2008)
 
 * Bugfix: set correct path to templates [Mike Bailey]
