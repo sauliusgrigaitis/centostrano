@@ -33,11 +33,17 @@ Capistrano::Configuration.instance(:must_exist).load do
          :mode => 0755,
          :owner => 'root:root'},
          
-         # So is this - xendomains fails to shut down domains on system shutdown
-         {:template => "xend-init.erb",
-          :path => '/etc/init.d/xend',
-          :mode => 0755,
-          :owner => 'root:root'}
+        # So is this - xendomains fails to shut down domains on system shutdown
+        {:template => "xend-init.erb",
+         :path => '/etc/init.d/xend',
+         :mode => 0755,
+         :owner => 'root:root'},
+          
+        # This gives you a second network bridge on second ethernet device  
+        {:template => "network-bridge-wrapper",
+         :path => '/etc/xen/scripts/network-bridge-wrapper',
+         :mode => 0755,
+         :owner => 'root:root'}
          
       ]
       
