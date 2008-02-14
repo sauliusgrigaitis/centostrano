@@ -74,6 +74,9 @@ files = {
   
     set :application, "set your application name here"
     set :repository,  "set your repository location here"
+    set :domain, "set domain name project will be served on here"
+    # set :gems_for_project, %w(dr_nic_magic_models swiftiply) # list of gems to be installed
+    
 
     # If you aren't deploying to /var/www/apps/\#{application} on the target
     # servers (which is the deprec default), you can specify the actual location
