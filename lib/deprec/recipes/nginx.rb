@@ -80,7 +80,7 @@ Capistrano::Configuration.instance(:must_exist).load do
         end
       end
 
-      desc "Push trac config files to server"
+      desc "Push nginx config files to server"
       task :config, :roles => :web do
         deprec2.push_configs(:nginx, SYSTEM_CONFIG_FILES[:nginx])
       end
