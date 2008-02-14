@@ -13,6 +13,7 @@ Capistrano::Configuration.instance(:must_exist).load do
     top.deprec.rails.setup_user_perms
     top.deprec.rails.setup_paths
     top.deprec.rails.setup_shared_dirs
+    top.deprec.rails.install_gems_for_project
   end
   
   # Override default cap task using sudo to create dir
@@ -55,6 +56,14 @@ Capistrano::Configuration.instance(:must_exist).load do
       :mode => 0644,
       :owner => 'root:root'}
     ]
+    
+  PROJECT_CONFIG_FILES[:monit] = [
+
+    { :template => 'monit_mongrel.erb',
+      :path => "monit_mongrel.conf", 
+      :mode => 0600,
+      :owner => 'root:root'}
+    ]
 
   namespace :deprec do
     namespace :rails do
@@ -75,7 +84,6 @@ Capistrano::Configuration.instance(:must_exist).load do
         gem2.install 'rails'
         gem2.install 'rspec' # seems to be required to run rake db:migrate (???)
         # gem2.install 'builder' # XXX ? needed ?
-        install_gems_for_project
       end
       
       task :install_gems_for_project do
@@ -88,15 +96,25 @@ Capistrano::Configuration.instance(:must_exist).load do
         PROJECT_CONFIG_FILES[:nginx].each do |file|
           deprec2.render_template(:nginx, file)
         end
+        
+        PROJECT_CONFIG_FILES[:monit].each do |file|
+          deprec2.render_template(:monit, file)
+        end
       end
 
       task :config do
         deprec2.push_configs(:nginx, PROJECT_CONFIG_FILES[:nginx])
+        deprec2.push_configs(:monit, PROJECT_CONFIG_FILES[:monit])
         symlink_nginx_vhost
+        symlink_monit_config
       end
 
       task :symlink_nginx_vhost, :roles => :web do
         sudo "ln -sf #{deploy_to}/nginx/rails_nginx_vhost.conf #{nginx_vhost_dir}/#{application}.conf"
+      end
+      
+      task :symlink_monit_config, :roles => :app do
+        sudo "ln -sf #{deploy_to}/monit/monit_mongrel.conf #{monit_confd_dir}/mongrel_#{application}.conf"
       end
 
 
@@ -244,7 +262,7 @@ Capistrano::Configuration.instance(:must_exist).load do
         top.deprec.nginx.activate       
         top.deprec.mongrel.create_mongrel_user_and_group 
         top.deprec.mongrel.config_gen_project
-        top.deprec.mongrel.config
+        top.deprec.mongrel.config_project
         top.deprec.mongrel.activate
         top.deprec.rails.config_gen
         top.deprec.rails.config
