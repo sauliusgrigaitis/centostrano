@@ -1,26 +1,6 @@
-define contact{ # example contact
-	contact_name	mbailey
-	alias	Mike Bailey
-	# contactgroups	contactgroup_names
-	host_notifications_enabled	1
-	service_notifications_enabled	1
-	host_notification_period	24x7
-	service_notification_period	24x7
-	host_notification_options	d,u,r,f,s,n
-	service_notification_options	w,u,c,r,f,s,n
-	host_notification_commands	notify-host-by-email
-	service_notification_commands	notify-service-by-email
-	email	mike@bailey.net.au
-	# pager	pager_number or pager_email_gateway
-	# addressx	additional_contact_address
-	# can_submit_commands	[0/1]
-	# retain_status_information	[0/1]
-	# retain_nonstatus_information	[0/1]
-}
-
-define hostgroup{ # example hostgroup 
-	hostgroup_name  sct
-	alias   Square Circle Triangle
+define hostgroup{ 
+	hostgroup_name  microsoft
+	alias   Big like IBM
 	# members       hosts
 	# hostgroup_members     hostgroups
 	# notes note_string
@@ -29,11 +9,11 @@ define hostgroup{ # example hostgroup
 }
 
 define host{  # example host with 
-	host_name sm01
-	alias sm01.blocksglobal.com
-	display_name Supermicro 1 (VMware host)
-	address sm01.blocksglobal.com
-	hostgroups sct
+	host_name www.microsoft.com
+	# alias Microsoft homepage
+	# display_name Some Fancy Name
+	address www.microsoft.com
+	hostgroups microsoft
 	check_command check-host-alive
 	# initial_state [o,d,u]
 	max_check_attempts 5
@@ -54,8 +34,8 @@ define host{  # example host with
 	# process_perf_data [0/1]
 	# retain_status_information [0/1]
 	# retain_nonstatus_information [0/1]
-	contacts mbailey
-	contact_groups null
+	# contacts steve
+	contact_groups admins
 	notification_interval 5
 	# first_notification_delay #
 	notification_period 24x7
@@ -74,18 +54,17 @@ define host{  # example host with
 }
 
 define host{
-	host_name booking
-	alias booking.blocksglobal.com
-	display_name Booking whitesite
-	address booking.blocksglobal.com
-	hostgroups sct
+	host_name www.hotmail.com
+	# alias hotmail
+	# display_name Fancy name for hotmail
+	address www.hotmail.com
+	hostgroups microsoft
 	check_command check-host-alive
 	max_check_attempts 5
 	check_interval 5
 	retry_interval 1
 	check_period 24x7
-	contacts mbailey
-	contact_groups null
+	contact_groups admins
 	notification_interval 5
 	notification_period 24x7
 }
