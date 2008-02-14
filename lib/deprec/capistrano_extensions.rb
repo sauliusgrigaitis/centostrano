@@ -77,7 +77,8 @@ module Deprec2
     # XXX add :always and :never later - not sure how to set persistent value from here
     # response = Capistrano::CLI.ui.ask "File exists. Overwrite? ([y]es, [n]o, [a]lways, n[e]ver)" do |q|
     puts
-    response = Capistrano::CLI.ui.ask "File exists. Overwrite? ([y]es, [n]o, [d]iff)" do |q|
+    response = Capistrano::CLI.ui.ask "File exists (#{full_path}). 
+    Overwrite? ([y]es, [n]o, [d]iff)" do |q|
       q.default = 'n'
     end
     
