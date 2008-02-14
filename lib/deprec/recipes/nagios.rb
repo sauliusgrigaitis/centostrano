@@ -126,11 +126,12 @@ Capistrano::Configuration.instance(:must_exist).load do
         deprec2.push_configs(:nagios, SYSTEM_CONFIG_FILES[:nagios])
         sudo "ln -sf #{deploy_to}/nagios/conf/nagios_apache_vhost.conf /usr/local/apache2/conf/apps"
         config_check
+        restart
       end
       
       desc "Run Nagios config check"
       task :config_check, :roles => :nagios do
-        send(run_method, "/etc/init.d/nagios check")
+        send(run_method, "/usr/local/nagios/bin/nagios -v /usr/local/nagios/etc/nagios.cfg")
       end
       
       desc "Set Nagios to start on boot"
