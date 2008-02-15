@@ -58,7 +58,7 @@ module Deprec2
       end
       system "mkdir -p #{path_dir}" if ! File.directory?(path_dir)
       File.open(full_path, 'w'){|f| f.write rendered_template }
-      puts "#{full_path} written"
+      puts "[done] #{full_path} written"
     else
       # render to string
       return rendered_template
