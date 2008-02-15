@@ -17,21 +17,22 @@
 ## Start monit in the background (run as a daemon) and check services at 
 ## 2-minute intervals.
 #
-# set daemon  120
+set daemon  <%= monit_check_interval %>
 #
 #
 ## Set syslog logging with the 'daemon' facility. If the FACILITY option is
 ## omitted, monit will use 'user' facility by default. If you want to log to 
 ## a stand alone log file instead, specify the path to a log file
 #
-# set logfile syslog facility log_daemon                       
+set logfile <%= monit_log %>                       
 #
 #
 ## Set the list of mail servers for alert delivery. Multiple servers may be 
 ## specified using comma separator. By default monit uses port 25 - this
 ## is possible to override with the PORT option.
 #
-# set mailserver mail.bar.baz,               # primary mailserver
+<%= '# ' unless monit_mailserver %>set mailserver <%= monit_mailserver || 'localhost' %>     # primary mailserver (append a comma
+#				# to this line if you add more.)
 #                backup.bar.baz port 10025,  # backup mailserver on port 10025
 #                localhost                   # fallback relay
 #
@@ -69,26 +70,33 @@
 ## or sender using the MAIL-FORMAT statement. Macros such as $DATE, etc.
 ## are expanded at runtime. For example, to override the sender:
 #
-# set mail-format { from: monit@foo.bar }
+<%= '# ' unless monit_mailserver %>set mail-format { from: <%= monit_mail_from %> }
 #
 #
 ## You can set alert recipients here whom will receive alerts if/when a 
 ## service defined in this file has errors. Alerts may be restricted on 
 ## events by using a filter as in the second example below. 
 #
-# set alert sysadm@foo.bar                       # receive all alerts
-# set alert manager@foo.bar only on { timeout }  # receive just service-
-#                                                # timeout alert
+<% monit_alert_recipients.each do |recipient| %>
+<%= '# ' unless monit_mailserver %>set alert <%= recipient %>                       # receive all alerts
+<% end %>
+<% monit_timeout_recipients.each do |recipient| %>
+<%= '# ' unless monit_mailserver %>set alert <%= recipient %> only on { timeout }  # receive just service-
+	                                                			# timeout alert
+<% end %>
+
 #
 #
 ## Monit has an embedded web server which can be used to view status of 
 ## services monitored, the current configuration, actual services parameters
 ## and manage services from a web interface.
 #
-# set httpd port 2812 and
-#     use address localhost  # only accept connection from localhost
-#     allow localhost        # allow localhost to connect to the server and
-#     allow admin:monit      # require user 'admin' with password 'monit'
+<% if monit_webserver_enabled %>
+set httpd port <%= monit_webserver_port %> and
+     use address <%= monit_webserver_address %>  # only accept connection from <%= monit_webserver_address %>
+     allow <%= monit_webserver_allowed_hosts %>        # allow <%= monit_webserver_allowed_hosts %> to connect to the server and
+     allow <%= monit_webserver_auth_user %>:<%= monit_webserver_auth_pass %>      # require user <%= monit_webserver_auth_user %> with password <%= monit_webserver_auth_pass %>
+<% end %>
 #
 #
 ###############################################################################
