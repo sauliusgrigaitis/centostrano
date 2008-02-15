@@ -1,6 +1,16 @@
 == SVN
 
+== 1.99.6 (Feb 15, 2008)
+
+* feature: Added monit support [Mike Bailey]
+
+* bugfix: Mongrel wasn't starting when server rebooted. [Mike Bailey]
+
+* bugfix: Fixed .caprc content [Mike Bailey]
+
 == 1.99.5 (Feb 12, 2008)
+
+* feature: installs and configures monit to manage your mongrel processes [Mike Bailey]
 
 * feature: When running config_gen,  if deprec discovers a file exists, checks 
            whether the new file differs from the existing one. If they're 
