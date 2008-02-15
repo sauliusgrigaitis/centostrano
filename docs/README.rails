@@ -13,7 +13,6 @@ cap deploy
 cap deprec:db:create
 cap deprec:db:migrate
 cap deprec:nginx:restart
-cap deprec:mongrel:restart
 
 
 * The detail
