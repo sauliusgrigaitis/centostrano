@@ -84,6 +84,11 @@ Capistrano::Configuration.instance(:must_exist).load do
         sudo "ln -sf #{deploy_to}/mongrel/cluster.yml #{mongrel_conf}"
       end
       
+      task :unlink_mongrel_cluster, :roles => :web do
+        deprec2.mkdir(mongrel_conf_dir, :via => :sudo)
+        sudo "test -L #{mongrel_conf} && unlink #{mongrel_conf}"
+      end
+      
       
       # Control
       
@@ -136,7 +141,8 @@ Capistrano::Configuration.instance(:must_exist).load do
       end
       
       task :deactivate_project, :roles => :app do
-        send(run_method, "update-rc.d -f mongrel_cluster remove")
+        unlink_mongrel_cluster
+        restart
       end
       
       task :backup, :roles => :app do
