@@ -6,6 +6,19 @@ Capistrano::Configuration.instance(:must_exist).load do
   set :monit_group, 'monit'
   set :monit_confd_dir, '/etc/monit.d'
   
+  set :monit_check_interval, 60
+  set :monit_log, 'syslog facility log_daemon'
+  set :monit_mailserver, nil
+  set :monit_mail_from, 'monit@deprec.enabled.slice'
+  set :monit_alert_recipients, %w(root@localhost)
+  set :monit_timeout_recipients, %w(root@localhost)
+  set :monit_webserver_enabled, true
+  set :monit_webserver_port, 2812
+  set :monit_webserver_address, 'localhost'
+  set :monit_webserver_allowed_hosts, 'localhost'
+  set :monit_webserver_auth_user, 'admin'
+  set :monit_webserver_auth_pass, 'monit'
+  
   # Upstream changes: http://www.tildeslash.com/monit/dist/CHANGES.txt  
   # Ubuntu package version = monit-4.8.1  
   SRC_PACKAGES[:monit] = {
