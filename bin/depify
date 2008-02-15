@@ -35,7 +35,7 @@ def unindent(string)
 end
 
 
-caprc = unindent(<<-FILE),
+caprc = unindent(<<-FILE)
   # .caprc - Capistrano configs (added by deprec gem [www.deprec.org])
   #
   # Include settings that you want active whenever you use Capistrano
@@ -59,7 +59,7 @@ caprc = unindent(<<-FILE),
   #
   # Stop some annoying warnings
   # ssh_options[:paranoid] = false
-  FILE
+FILE
 
 files = {
   "Capfile" => unindent(<<-FILE),
