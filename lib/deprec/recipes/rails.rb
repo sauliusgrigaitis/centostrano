@@ -247,6 +247,11 @@ Capistrano::Configuration.instance(:must_exist).load do
         top.deprec.mongrel.install
         top.deprec.mongrel.config_gen_system
         top.deprec.mongrel.config_system
+        
+        # Monit
+        top.deprec.monit.install
+        top.deprec.monit.config_gen_system
+        top.deprec.monit.config_system
 
         # Install mysql
         top.deprec.mysql.install
@@ -264,6 +269,9 @@ Capistrano::Configuration.instance(:must_exist).load do
         top.deprec.mongrel.config_gen_project
         top.deprec.mongrel.config_project
         top.deprec.mongrel.activate
+        top.deprec.monit.config_gen_project
+        top.deprec.monit.config_project
+        top.deprec.monit.activate
         top.deprec.rails.config_gen
         top.deprec.rails.config
       end
