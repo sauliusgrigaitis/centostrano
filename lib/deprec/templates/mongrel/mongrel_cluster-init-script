@@ -9,9 +9,10 @@
 #              behind a load balancer.
 #              
 
+PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local:/usr/local/sbin:/usr/local/bin
 CONF_DIR=/etc/mongrel_cluster
 PID_DIR=/var/run/mongrel_cluster
-USER=mongrel
+# USER=mongrel
 
 RETVAL=0
 
@@ -25,7 +26,7 @@ case "$1" in
     start)
       # Create pid directory
       mkdir -p $PID_DIR
-      chown $USER:$USER $PID_DIR
+      # chown $USER:$USER $PID_DIR
 
       mongrel_cluster_ctl start -c $CONF_DIR
       RETVAL=$?
