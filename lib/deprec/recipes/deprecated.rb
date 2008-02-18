@@ -12,7 +12,7 @@ You've installed deprec2 but seem to be using a deprec1 command.
 
 You have two options:
 
-- install deprec-1.9.x and continue using deprec2
+- install deprec-1.9.x and continue using deprec1
 
   Instructions are available at http://www.deprec.org/
 
