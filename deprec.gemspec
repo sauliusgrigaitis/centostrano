@@ -8,7 +8,7 @@ SPEC = Gem::Specification.new do |spec|
   spec.email = 'mike@bailey.net.au'
   spec.homepage = 'http://www.deprec.org/'
   spec.rubyforge_project = 'deprec'
-  spec.version = '1.99.6'
+  spec.version = '1.99.7'
   spec.summary = 'deployment recipes for capistrano'
   spec.description = <<-EOF
       This project provides libraries of Capistrano tasks and extensions to 

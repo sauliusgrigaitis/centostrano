@@ -1,5 +1,10 @@
 == SVN
 
+== 1.99.7 (Feb 18, 2008)
+
+* enhancement: nginx vhost config now serves up assetX.hostname.com
+* enhancement: deprec:db:schema_load is nicer than running migration initially
+
 == 1.99.6 (Feb 15, 2008)
 
 * feature: Added monit support [Mike Bailey]
