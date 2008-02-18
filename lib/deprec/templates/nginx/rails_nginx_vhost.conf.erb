@@ -6,7 +6,7 @@ upstream <%= application %> {
 
 server {
     listen       80;
-    server_name  <%= domain %>; # blocks.lemonbaxter.com.au assets0.lemonbaxter.com.au assets1.lemonbaxter.com.au assets2.lemonbaxter.com assets3.lemonbaxter.com;
+    server_name  <%= domain %> <% 4.times do |counter| %> <%= domain.sub(/.*?\./, "assets#{counter}.") %> <% end %>
     root <%= deploy_to %>/current/public;
     access_log <%= deploy_to %>/shared/log/<%= domain %>-access.log;
     error_log <%= deploy_to %>/shared/log/<%= domain %>-error.log;
