@@ -12,7 +12,7 @@
 
 == 1.99.6 (Feb 15, 2008)
 
-* feature: Added monit support [Mike Bailey]
+* bugfix: fixed monit support [Mike Bailey]
 
 * bugfix: Mongrel wasn't starting when server rebooted. [Mike Bailey]
 
