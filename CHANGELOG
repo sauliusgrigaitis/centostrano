@@ -1,5 +1,9 @@
 == SVN
 
+== 1.99.8 (Feb 18, 2008)
+
+* added nginx_client_max_body_size setting for nginx rails vhost
+
 == 1.99.7 (Feb 18, 2008)
 
 * enhancement: nginx vhost config now serves up assetX.hostname.com
