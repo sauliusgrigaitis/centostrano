@@ -2,8 +2,8 @@
 
 == 1.99.8 (Feb 18, 2008)
 
-* added nginx_client_max_body_size setting for nginx rails vhost
-* bugfix: put correct path into monit_mongrel template
+* enhancement: added nginx_client_max_body_size setting for nginx rails vhost
+* bugfix: monit config was broken
 
 == 1.99.7 (Feb 18, 2008)
 
