@@ -10,7 +10,7 @@ server {
     root <%= deploy_to %>/current/public;
     access_log <%= deploy_to %>/shared/log/<%= domain %>-access.log;
     error_log <%= deploy_to %>/shared/log/<%= domain %>-error.log;
-    client_max_body_size  50M;
+    client_max_body_size  <%= nginx_client_max_body_size %>;
 
         if (-f $document_root/maintenance.html){
                 rewrite  ^(.*)$  /maintenance.html last;

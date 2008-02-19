@@ -7,6 +7,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       set :nginx_user,  'nginx'
       set :nginx_group, 'nginx'
       set :nginx_vhost_dir, '/usr/local/nginx/conf/vhosts'
+      set :nginx_client_max_body_size, '50M'
 
       SRC_PACKAGES[:nginx] = {
         :filename => 'nginx-0.5.34.tar.gz',   
