@@ -45,6 +45,11 @@ Capistrano::Configuration.instance(:must_exist).load do
         deprec2.groupadd(nginx_group)
         deprec2.useradd(nginx_user, :group => nginx_group, :homedir => false)
       end
+      
+      task :rename_index_page, :roles => :web do
+        index_file = '/usr/local/nginx/html/index.html'
+        sudo "test -f #{index_file} && sudo mv #{index_file} #{index_file}.orig || exit 0"
+      end
 
       SYSTEM_CONFIG_FILES[:nginx] = [
 
