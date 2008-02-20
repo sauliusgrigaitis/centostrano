@@ -15,7 +15,7 @@ Capistrano::Configuration.instance(:must_exist).load do
   set :monit_webserver_enabled, true
   set :monit_webserver_port, 2812
   set :monit_webserver_address, 'localhost'
-  set :monit_webserver_allowed_hosts, 'localhost'
+  set :monit_webserver_allowed_hosts_and_networks, %w(localhost)
   set :monit_webserver_auth_user, 'admin'
   set :monit_webserver_auth_pass, 'monit'
   
