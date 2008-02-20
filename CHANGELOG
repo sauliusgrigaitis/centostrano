@@ -1,5 +1,10 @@
 == SVN
 
+== 1.99.9 (Feb 21, 2008)
+
+* enhancement: updated how allowed hosts are generated
+* bugfix: remove nginx index.html
+
 == 1.99.8 (Feb 18, 2008)
 
 * enhancement: added nginx_client_max_body_size setting for nginx rails vhost
