@@ -83,22 +83,22 @@ Capistrano::Configuration.instance(:must_exist).load do
   end
 
   desc "Start Monit"
-  task :start do
+  task :start, :roles => :app do
     send(run_method, "/etc/init.d/monit start")
   end
 
   desc "Stop Monit"
-  task :stop do
+  task :stop, :roles => :app  do
     send(run_method, "/etc/init.d/monit stop")
   end
 
   desc "Restart Monit"
-  task :restart do
+  task :restart, :roles => :app  do
     send(run_method, "/etc/init.d/monit restart")
   end
 
   desc "Reload Monit"
-  task :reload do
+  task :reload, :roles => :app  do
     send(run_method, "/etc/init.d/monit reload")
   end
    
