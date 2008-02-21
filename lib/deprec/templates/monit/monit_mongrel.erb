@@ -1,8 +1,8 @@
 <% mongrel_servers.times do |counter| -%>
   check process mongrel-<%=8000+counter%> with pidfile <%=deploy_to%>/shared/tmp/pids/mongrel.<%=8000+counter%>.pid
 	group mongrel
-	start program = "/usr/local/bin/ruby /usr/local/bin/mongrel_rails start -d -e production -p <%=8000+counter%> -a 127.0.0.1 -P <%= deploy_to %>/shared/tmp/pids/mongrel.<%=8000+counter%>.pid -c <%= deploy_to %>/current"
-	stop program = "/usr/local/bin/ruby /usr/local/bin/mongrel_rails stop stop -P <%= deploy_to %>/shared/tmp/pids/mongrel.<%=8000+counter%>.pid"
+	start program = "/usr/local/bin/ruby /usr/local/bin/mongrel_rails start -d -e production -a 127.0.0.1 -c <%= deploy_to %>/current --user <%= mongrel_user %> --group <%= mongrel_group %> -p <%=8000+counter%> -P <%= mongrel_pid_dir %>/mongrel.<%=8000+counter%>.pid -l <%= mongrel_log_dir %>/mongrel.<%=8000+counter%>.log"
+	stop program = "/usr/local/bin/ruby /usr/local/bin/mongrel_rails stop -P <%= mongrel_pid_dir %>/mongrel.<%=8000+counter%>.pid"
 	
 	if failed host 127.0.0.1 port <%=8000+counter%> protocol http
     	with timeout 10 seconds
