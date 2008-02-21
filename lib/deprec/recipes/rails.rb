@@ -100,11 +100,13 @@ Capistrano::Configuration.instance(:must_exist).load do
         PROJECT_CONFIG_FILES[:monit].each do |file|
           deprec2.render_template(:monit, file)
         end
+        top.deprec.mongrel.config_gen_project
       end
 
-      task :config do
+      task :config, :roles => [:app, :web] do
         deprec2.push_configs(:nginx, PROJECT_CONFIG_FILES[:nginx])
         deprec2.push_configs(:monit, PROJECT_CONFIG_FILES[:monit])
+        top.deprec.mongrel.config_project
         symlink_nginx_vhost
         symlink_monit_config
       end
