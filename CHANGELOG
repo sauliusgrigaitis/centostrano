@@ -1,7 +1,8 @@
 == SVN
 
-== 1.99.9 (Feb 21, 2008)
+== 1.99.11 (Feb 21, 2008)
 
+* enabled evented mongrel
 * enhancement: updated how allowed hosts are generated
 * bugfix: remove nginx index.html
 

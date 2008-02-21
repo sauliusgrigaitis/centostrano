@@ -14,6 +14,8 @@ CONF_DIR=/etc/mongrel_cluster
 PID_DIR=/var/run/mongrel_cluster
 # USER=mongrel
 
+EVENT=1
+
 RETVAL=0
 
 # Gracefully exit if the controller is missing.
