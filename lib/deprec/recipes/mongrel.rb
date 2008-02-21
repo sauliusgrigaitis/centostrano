@@ -8,6 +8,8 @@ Capistrano::Configuration.instance(:must_exist).load do
       set :mongrel_port, 8000
       set :mongrel_address, "127.0.0.1"
       set(:mongrel_environment) { rails_env }
+      set(:mongrel_log_dir) { "#{deploy_to}/shared/log" }
+      set(:mongrel_pid_dir) { "#{deploy_to}/shared/tmp/pids" }
       set :mongrel_conf_dir, '/etc/mongrel_cluster'
       set(:mongrel_conf) { "/etc/mongrel_cluster/#{application}.yml" }  
       set :mongrel_user_prefix,  'mongrel_'
@@ -22,6 +24,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       task :install, :roles => :app do
         gem2.select 'mongrel'                # mongrel requires we select a version
         gem2.install 'mongrel_cluster'
+        gem2.install 'swiftiply'
       end
     
     
@@ -64,27 +67,27 @@ Capistrano::Configuration.instance(:must_exist).load do
       end
       
       desc 'Deploy configuration files(s) for mongrel' 
-      task :config do
+      task :config, :roles => :app do
         config_system
         config_project
       end
       
-      task :config_system do
+      task :config_system, :roles => :app do
         deprec2.push_configs(:mongrel, SYSTEM_CONFIG_FILES[:mongrel])
       end
       
-      task :config_project do
+      task :config_project, :roles => :app do
         create_mongrel_user_and_group
         deprec2.push_configs(:mongrel, PROJECT_CONFIG_FILES[:mongrel])
         symlink_mongrel_cluster
       end
       
-      task :symlink_mongrel_cluster, :roles => :web do
+      task :symlink_mongrel_cluster, :roles => :app do
         deprec2.mkdir(mongrel_conf_dir, :via => :sudo)
         sudo "ln -sf #{deploy_to}/mongrel/cluster.yml #{mongrel_conf}"
       end
       
-      task :unlink_mongrel_cluster, :roles => :web do
+      task :unlink_mongrel_cluster, :roles => :app do
         deprec2.mkdir(mongrel_conf_dir, :via => :sudo)
         sudo "test -L #{mongrel_conf} && unlink #{mongrel_conf}"
       end
