@@ -60,7 +60,7 @@ Capistrano::Configuration.instance(:must_exist).load do
         end
         new_password = Capistrano::CLI.ui.ask("Enter new password for #{target_user}") { |q| q.echo = false }
   
-        deprec2.invoke_with_input("passwd #{target_user}", /UNIX password/, new_pasword) 
+        deprec2.invoke_with_input("passwd #{target_user}", /UNIX password/, new_password) 
       end
       
       desc "Add user to group"
