@@ -32,7 +32,16 @@ module Deprec2
       return false 
     end
   
-    template = ERB.new(IO.read(File.join(DEPREC_TEMPLATES_BASE, app.to_s, template)), nil, '-')
+    # Local copies of deprec templates exist they will be used 
+    # e.g. config/templates/nginx/nginx.conf.erb
+    local_template = File.join('config','templates',app.to_s, template)
+    if File.exists?(local_template)
+      puts
+      puts "Using local template (#{local_template})"
+      template = ERB.new(IO.read(local_template), nil, '-')
+    else
+      template = ERB.new(IO.read(File.join(DEPREC_TEMPLATES_BASE, app.to_s, template)), nil, '-')
+    end
     rendered_template = template.result(binding)
   
     if remote 
