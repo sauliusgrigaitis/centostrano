@@ -9,7 +9,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       set :mongrel_address, "127.0.0.1"
       set(:mongrel_environment) { rails_env }
       set(:mongrel_log_dir) { "#{deploy_to}/shared/log" }
-      set(:mongrel_pid_dir) { "#{deploy_to}/shared/tmp/pids" }
+      set(:mongrel_pid_dir) { "#{deploy_to}/shared/pids" }
       set :mongrel_conf_dir, '/etc/mongrel_cluster'
       set(:mongrel_conf) { "/etc/mongrel_cluster/#{application}.yml" }  
       set :mongrel_user_prefix,  'mongrel_'
@@ -167,7 +167,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       task :set_perms_for_mongrel_dirs, :roles => :app do
         tmp_dir = "#{deploy_to}/current/tmp"
         shared_dir = "#{deploy_to}/shared"
-        files = ["#{deploy_to}/shared/log/mongrel.log", "#{deploy_to}/shared/log/#{rails_env}.log"]
+        files = ["#{mongrel_log_dir}/mongrel.log", "#{mongrel_log_dir}/#{rails_env}.log"]
 
         sudo "chgrp -R #{mongrel_group} #{tmp_dir} #{shared_dir}"
         sudo "chmod -R g+w #{tmp_dir} #{shared_dir}" 
