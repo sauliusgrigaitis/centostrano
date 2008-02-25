@@ -1,5 +1,6 @@
 # Copyright 2006-2008 by Mike Bailey. All rights reserved.
 require 'capistrano'
+require 'fileutils'
 
 module Deprec2
   DEPREC_TEMPLATES_BASE = File.join(File.dirname(__FILE__), 'templates')
@@ -56,7 +57,9 @@ module Deprec2
           return false
         end
       end
-      system "mkdir -p #{path_dir}" if ! File.directory?(path_dir)
+      FileUtils.mkdir_p "#{path_dir}" if ! File.directory?(path_dir)
+      # added line above to make windows compatible
+      # system "mkdir -p #{path_dir}" if ! File.directory?(path_dir) 
       File.open(full_path, 'w'){|f| f.write rendered_template }
       puts "[done] #{full_path} written"
     else
