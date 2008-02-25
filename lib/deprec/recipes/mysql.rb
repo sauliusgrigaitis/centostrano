@@ -109,3 +109,7 @@ end
 # mysqldump --all-databases --master-data >dbdump.db
 # 
 # UNLOCK TABLES;
+
+
+# Replication Features and Issues
+# http://dev.mysql.com/doc/refman/5.0/en/replication-features.html
