@@ -1,5 +1,9 @@
 == svn
 
+# Add the following to your deploy.rb (or ~/.caprc if always the same)
+	set :scm, 'your.svn.server'
+
+# The run the following from the root the project you wish to import	
 cap deprec:svn:install
 cap deprec:svn:setup
 
