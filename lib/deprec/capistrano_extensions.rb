@@ -32,9 +32,11 @@ module Deprec2
       return false 
     end
   
-    # Local copies of deprec templates exist they will be used 
+    # If local copies of deprec templates exist they will be used 
+    # If you don't specify the location with the local_template_dir option
+    # it defaults to config/templates.
     # e.g. config/templates/nginx/nginx.conf.erb
-    local_template = File.join('config','templates',app.to_s, template)
+    local_template = File.join(local_template_dir, app.to_s, template)
     if File.exists?(local_template)
       puts
       puts "Using local template (#{local_template})"
