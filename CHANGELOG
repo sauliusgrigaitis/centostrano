@@ -1,5 +1,9 @@
 == SVN
 
+== 1.99.14 (Feb 21, 2008)
+
+* monit template now uses :mongrel_port instead of 8000
+
 == 1.99.11 (Feb 21, 2008)
 
 * enabled evented mongrel
