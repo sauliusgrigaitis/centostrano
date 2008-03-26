@@ -1,5 +1,9 @@
 == SVN
 
+== 1.99.15 (Mar 27, 2008)
+
+* moved vmbuilder_plugins out of deprec dir 
+
 == 1.99.14 (Feb 21, 2008)
 
 * monit template now uses :mongrel_port instead of 8000
