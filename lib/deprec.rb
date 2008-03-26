@@ -3,6 +3,6 @@ unless Capistrano::Configuration.respond_to?(:instance)
 end
 
 require "#{File.dirname(__FILE__)}/deprec/capistrano_extensions"
-require "#{File.dirname(__FILE__)}/deprec/vmbuilder_plugins/all"
+require "#{File.dirname(__FILE__)}/vmbuilder_plugins/all"
 require "#{File.dirname(__FILE__)}/deprec/recipes"
 
