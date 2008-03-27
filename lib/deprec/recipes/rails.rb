@@ -233,9 +233,14 @@ Capistrano::Configuration.instance(:must_exist).load do
       DESC
       task :install_rails_stack do
 
+        # Generate configs first in case user input is required
+        # Then we can go make a cup of tea.
+        top.deprec.nginx.config_gen
+        top.deprec.mongrel.config_gen_system
+        top.deprec.monit.config_gen
+        
         # Nginx as our web frontend
         top.deprec.nginx.install
-        top.deprec.nginx.config_gen
         top.deprec.nginx.config
         
         # Subversion
@@ -247,12 +252,10 @@ Capistrano::Configuration.instance(:must_exist).load do
         
         # Mongrel as our app server
         top.deprec.mongrel.install
-        top.deprec.mongrel.config_gen_system
         top.deprec.mongrel.config_system
         
         # Monit
         top.deprec.monit.install
-        top.deprec.monit.config_gen
         top.deprec.monit.config
 
         # Install mysql
