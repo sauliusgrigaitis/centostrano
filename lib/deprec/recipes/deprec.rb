@@ -126,7 +126,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       deprec2.create_src_dir
     end
     
-    # Download all packages used my deprec to your local host.
+    # Download all packages used by deprec to your local host.
     # You can then push them to /usr/local/src on target hosts
     # to save time and bandwidth rather than repeatedly downloading
     # from the distribution sites.
