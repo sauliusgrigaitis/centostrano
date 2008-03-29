@@ -26,7 +26,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       task :install do
         install_deps
         create_nagios_user
-        deprec2.add_user_to_group(nagios, apache_user)
+        deprec2.add_user_to_group(nagios_user, apache_user)
         deprec2.mkdir('/usr/local/nagios/etc', :owner => "#{nagios_user}.#{nagios_group}", :via => :sudo)
         deprec2.mkdir('/usr/local/nagios/objects', :owner => "#{nagios_user}.#{nagios_group}", :via => :sudo)
         deprec2.download_src(SRC_PACKAGES[:nagios], src_dir)
@@ -37,7 +37,7 @@ Capistrano::Configuration.instance(:must_exist).load do
         deprec2.groupadd(nagios_group)
         deprec2.useradd(nagios_user, :group => nagios_group, :homedir => false)
         deprec2.groupadd(nagios_cmd_group)
-        deprec2.add_user_to_group(nagios, nagios_cmd_group)
+        deprec2.add_user_to_group(nagios_user, nagios_cmd_group)
       end
          
       # Install dependencies for nagios
