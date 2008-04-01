@@ -13,7 +13,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       
       # Install dependencies for Mysql
       task :install_deps, :roles => :db do
-        apt.install( {:base => %w(mysql-server mysql-client)}, :stable )
+        apt.install( {:base => %w(mysql mysql-server mysql-devel)}, :stable, :repositories => [:centosplus] )
       end
       
       task :symlink_mysql_sockfile, :roles => :db do
@@ -57,22 +57,22 @@ Capistrano::Configuration.instance(:must_exist).load do
       
       desc "Start Mysql"
       task :start, :roles => :db do
-        send(run_method, "/etc/init.d/mysql start")
+        send(run_method, "/etc/init.d/mysqld start")
       end
       
       desc "Stop Mysql"
       task :stop, :roles => :db do
-        send(run_method, "/etc/init.d/mysql stop")
+        send(run_method, "/etc/init.d/mysqld stop")
       end
       
       desc "Restart Mysql"
       task :restart, :roles => :db do
-        send(run_method, "/etc/init.d/mysql restart")
+        send(run_method, "/etc/init.d/mysqld restart")
       end
       
       desc "Reload Mysql"
       task :reload, :roles => :db do
-        send(run_method, "/etc/init.d/mysql reload")
+        send(run_method, "/etc/init.d/mysqld reload")
       end
       
       

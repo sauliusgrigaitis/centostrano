@@ -23,15 +23,18 @@ require 'capistrano'
 module Apt 
 
   # Default apt-get command - reduces any interactivity to the minimum.
-  APT_GET="DEBCONF_TERSE='yes' DEBIAN_PRIORITY='critical' DEBIAN_FRONTEND=noninteractive apt-get" 
+  #APT_GET="DEBCONF_TERSE='yes' DEBIAN_PRIORITY='critical' DEBIAN_FRONTEND=noninteractive apt-get" 
+  APT_GET="yum -y"
 
   # Run the apt install program across the package list in 'packages'. 
   # Select those packages referenced by <tt>:base</tt> and the +version+
   # of the distribution you want to use.
   def install(packages, version, options={})
-    special_options="--allow-unauthenticated" if version != :stable
+    #special_options="--allow-unauthenticated" if version != :stable
+    #sh -c "#{APT_GET} -qyu --force-yes #{special_options.to_s} install #{package_list(packages, version)}"
+    special_options = options[:repositories].collect { |repository| " --enablerepo=#{repository}"} if (options && options[:repositories].is_a?(Array))
     send(run_method, %{
-      sh -c "#{APT_GET} -qyu --force-yes #{special_options.to_s} install #{package_list(packages, version)}"
+      sh -c "#{APT_GET} #{special_options.to_s} install #{package_list(packages, version)}"
     }, options)
   end
 

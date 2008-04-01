@@ -74,13 +74,14 @@ Capistrano::Configuration.instance(:must_exist).load do
       end
 
       task :install_deps do
-        apt.install( {:base => %w(libmysqlclient15-dev sqlite3 libsqlite3-ruby libsqlite3-dev)}, :stable )
+        apt.install( {:base => %w(sqlite sqlite-devel)}, :stable )
+        apt.install( {:base => %w(mysql mysql-devel)}, :stable, :repositories => [:centosplus] )
       end
 
       # install some required ruby gems
       task :install_gems do
         gem2.install 'sqlite3-ruby'
-        gem2.install 'mysql'
+        gem2.install 'mysql --  --with-mysql-include=/usr/include/mysql --with-mysql-lib=/usr/lib/mysql'
         gem2.install 'rails'
         gem2.install 'rspec' # seems to be required to run rake db:migrate (???)
         # gem2.install 'builder' # XXX ? needed ?
@@ -245,7 +246,8 @@ Capistrano::Configuration.instance(:must_exist).load do
         
         # Subversion
         top.deprec.svn.install
-
+        # Git
+        top.deprec.git.install
         # Ruby
         top.deprec.ruby.install      
         top.deprec.rubygems.install      

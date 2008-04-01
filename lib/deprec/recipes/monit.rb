@@ -44,7 +44,7 @@ Capistrano::Configuration.instance(:must_exist).load do
   
   # install dependencies for monit
   task :install_deps do
-    apt.install( {:base => %w(flex bison libssl-dev)}, :stable )
+    apt.install( {:base => %w(flex bison openssl openssl-devel)}, :stable )
   end
     
   SYSTEM_CONFIG_FILES[:monit] = [
@@ -107,7 +107,8 @@ Capistrano::Configuration.instance(:must_exist).load do
     Setup server to start monit on boot.
   DESC
   task :activate do
-    send(run_method, "update-rc.d monit defaults")
+    #send(run_method, "/sbin/chkconfig --add monit")
+    #send(run_method, "/sbin/chkconfig --level 345 monit on")
   end
   
   desc <<-DESC

@@ -26,7 +26,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       end
       
       task :install_deps do
-        apt.install( {:base => %w(zlib1g-dev libssl-dev libncurses5-dev libreadline5-dev)}, :stable )
+        apt.install( {:base => %w(openssl openssl-devel)}, :stable )
       end
 
     end

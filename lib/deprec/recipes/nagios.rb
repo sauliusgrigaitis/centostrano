@@ -247,7 +247,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       end
       
       task :install_deps do
-        apt.install( {:base => %w(xinetd libssl-dev openssl)}, :stable )
+        apt.install( {:base => %w(xinetd openssl openssl-devel)}, :stable )
       end
       
       SYSTEM_CONFIG_FILES[:nrpe] = [

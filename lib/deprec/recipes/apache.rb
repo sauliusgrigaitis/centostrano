@@ -74,7 +74,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       
       # install dependencies for apache
       task :install_deps do
-        apt.install( {:base => %w(zlib1g-dev zlib1g openssl libssl-dev)}, :stable )
+        apt.install( {:base => %w(zlib1g-dev zlib1g openssl openssl-devel)}, :stable )
       end
       
       # Create dir for vhost config files

@@ -50,7 +50,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       # install dependencies for php
       task :install_deps do
         puts "This function should be overridden by your OS plugin!"
-        apt.install( {:base => %w(zlib1g-dev zlib1g openssl libssl-dev 
+        apt.install( {:base => %w(zlib1g-dev zlib1g openssl openssl-devel 
           flex libcurl3 libcurl3-dev libmcrypt-dev libmysqlclient15-dev libncurses5-dev 
           libxml2-dev libjpeg62-dev libpng12-dev)}, :stable )
       end

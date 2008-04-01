@@ -116,7 +116,8 @@ Capistrano::Configuration.instance(:must_exist).load do
       end  
       
       task :activate_system, :roles => :app do
-        send(run_method, "update-rc.d mongrel_cluster defaults")
+        send(run_method, "/sbin/chkconfig --add mongrel_cluster")
+        send(run_method, "/sbin/chkconfig --level 345 mongrel_cluster on")
       end
       
       task :activate_project, :roles => :app do
@@ -160,7 +161,7 @@ Capistrano::Configuration.instance(:must_exist).load do
         deprec2.useradd(mongrel_user, :group => mongrel_group, :homedir => false)
         # Set the primary group for the mongrel user (in case user already existed
         # when previous command was run)
-        sudo "usermod --gid #{mongrel_group} #{mongrel_user}"
+        sudo "/usr/sbin/usermod -g #{mongrel_group} #{mongrel_user}"
       end
       
       desc "set group ownership and permissions on dirs mongrel needs to write to"
