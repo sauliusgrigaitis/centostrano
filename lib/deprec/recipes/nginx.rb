@@ -28,6 +28,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       desc "Install nginx"
       task :install do
         install_deps
+        install_start_stop_daemon
         deprec2.download_src(SRC_PACKAGES[:nginx], src_dir)
         deprec2.install_from_src(SRC_PACKAGES[:nginx], src_dir)
         create_nginx_user
@@ -37,7 +38,8 @@ Capistrano::Configuration.instance(:must_exist).load do
 
       # install dependencies for nginx
       task :install_deps do
-        apt.install( {:base => %w(libpcre3 libpcre3-dev libpcrecpp0 libssl-dev zlib1g-dev)}, :stable )
+        #apt.install( {:base => %w(libpcre3 libpcre3-dev libpcrecpp0 libssl-dev zlib1g-dev)}, :stable )
+        apt.install( {:base => %w(pcre* gcc make openssl openssl-devel  zlib-devel)}, :stable )
         # do we need libgcrypt11-dev?
       end
 
@@ -91,6 +93,19 @@ Capistrano::Configuration.instance(:must_exist).load do
         deprec2.push_configs(:nginx, SYSTEM_CONFIG_FILES[:nginx])
       end
 
+      desc "install start_stop_daemon"
+      task :install_start_stop_daemon, :roles => :web do
+        commands = <<-DESC
+          sh -c 'cd /usr/local/src; 
+          wget http://developer.axis.com/download/distribution/apps-sys-utils-start-stop-daemon-IR1_9_18-1.tar.gz; 
+          tar zxvf apps-sys-utils-start-stop-daemon-IR1_9_18-1.tar.gz;
+          cd /usr/local/src/apps/sys-utils/start-stop-daemon-IR1_9_18-1/; 
+          gcc start-stop-daemon.c -o start-stop-daemon;
+          cp start-stop-daemon /usr/sbin;' 
+        DESC
+        send(run_method, commands)
+      end
+  
       desc <<-DESC
       Activate nginx start scripts on server.
       Setup server to start nginx on boot.
@@ -100,7 +115,8 @@ Capistrano::Configuration.instance(:must_exist).load do
       end
 
       task :activate_system, :roles => :web do
-        send(run_method, "update-rc.d nginx defaults")
+        send(run_method, "/sbin/chkconfig --add nginx")
+        send(run_method, "/sbin/chkconfig --level 345 nginx on")
       end
 
       desc <<-DESC

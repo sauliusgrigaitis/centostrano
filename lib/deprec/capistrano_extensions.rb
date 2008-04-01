@@ -188,9 +188,9 @@ module Deprec2
   def useradd(user, options={})
     options[:shell] ||= '/bin/bash' # new accounts on ubuntu 6.06.1 have been getting /bin/sh
     switches = ''
-    switches += " --shell=#{options[:shell]} " if options[:shell]
-    switches += ' --create-home ' unless options[:homedir] == false
-    switches += " --gid #{options[:group]} " unless options[:group].nil?
+    switches += " -s #{options[:shell]} " if options[:shell]
+    switches += ' -M ' if options[:homedir] == false
+    switches += " -g #{options[:group]} " unless options[:group].nil?
     invoke_command "grep '^#{user}:' /etc/passwd || sudo /usr/sbin/useradd #{switches} #{user}", 
     :via => run_method
   end
@@ -261,7 +261,7 @@ module Deprec2
   def install_from_src(src_package, src_dir)
     package_dir = File.join(src_dir, src_package[:dir])
     unpack_src(src_package, src_dir)
-    apt.install( {:base => %w(build-essential)}, :stable )
+    apt.install( {:base => %w(gcc gcc-c++ make)}, :stable )
     # XXX replace with invoke_command
     sudo <<-SUDO
     sh -c '
