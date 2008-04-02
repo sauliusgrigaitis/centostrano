@@ -1,7 +1,7 @@
 # Copyright 2006-2008 by Mike Bailey. All rights reserved.
 Capistrano::Configuration.instance(:must_exist).load do 
 
-  namespace :deprec do
+  namespace :centos do
     namespace :ruby do
             
       SRC_PACKAGES[:ruby] = {
@@ -33,7 +33,7 @@ Capistrano::Configuration.instance(:must_exist).load do
   end
   
   
-  namespace :deprec do
+  namespace :centos do
     namespace :rubygems do
   
       SRC_PACKAGES[:rubygems] = {
