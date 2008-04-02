@@ -1,6 +1,6 @@
 # Copyright 2006-2008 by Mike Bailey. All rights reserved.
 Capistrano::Configuration.instance(:must_exist).load do 
-  namespace :deprec do 
+  namespace :centos do 
     namespace :nginx do
 
       set :nginx_server_name, nil
@@ -124,7 +124,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       Setup server to start nginx on boot.
       DESC
       task :deactivate, :roles => :web do
-        send(run_method, "update-rc.d -f nginx remove")
+        send(run_method, "/sbin/chkconfig --del nginx")
       end
 
 
