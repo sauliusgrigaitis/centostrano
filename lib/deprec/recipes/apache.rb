@@ -1,6 +1,6 @@
 # Copyright 2006-2008 by Mike Bailey. All rights reserved.
 Capistrano::Configuration.instance(:must_exist).load do 
-  namespace :deprec do
+  namespace :cent do
     namespace :apache do
       
       # put apache config for site in shared/config/apache2 dir
@@ -150,12 +150,13 @@ Capistrano::Configuration.instance(:must_exist).load do
 
       desc "Set apache to start on boot"
       task :activate, :roles => :web do
-        send(run_method, "update-rc.d httpd defaults")
+        send(run_method, "/sbin/chkconfig --add httpd")
+        send(run_method, "/sbin/chkconfig --level 345 httpd on")
       end
       
       desc "Set apache to not start on boot"
       task :deactivate, :roles => :web do
-        send(run_method, "update-rc.d -f httpd remove")
+        send(run_method, "/sbin/chkconfig --del httpd")
       end
       
       task :backup, :roles => :web do
