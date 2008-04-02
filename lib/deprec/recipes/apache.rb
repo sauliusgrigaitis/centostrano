@@ -126,6 +126,7 @@ Capistrano::Configuration.instance(:must_exist).load do
 
       task :config_project, :roles => :web do
         deprec2.push_configs(:apache, PROJECT_CONFIG_FILES[:apache])
+        sudo "ln -sf #{deploy_to}/apache/conf/httpd-vhost-app.conf /usr/local/apache2/conf/apps/#{application}.conf"        
       end
 
       desc "Start Apache"
