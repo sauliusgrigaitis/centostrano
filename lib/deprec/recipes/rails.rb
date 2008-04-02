@@ -65,7 +65,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       :owner => 'root:root'}
     ]
 
-  namespace :deprec do
+  namespace :centos do
     namespace :rails do
 
       task :install, :roles => :app do
