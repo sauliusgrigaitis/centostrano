@@ -1,6 +1,6 @@
 # Copyright 2006-2008 by Mike Bailey. All rights reserved.
 Capistrano::Configuration.instance(:must_exist).load do 
-  namespace :deprec do
+  namespace :centos do
     namespace :mysql do
       
       # Installation
@@ -46,11 +46,11 @@ Capistrano::Configuration.instance(:must_exist).load do
       end
       
       task :activate, :roles => :db do
-        send(run_method, "update-rc.d mysql defaults")
+        send(run_method, "/sbin/chkconfig --add mysql")
       end  
       
       task :deactivate, :roles => :db do
-        send(run_method, "update-rc.d -f mysql remove")
+        send(run_method, "/sbin/chkconfig --del mysql")
       end
       
       # Control
