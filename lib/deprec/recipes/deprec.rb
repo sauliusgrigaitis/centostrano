@@ -100,7 +100,7 @@ Capistrano::Configuration.instance(:must_exist).load do
   # XXX for some reason this is causing "before deprec:rails:install" to be executed twice
   # on :load, 'deprec:connect_canonical_tasks' 
 
-  namespace :deprec do
+  namespace :centos do
 
     task :connect_canonical_tasks, :hosts => 'localhost' do      
       # link application specific recipes into canonical task names
