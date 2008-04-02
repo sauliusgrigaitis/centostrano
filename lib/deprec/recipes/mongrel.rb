@@ -1,7 +1,7 @@
 # Copyright 2006-2008 by Mike Bailey. All rights reserved.
 Capistrano::Configuration.instance(:must_exist).load do 
   
-  namespace :deprec do
+  namespace :centos do
     namespace :mongrel do
         
       set :mongrel_servers, 2
@@ -141,7 +141,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       end
       
       task :deactivate_system, :roles => :app do
-        send(run_method, "update-rc.d -f mongrel_cluster remove")
+        send(run_method, "/sbin/chkconfig --del mongrel_cluster")
       end
       
       task :deactivate_project, :roles => :app do

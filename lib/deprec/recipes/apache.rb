@@ -1,6 +1,6 @@
 # Copyright 2006-2008 by Mike Bailey. All rights reserved.
 Capistrano::Configuration.instance(:must_exist).load do 
-  namespace :cent do
+  namespace :centos do
     namespace :apache do
       
       # put apache config for site in shared/config/apache2 dir

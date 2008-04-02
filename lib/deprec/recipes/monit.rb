@@ -1,6 +1,6 @@
 # Copyright 2006-2008 by Mike Bailey. All rights reserved.
 Capistrano::Configuration.instance(:must_exist).load do 
-  namespace :deprec do namespace :monit do
+  namespace :centos do namespace :monit do
         
   set :monit_user,  'monit'
   set :monit_group, 'monit'
@@ -107,8 +107,8 @@ Capistrano::Configuration.instance(:must_exist).load do
     Setup server to start monit on boot.
   DESC
   task :activate do
-    #send(run_method, "/sbin/chkconfig --add monit")
-    #send(run_method, "/sbin/chkconfig --level 345 monit on")
+    send(run_method, "/sbin/chkconfig --add monit")
+    send(run_method, "/sbin/chkconfig --level 345 monit on")
   end
   
   desc <<-DESC
@@ -116,7 +116,7 @@ Capistrano::Configuration.instance(:must_exist).load do
     Setup server to start monit on boot.
   DESC
   task :deactivate do
-    send(run_method, "update-rc.d -f monit remove")
+    send(run_method, "/sbin/chkconfig --del monit")
   end
   
   task :backup do
