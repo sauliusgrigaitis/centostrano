@@ -5,7 +5,7 @@ require 'uri'
 # http://svnbook.red-bean.com/en/1.4/svn-book.html#svn.serverconfig.choosing.apache
 
 Capistrano::Configuration.instance(:must_exist).load do 
-  namespace :deprec do namespace :svn do
+  namespace :centos do namespace :svn do
   
   set :scm_group, 'scm'
   
