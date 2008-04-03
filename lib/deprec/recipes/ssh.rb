@@ -35,22 +35,22 @@ Capistrano::Configuration.instance(:must_exist).load do
 
       desc "Start ssh"
       task :start do
-        send(run_method, "/etc/init.d/ssh reload")
+        send(run_method, "/etc/init.d/sshd reload")
       end
     
       desc "Stop ssh"
       task :stop do
-        send(run_method, "/etc/init.d/ssh reload")
+        send(run_method, "/etc/init.d/sshd reload")
       end
     
       desc "Restart ssh"
       task :restart do
-        send(run_method, "/etc/init.d/ssh restart")
+        send(run_method, "/etc/init.d/sshd restart")
       end
     
       desc "Reload ssh"
       task :reload do
-        send(run_method, "/etc/init.d/ssh reload")
+        send(run_method, "/etc/init.d/sshd reload")
       end
       
       desc "Sets up authorized_keys file on remote server"
