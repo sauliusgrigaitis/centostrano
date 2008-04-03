@@ -42,7 +42,7 @@ Capistrano::Configuration.instance(:must_exist).load do
         
         if copy_keys && copy_keys.grep(/y/i)
           set :target_user, target_user
-          top.deprec.ssh.setup_keys
+          top.centos.ssh.setup_keys
         end
         
       end
