@@ -16,7 +16,7 @@ SPEC = Gem::Specification.new do |spec|
   spec.require_path = 'lib'
   spec.add_dependency('capistrano', '> 2.0.0')
   candidates = Dir.glob("{bin,docs,lib,test,resources}/**/*") 
-  candidates.concat(%w(COPYING LICENSE README.txt THANKS))
+  candidates.concat(%w(COPYING LICENSE README THANKS))
   spec.files = candidates.delete_if do |item| 
     item.include?("CVS") || item.include?("rdoc") 
   end
