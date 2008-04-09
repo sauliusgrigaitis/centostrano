@@ -107,8 +107,8 @@ Capistrano::Configuration.instance(:must_exist).load do
     Setup server to start monit on boot.
   DESC
   task :activate do
-    send(run_method, "/sbin/chkconfig --add monit")
-    send(run_method, "/sbin/chkconfig --level 345 monit on")
+    #send(run_method, "/sbin/chkconfig --add monit")
+    #send(run_method, "/sbin/chkconfig --level 345 monit on")
   end
   
   desc <<-DESC

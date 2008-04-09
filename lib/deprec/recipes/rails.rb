@@ -10,10 +10,10 @@ Capistrano::Configuration.instance(:must_exist).load do
 
   # Hook into the default capistrano deploy tasks
   before 'deploy:setup', :except => { :no_release => true } do
-    top.deprec.rails.setup_user_perms
-    top.deprec.rails.setup_paths
-    top.deprec.rails.setup_shared_dirs
-    top.deprec.rails.install_gems_for_project
+    top.centos.rails.setup_user_perms
+    top.centos.rails.setup_paths
+    top.centos.rails.setup_shared_dirs
+    top.centos.rails.install_gems_for_project
   end
   
   # Override default cap task using sudo to create dir
@@ -26,14 +26,14 @@ Capistrano::Configuration.instance(:must_exist).load do
   end
 
   after 'deploy:setup', :except => { :no_release => true } do
-    top.deprec.rails.setup_servers
-    top.deprec.rails.create_config_dir
+    top.centos.rails.setup_servers
+    top.centos.rails.create_config_dir
   end
 
   after 'deploy:symlink', :roles => :app do
-    top.deprec.rails.symlink_shared_dirs
-    top.deprec.rails.symlink_database_yml unless database_yml_in_scm
-    top.deprec.mongrel.set_perms_for_mongrel_dirs
+    top.centos.rails.symlink_shared_dirs
+    top.centos.rails.symlink_database_yml unless database_yml_in_scm
+    top.centos.mongrel.set_perms_for_mongrel_dirs
   end
 
   after :deploy, :roles => :app do
@@ -43,8 +43,8 @@ Capistrano::Configuration.instance(:must_exist).load do
   # redefine the reaper
   namespace :deploy do
     task :restart do
-      top.deprec.mongrel.restart
-      top.deprec.nginx.restart
+      top.centos.mongrel.restart
+      top.centos.nginx.restart
     end
   end
 
@@ -101,13 +101,13 @@ Capistrano::Configuration.instance(:must_exist).load do
         PROJECT_CONFIG_FILES[:monit].each do |file|
           deprec2.render_template(:monit, file)
         end
-        top.deprec.mongrel.config_gen_project
+        top.centos.mongrel.config_gen_project
       end
 
       task :config, :roles => [:app, :web] do
         deprec2.push_configs(:nginx, PROJECT_CONFIG_FILES[:nginx])
         deprec2.push_configs(:monit, PROJECT_CONFIG_FILES[:monit])
-        top.deprec.mongrel.config_project
+        top.centos.mongrel.config_project
         symlink_nginx_vhost
         symlink_monit_config
       end
@@ -138,7 +138,7 @@ Capistrano::Configuration.instance(:must_exist).load do
 
       # Setup database server.
       task :setup_db, :roles => :db, :only => { :primary => true } do
-        top.deprec.mysql.setup
+        top.centos.mysql.setup
       end
 
       # setup extra paths required for deployment
@@ -236,49 +236,49 @@ Capistrano::Configuration.instance(:must_exist).load do
 
         # Generate configs first in case user input is required
         # Then we can go make a cup of tea.
-        top.deprec.nginx.config_gen
-        top.deprec.mongrel.config_gen_system
-        top.deprec.monit.config_gen
+        top.centos.nginx.config_gen
+        top.centos.mongrel.config_gen_system
+        top.centos.monit.config_gen
         
         # Nginx as our web frontend
-        top.deprec.nginx.install
-        top.deprec.nginx.config
+        top.centos.nginx.install
+        top.centos.nginx.config
         
         # Subversion
-        top.deprec.svn.install
+        top.centos.svn.install
         # Git
-        top.deprec.git.install
+        top.centos.git.install
         # Ruby
-        top.deprec.ruby.install      
-        top.deprec.rubygems.install      
+        top.centos.ruby.install      
+        top.centos.rubygems.install      
         
         # Mongrel as our app server
-        top.deprec.mongrel.install
-        top.deprec.mongrel.config_system
+        top.centos.mongrel.install
+        top.centos.mongrel.config_system
         
         # Monit
-        top.deprec.monit.install
-        top.deprec.monit.config
+        top.centos.monit.install
+        top.centos.monit.config
 
         # Install mysql
-        top.deprec.mysql.install
-        top.deprec.mysql.start
+        top.centos.mysql.install
+        top.centos.mysql.start
         
         # Install rails
-        top.deprec.rails.install
+        top.centos.rails.install
       end
       
       desc "setup and configure servers"
       task :setup_servers do
 
-        top.deprec.nginx.activate       
-        top.deprec.mongrel.create_mongrel_user_and_group 
-        top.deprec.mongrel.config_gen_project
-        top.deprec.mongrel.config_project
-        top.deprec.mongrel.activate
-        top.deprec.monit.activate
-        top.deprec.rails.config_gen
-        top.deprec.rails.config
+        top.centos.nginx.activate       
+        top.centos.mongrel.create_mongrel_user_and_group 
+        top.centos.mongrel.config_gen_project
+        top.centos.mongrel.config_project
+        top.centos.mongrel.activate
+        top.centos.monit.activate
+        top.centos.rails.config_gen
+        top.centos.rails.config
       end
     end
 
@@ -309,7 +309,7 @@ Capistrano::Configuration.instance(:must_exist).load do
 
     namespace :deploy do
       task :restart, :roles => :app, :except => { :no_release => true } do
-        top.deprec.mongrel.restart
+        top.centos.mongrel.restart
       end
     end
   end
