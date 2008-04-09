@@ -140,7 +140,9 @@ Capistrano::Configuration.instance(:must_exist).load do
       doc/app/*
       doc/api/*
     FILE
-      
+    ["log", "tmp/cache", "tmp/pids", "tmp/sessions", "tmp/sockets"].each do
+      |dir| system("touch #{dir}/.gitignore")
+    end
     File.open(".gitignore", "w") { |f| f.write(ignore.strip.gsub(/^#{ignore[/\A\s*/]}/, "")) }
     system "find . -type d -empty | xargs -I {} touch {}/.gitignore"
     system "git add ."
