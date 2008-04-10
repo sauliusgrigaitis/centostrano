@@ -1,4 +1,4 @@
-# Copyright 2006-2008 by Mike Bailey. All rights reserved.
+# Copyright 2006-2008 by Saulius Grigaitis. All rights reserved.
 Capistrano::Configuration.instance(:must_exist).load do 
   namespace :centos do
     namespace :postgresql do
@@ -17,11 +17,11 @@ Capistrano::Configuration.instance(:must_exist).load do
 
       desc "Create Database" 
       task :create_db, :roles => :db do
-        #that's hack to 'generate' proper configuration file (this should be replaced with initdb or so)
-        top.centos.postgresql.start
-        top.centos.postgresql.config_gen
-        top.centos.postgresql.config
-        top.centos.postgresql.restart
+        #that's hack to initialize database (this should be replaced with initdb or so)
+        start
+        config_gen
+        config
+        restart
         read_config
         createuser(db_user, db_password)
         createdb(db_name, db_user)
