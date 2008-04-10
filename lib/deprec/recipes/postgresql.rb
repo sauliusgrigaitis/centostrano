@@ -27,13 +27,6 @@ Capistrano::Configuration.instance(:must_exist).load do
         createdb(db_name, db_user)
       end
        
-      #task :symlink_mysql_sockfile, :roles => :db do
-        # rails puts "socket: /tmp/mysql.sock" into config/database.yml
-        # this is not the location for our ubuntu's mysql socket file
-        # so we create this link to make deployment using rails defaults simpler
-      #  sudo "ln -sf /var/run/mysqld/mysqld.sock /tmp/mysql.sock"
-      #end
-      
       # Configuration
       
       SYSTEM_CONFIG_FILES[:postgresql] = [
@@ -85,8 +78,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       task :reload, :roles => :db do
         send(run_method, "/etc/init.d/postgresql reload")
       end
-     
-            
+      
       task :backup, :roles => :db do
       end
       
@@ -96,7 +88,7 @@ Capistrano::Configuration.instance(:must_exist).load do
     end
   end
 
-  # Imported from Rails Machine gem
+# Imported from Rails Machine gem
 
   def createdb(db, user)
     sudo "su - postgres -c \'createdb -O #{user} #{db}\'"  
@@ -120,12 +112,11 @@ Capistrano::Configuration.instance(:must_exist).load do
   def command(sql, database)
     run "psql --command=\"#{sql}\" #{database}" 
   end
-
+  
   def read_config
     db_config = YAML.load_file('config/database.yml')
     set :db_user, db_config[rails_env]["username"]
     set :db_password, db_config[rails_env]["password"] 
     set :db_name, db_config[rails_env]["database"]
   end
-
 end

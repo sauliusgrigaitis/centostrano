@@ -3,12 +3,12 @@ require 'fileutils'
 require 'uri'
 require 'optparse'
 
-
 Capistrano::Configuration.instance(:must_exist).load do 
   namespace :centos do namespace :git do
   
   set :scm_group, 'scm'
   # Extract git attributes from :repository URL
+
   # 
   # Two examples of :repository entries are:
   #
@@ -77,7 +77,7 @@ Capistrano::Configuration.instance(:must_exist).load do
     repository_configs.each { |rc| deprec2.render_template(:centos, rc) }
   end
 
-  desc "grant a user access to svn repos"
+  desc "grant a user access to git repos"
   task :grant_user_access, :roles => :scm do
     # creates account, scm_group and adds account to group
     deprec2.useradd(git_account)
