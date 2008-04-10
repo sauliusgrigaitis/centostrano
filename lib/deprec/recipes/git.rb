@@ -110,43 +110,29 @@ Capistrano::Configuration.instance(:must_exist).load do
     end
   end
 
-  # Adapted from code in Bradley Taylors RailsMachine gem
   desc "Import project into git repository."
   task :push, :roles => :scm do 
-    ignore_log_and_tmp
-    new_path = "../#{application}"
+    add_ignores
     puts "Importing application."
     system "git push #{repository} master"
     puts "Your repository is: #{repository}" 
   end
   
-  # Lifted from Bradley Taylors RailsMachine gem
-  desc "ignore log files and tmp"
-  task :ignore_log_and_tmp, :roles => :scm  do
-    puts "removing log directory contents from git"
-    system "rm log/*"
-    puts "removing contents of tmp sub-directorys from git"
-    system "rm tmp/cache/*"
-    system "rm tmp/pids/*"
-    system "rm tmp/sessions/*"
-    system "rm tmp/sockets/*"
-
+  desc "ignore log files, tmp"
+  task :add_ignores, :roles => :scm  do
     ignore = <<-FILE
       .DS_Store
       log/*.log
       tmp/**/*
       db/*.sqlite3
-      coverage
-      doc/app/*
-      doc/api/*
     FILE
-    ["log", "tmp/cache", "tmp/pids", "tmp/sessions", "tmp/sockets"].each do
-      |dir| system("touch #{dir}/.gitignore")
+    ["log", "tmp/cache", "tmp/pids", "tmp/sessions", "tmp/sockets"].each do |dir|
+      system("touch #{dir}/.gitignore")
     end
     File.open(".gitignore", "w") { |f| f.write(ignore.strip.gsub(/^#{ignore[/\A\s*/]}/, "")) }
     system "find . -type d -empty | xargs -I {} touch {}/.gitignore"
     system "git add ."
-    system "git commit -a -m 'Touched .gitignore to emtpy folders and  ignored log files and tmp'"
+    system "git commit -a -m 'Touched .gitignore to emtpy folders, ignored log files, tmp, sqlite3 db'"
   end
   
   end end
