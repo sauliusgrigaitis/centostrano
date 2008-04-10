@@ -78,7 +78,7 @@ files = {
   
     set :application, "set your application name here"
     set :domain, "set domain name project will be served on here"
-    set :repository,  "svn+ssh://\#{domain}/var/www/apps/\#{application}/repos"
+    set :repository,  "ssh://\#{domain}/var/git/\#{application}.git"
     # set :gems_for_project, %w(dr_nic_magic_models swiftiply) # list of gems to be installed
     
     # Update these if you're not running everything on one host.
@@ -86,6 +86,8 @@ files = {
     role :web, domain
     role :db,  domain, :primary => true
     role :scm, domain # used by deprec if you want to install subversion
+ 
+    default_run_options[:pty] = true
 
     # If you aren't deploying to /var/www/apps/\#{application} on the target
     # servers (which is the deprec default), you can specify the actual location
