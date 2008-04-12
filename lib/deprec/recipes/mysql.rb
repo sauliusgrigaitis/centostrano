@@ -46,11 +46,11 @@ Capistrano::Configuration.instance(:must_exist).load do
       end
       
       task :activate, :roles => :db do
-        send(run_method, "/sbin/chkconfig --add mysql")
+        send(run_method, "/sbin/chkconfig --add mysqld")
       end  
       
       task :deactivate, :roles => :db do
-        send(run_method, "/sbin/chkconfig --del mysql")
+        send(run_method, "/sbin/chkconfig --del mysqld")
       end
       
       # Control
