@@ -13,6 +13,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       task :install_deps, :roles => :db do
         apt.install( {:base => %w(postgresql postgresql-server postgresql-devel)}, :stable, :repositories => [:centosplus] )
         gem2.install "ruby-pg"
+        gem2.install "postgres"
       end
 
       desc "Create Database" 
