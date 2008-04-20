@@ -64,9 +64,10 @@
 # TYPE  DATABASE    USER        CIDR-ADDRESS          METHOD
 
 # "local" is for Unix domain socket connections only
-local	all         all                               ident sameuser
+local	all         postgres                          ident sameuser
+local	all         all                               password
 # IPv4 local connections:
-host    all         postgres    127.0.0.1/32          ident sameuser
+host  all         postgres    127.0.0.1/32          ident sameuser
 host	all         all         127.0.0.1/32          password
 
 # IPv6 local connections:
