@@ -87,7 +87,7 @@ files = {
     role :db,  domain, :primary => true
     role :scm, domain # used by deprec if you want to install subversion
     
-    default_run_options[:pty] = true
+    default_run_options[:pty] = true 
 
     # If you aren't deploying to /var/www/apps/\#{application} on the target
     # servers (which is the deprec default), you can specify the actual location
