@@ -2,11 +2,11 @@
 Centostrano - port of deprec2 to CentOS
 ------------------------------------------
 
-This projects aims to port deprec2 to CentOS. I try to make Centostrano
+This project aims to port deprec2 to CentOS. I try to make Centostrano
 as close to original deprec2 as possible, but I did some changes because 
 of conflicts between Centostrano and deprec2. Instead of binary 'depify'
 one must use 'centify', instead of 'deprec' namespace of capistrano 
-tasks one should use 'centos', everything else should be the same as 
+tasks one must use 'centos', everything else should be the same as 
 original deprec, so I include original deprec info files too.
 
 Currently Centostrano supports only CentOS 4.6, but soon it should support
