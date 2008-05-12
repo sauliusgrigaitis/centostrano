@@ -3,10 +3,10 @@ require 'rubygems'
 SPEC = Gem::Specification.new do |spec|
   spec.name = 'centostrano'
   spec.author = 'Saulius Grigaitis'
-  spec.email = 'saulius.grigaitis@gmail.com'
-  spec.homepage = 'http://www.rubyonrails.lt'
+  spec.email = 'saulius.grigaitis@mif.vu.lt'
+  spec.homepage = 'http://www.rubyonrails.lt/centostrano'
   spec.rubyforge_project = 'centostrano'
-  spec.version = '1.99.15'
+  spec.version = '0.0.1'
   spec.summary = 'CentOS deployment recipes for capistrano'
   spec.description = <<-EOF
       This project is port of deprec2 for CentOS. Centostrano provides libraries 
