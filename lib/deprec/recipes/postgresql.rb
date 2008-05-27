@@ -11,7 +11,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       
       # Install dependencies for PostgreSQL 
       task :install_deps, :roles => :db do
-        apt.install( {:base => %w(postgresql postgresql-server postgresql-devel)}, :stable, :repositories => [:centosplus] )
+        apt.install( {:base => %w(postgresql postgresql-server postgresql-devel)}, :stable )
         gem2.install "ruby-pg"
         gem2.install "postgres"
       end
@@ -52,6 +52,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       
       task :activate, :roles => :db do
         send(run_method, "/sbin/chkconfig --add postgresql")
+        send(run_method, "/sbin/chkconfig postgresql on")
       end  
       
       task :deactivate, :roles => :db do
