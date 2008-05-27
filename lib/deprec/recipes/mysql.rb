@@ -13,7 +13,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       
       # Install dependencies for Mysql
       task :install_deps, :roles => :db do
-        apt.install( {:base => %w(mysql mysql-server mysql-devel)}, :stable, :repositories => [:centosplus] )
+        apt.install( {:base => %w(mysql mysql-server mysql-devel)}, :stable )
       end
       
       task :symlink_mysql_sockfile, :roles => :db do
@@ -47,6 +47,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       
       task :activate, :roles => :db do
         send(run_method, "/sbin/chkconfig --add mysqld")
+        send(run_method, "/sbin/chkconfig mysqld on")
       end  
       
       task :deactivate, :roles => :db do
