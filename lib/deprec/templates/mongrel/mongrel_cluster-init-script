@@ -30,7 +30,7 @@ case "$1" in
       mkdir -p $PID_DIR
       # chown $USER:$USER $PID_DIR
 
-      mongrel_cluster_ctl start -c $CONF_DIR
+      mongrel_cluster_ctl start --clean -c $CONF_DIR
       RETVAL=$?
   ;;
     stop)
@@ -38,7 +38,7 @@ case "$1" in
       RETVAL=$?
   ;;
     restart)
-      mongrel_cluster_ctl restart -c $CONF_DIR
+      mongrel_cluster_ctl restart --clean -c $CONF_DIR
       RETVAL=$?
   ;;
     status)
