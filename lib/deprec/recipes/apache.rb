@@ -35,7 +35,12 @@ Capistrano::Configuration.instance(:must_exist).load do
       set :apache_docroot, '/usr/local/apache2/htdocs'
       set :apache_vhost_dir, '/usr/local/apache2/conf/apps'
       set :apache_config_file, '/usr/local/apache2/conf/httpd.conf'
-      
+
+
+      # seems that apache from packages should be OK, it's much easier to update it later via yum
+      # so let's forget compiling from source.
+
+=begin
       SRC_PACKAGES[:apache] = {
         :filename => 'httpd-2.2.6.tar.gz',   
         :md5sum => "d050a49bd7532ec21c6bb593b3473a5d  httpd-2.2.6.tar.gz", 
@@ -62,12 +67,14 @@ Capistrano::Configuration.instance(:must_exist).load do
         :install => 'make install;',
         :post_install => 'install -b support/apachectl /etc/init.d/httpd;'
       }
-      
+=end
+
       desc "Install apache"
       task :install do
         install_deps
-        deprec2.download_src(SRC_PACKAGES[:apache], src_dir)
-        deprec2.install_from_src(SRC_PACKAGES[:apache], src_dir)
+        #deprec2.download_src(SRC_PACKAGES[:apache], src_dir)
+        #deprec2.install_from_src(SRC_PACKAGES[:apache], src_dir)a
+        apt.install( {:base => %w(httpd)}, :stable )
         setup_vhost_dir
         install_index_page
       end
