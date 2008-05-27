@@ -25,8 +25,12 @@ Capistrano::Configuration.instance(:must_exist).load do
         gem2.select 'mongrel'                # mongrel requires we select a version
         gem2.install 'mongrel_cluster'
         gem2.install 'swiftiply'
+        symlink_mongrel_rails
       end
-    
+      
+      task :symlink_mongrel_rails, :roles => :app do
+        sudo "ln -sf /usr/local/bin/mongrel_rails /usr/bin/mongrel_rails"
+      end
     
       # Configure
       
@@ -44,6 +48,11 @@ Capistrano::Configuration.instance(:must_exist).load do
         {:template => 'mongrel_cluster.yml.erb',
          :path => 'cluster.yml',
          :mode => 0644,
+         :owner => 'root:root'},
+
+        {:template => 'monit.conf.erb',
+         :path => "monit.conf", 
+         :mode => 0600,
          :owner => 'root:root'}
       
       ]
@@ -80,6 +89,16 @@ Capistrano::Configuration.instance(:must_exist).load do
         create_mongrel_user_and_group
         deprec2.push_configs(:mongrel, PROJECT_CONFIG_FILES[:mongrel])
         symlink_mongrel_cluster
+        symlink_monit_config
+      end
+      
+      task :symlink_monit_config, :roles => :app do
+        deprec2.mkdir(monit_confd_dir, :via => :sudo)
+        sudo "ln -sf #{deploy_to}/mongrel/monit.conf #{monit_confd_dir}/mongrel_#{application}.conf"
+      end
+      
+      task :unlink_monit_config, :roles => :app do
+        sudo "test -L #{monit_confd_dir}/mongrel_#{application}.conf && unlink #{monit_confd_dir}/mongrel_#{application}.conf"
       end
       
       task :symlink_mongrel_cluster, :roles => :app do
@@ -88,7 +107,6 @@ Capistrano::Configuration.instance(:must_exist).load do
       end
       
       task :unlink_mongrel_cluster, :roles => :app do
-        deprec2.mkdir(mongrel_conf_dir, :via => :sudo)
         sudo "test -L #{mongrel_conf} && unlink #{mongrel_conf}"
       end
       
@@ -97,7 +115,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       
       desc "Start application server."
       task :start, :roles => :app do
-        send(run_method, "mongrel_rails cluster::start -C #{mongrel_conf}")
+        send(run_method, "mongrel_rails cluster::start --clean -C #{mongrel_conf}")
       end
       
       desc "Stop application server."
@@ -107,7 +125,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       
       desc "Restart application server."
       task :restart, :roles => :app do
-        send(run_method, "mongrel_rails cluster::restart -C #{mongrel_conf}")
+        send(run_method, "mongrel_rails cluster::restart --clean -C #{mongrel_conf}")
       end
       
       task :activate, :roles => :app do
@@ -122,6 +140,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       
       task :activate_project, :roles => :app do
         symlink_mongrel_cluster
+        symlink_monit_config
       end
       
       task :deactivate, :roles => :app do
@@ -146,6 +165,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       
       task :deactivate_project, :roles => :app do
         unlink_mongrel_cluster
+        unlink_monit_config
         restart
       end
       
