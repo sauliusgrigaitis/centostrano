@@ -36,47 +36,9 @@ Capistrano::Configuration.instance(:must_exist).load do
   
   desc "install dependencies for Subversion"
   task :install_deps do
-    enable_atrpms_dag_repositories
-    apt.install( {:base => %w(git)}, :stable , {:repositories => [:atrpms, :dag]})
+    apt.install( {:base => %w(git)}, :stable)
   end
  
-  desc "enable atrmps and dag repositories"
-  task :enable_atrpms_dag_repositories do
-    repository_configs = [
-      {
-        :template => 'repository.erb',
-        :path => '/etc/yum.repos.d/atrpms.repo',
-        :mode => 0644,
-        :owner => 'root:root',
-        :remote => true,
-        :repository => { 
-          :code => "atrpms",
-          :name => "ATrpms for Enterprise Linux $releasever - $basearch",
-          :baseurl => "http://dl.atrpms.net/el$releasever-$basearch/atrpms/stable",
-          :enabled => "0",
-          :gpgcheck => "1",
-          :gpgkey => "http://ATrpms.net/RPM-GPG-KEY.atrpms"
-        }
-      },
-      {
-        :template => 'repository.erb',
-        :path => '/etc/yum.repos.d/dag.repo',
-        :mode => 0644,
-        :owner => 'root:root',
-        :remote => true,
-        :repository => { 
-          :code => "dag",
-          :name => "Dag",
-          :baseurl => "http://dag.freshrpms.net/redhat/el4/en/$basearch/dag\nhttp://ftp.heanet.ie/pub/freshrpms/pub/dag/redhat/el4/en/i386/dag/",
-          :enabled => "0",
-          :gpgcheck => "1",
-          :gpgkey => "http://dag.wieers.com/packages/RPM-GPG-KEY.dag.txt"
-        }
-      } 
-    ]
-    repository_configs.each { |rc| deprec2.render_template(:centos, rc) }
-  end
-
   desc "grant a user access to git repos"
   task :grant_user_access, :roles => :scm do
     # creates account, scm_group and adds account to group
