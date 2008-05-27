@@ -9,11 +9,15 @@ one must use 'centify', instead of 'deprec' namespace of capistrano
 tasks one must use 'centos', everything else should be the same as 
 original deprec, so I include original deprec info files too.
 
-Currently Centostrano supports only CentOS 4.6, but soon it should support
-CentOS 5.1 too.
+Currently Centostrano supports CentOS 5.1. There are some work done to
+support CentOS 4.6, but I removed the support because I personaly do
+not need CentOS 4.6 support and there were too much hacks (like 
+unoficial repositories, issues with gitosis because of too old python 
+etc.), if there will be demand for Centos 4.6 support, I'll merge previous
+work to current Centostrano. 
 
-Also, I added Git and PostgreSQL installation and setup scripts, those 
-needs more testing, so any feedback is welcome.
+Also, I added Git(+ Gitosis for configuration) and PostgreSQL installation 
+and setup scripts, those needs more testing, so any feedback is welcome.
 
 == Credits
 
