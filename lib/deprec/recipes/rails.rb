@@ -57,14 +57,6 @@ Capistrano::Configuration.instance(:must_exist).load do
       :owner => 'root:root'}
     ]
     
-  PROJECT_CONFIG_FILES[:monit] = [
-
-    { :template => 'monit_mongrel.erb',
-      :path => "monit_mongrel.conf", 
-      :mode => 0600,
-      :owner => 'root:root'}
-    ]
-
   namespace :centos do
     namespace :rails do
 
@@ -98,9 +90,6 @@ Capistrano::Configuration.instance(:must_exist).load do
           deprec2.render_template(:nginx, file)
         end
         
-        PROJECT_CONFIG_FILES[:monit].each do |file|
-          deprec2.render_template(:monit, file)
-        end
         top.centos.mongrel.config_gen_project
       end
 
@@ -116,11 +105,6 @@ Capistrano::Configuration.instance(:must_exist).load do
         sudo "ln -sf #{deploy_to}/nginx/rails_nginx_vhost.conf #{nginx_vhost_dir}/#{application}.conf"
       end
       
-      task :symlink_monit_config, :roles => :app do
-        sudo "ln -sf #{deploy_to}/monit/monit_mongrel.conf #{monit_confd_dir}/mongrel_#{application}.conf"
-      end
-
-
       task :create_config_dir do
         deprec2.mkdir("#{shared_path}/config", :group => group, :mode => 0775, :via => :sudo)
       end
