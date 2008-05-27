@@ -1,6 +1,6 @@
 <% mongrel_servers.times do |counter| -%>
   check process mongrel-<%=mongrel_port+counter%> with pidfile <%= mongrel_pid_dir %>/mongrel.<%=mongrel_port+counter%>.pid
-	group mongrel
+	group mongrel_<%= application %>
 	start program = "/usr/local/bin/ruby /usr/local/bin/mongrel_rails start -d -e production -a 127.0.0.1 -c <%= deploy_to %>/current --user <%= mongrel_user %> --group <%= mongrel_group %> -p <%=mongrel_port+counter%> -P <%= mongrel_pid_dir %>/mongrel.<%=mongrel_port+counter%>.pid -l <%= mongrel_log_dir %>/mongrel.<%=mongrel_port+counter%>.log"
 	stop program = "/usr/local/bin/ruby /usr/local/bin/mongrel_rails stop -P <%= mongrel_pid_dir %>/mongrel.<%=mongrel_port+counter%>.pid"
 	
