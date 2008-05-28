@@ -135,7 +135,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       
       task :activate_system, :roles => :app do
         send(run_method, "/sbin/chkconfig --add mongrel_cluster")
-        send(run_method, "/sbin/chkconfig --level 345 mongrel_cluster on")
+        send(run_method, "/sbin/chkconfig --level 45 mongrel_cluster on")
       end
       
       task :activate_project, :roles => :app do
