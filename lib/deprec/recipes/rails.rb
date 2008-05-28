@@ -67,7 +67,7 @@ Capistrano::Configuration.instance(:must_exist).load do
 
       task :install_deps do
         apt.install( {:base => %w(sqlite sqlite-devel)}, :stable )
-        apt.install( {:base => %w(mysql mysql-devel)}, :stable, :repositories => [:centosplus] )
+        apt.install( {:base => %w(mysql mysql-devel)}, :stable )
       end
 
       # install some required ruby gems
