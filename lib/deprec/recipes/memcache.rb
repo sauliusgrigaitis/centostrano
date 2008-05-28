@@ -24,6 +24,8 @@ Capistrano::Configuration.instance(:must_exist).load do
   end
   
   task :install_memcached do
+    # rpmforge contains same version of memcached, so let's use packages here
+=begin
     version = 'memcached-1.2.2'
     set :src_package, {
       :file => version + '.tar.gz',   
@@ -34,15 +36,17 @@ Capistrano::Configuration.instance(:must_exist).load do
       :configure => %w{
         ./configure
         --prefix=/usr/local 
+        --with-libevent=/usr/lib/
         ;
         }.reject{|arg| arg.match '#'}.join(' '),
       :make => 'make;',
       :install => 'make install;',
       :post_install => 'install -b scripts/memcached-init /etc/init.d/memcached;'
     }
-    apt.install( {:base => %w(libevent-dev)}, :stable )
-    deprec.download_src(src_package, src_dir)
-    deprec.install_from_src(src_package, src_dir)
+=end
+    apt.install( {:base => %w(memcached libevent libevent-devel)}, :stable )
+    #deprec.download_src(src_package, src_dir)
+    #deprec.install_from_src(src_package, src_dir)
   end
 end end
   

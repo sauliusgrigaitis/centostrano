@@ -42,7 +42,7 @@ Capistrano::Configuration.instance(:must_exist).load do
   desc "Install monit"
   task :install do
     install_deps
-    enable_rmpforge
+    apt.enable_rmpforge_repository
     apt.install( {:base => %w(monit)}, :stable )
     #deprec2.download_src(SRC_PACKAGES[:monit], src_dir)
     #deprec2.install_from_src(SRC_PACKAGES[:monit], src_dir)
@@ -54,15 +54,7 @@ Capistrano::Configuration.instance(:must_exist).load do
     apt.install( {:base => %w(flex bison openssl openssl-devel)}, :stable )
   end
 
-  task :enable_rpmforge do
-    sudo <<-SUDO
-      sh -c '
-      cd #{src_dir};
-      wget http://dag.wieers.com/rpm/packages/rpmforge-release/rpmforge-release-0.3.6-1.el5.rf.`uname -i`.rpm;
-      rpm -i rpmforge-release-0.3.6-1.el5.rf.`uname -i`.rpm'
-    SUDO
-  end
-    
+      
   SYSTEM_CONFIG_FILES[:monit] = [
     
     {:template => 'monit-init-script',
