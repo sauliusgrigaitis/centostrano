@@ -20,7 +20,10 @@ Capistrano::Configuration.instance(:must_exist).load do
   set :monit_webserver_auth_pass, 'monit'
   
   # Upstream changes: http://www.tildeslash.com/monit/dist/CHANGES.txt  
-  # Ubuntu package version = monit-4.8.1  
+  # rpmforge has packages of monit 4.9.2, let's use it instead of newest
+  # version from sources
+  
+=begin
   SRC_PACKAGES[:monit] = {
     :filename => 'monit-4.10.1.tar.gz',   
     :md5sum => "d3143b0bbd79b53f1b019d2fc1dae656  monit-4.10.1.tar.gz", 
@@ -34,18 +37,29 @@ Capistrano::Configuration.instance(:must_exist).load do
     :make => 'make;',
     :install => 'make install;'
   }
-  
+=end  
+
   desc "Install monit"
   task :install do
     install_deps
-    deprec2.download_src(SRC_PACKAGES[:monit], src_dir)
-    deprec2.install_from_src(SRC_PACKAGES[:monit], src_dir)
+    enable_rmpforge
+    #deprec2.download_src(SRC_PACKAGES[:monit], src_dir)
+    #deprec2.install_from_src(SRC_PACKAGES[:monit], src_dir)
     activate
   end
   
   # install dependencies for monit
   task :install_deps do
     apt.install( {:base => %w(flex bison openssl openssl-devel)}, :stable )
+  end
+
+  task :enable_rpmforge do
+    sudo <<-SUDO
+      sh -c '
+      cd #{src_dir};
+      wget http://dag.wieers.com/rpm/packages/rpmforge-release/rpmforge-release-0.3.6-1.el5.rf.`uname -i`.rpm;
+      rpm -i rpmforge-release-0.3.6-1.el5.rf.`uname -i`.rpm'
+    SUDO
   end
     
   SYSTEM_CONFIG_FILES[:monit] = [
@@ -108,8 +122,8 @@ Capistrano::Configuration.instance(:must_exist).load do
     Setup server to start monit on boot.
   DESC
   task :activate do
-    #send(run_method, "/sbin/chkconfig --add monit")
-    #send(run_method, "/sbin/chkconfig --level 345 monit on")
+    send(run_method, "/sbin/chkconfig --add monit")
+    send(run_method, "/sbin/chkconfig --level 45 monit on")
   end
   
   desc <<-DESC
