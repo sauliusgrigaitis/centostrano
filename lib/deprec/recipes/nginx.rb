@@ -10,11 +10,11 @@ Capistrano::Configuration.instance(:must_exist).load do
       set :nginx_client_max_body_size, '50M'
 
       SRC_PACKAGES[:nginx] = {
-        :filename => 'nginx-0.5.34.tar.gz',   
-        :md5sum => "8f7d3efcd7caaf1f06e4d95dfaeac238  nginx-0.5.34.tar.gz", 
-        :dir => 'nginx-0.5.34',  
-        :url => "http://sysoev.ru/nginx/nginx-0.5.34.tar.gz",
-        :unpack => "tar zxf nginx-0.5.34.tar.gz;",
+        :filename => 'nginx-0.6.31.tar.gz',   
+        :md5sum => "824bcc25bbd5b636f182237b69227bd2  nginx-0.6.31.tar.gz", 
+        :dir => 'nginx-0.6.31',  
+        :url => "http://sysoev.ru/nginx/nginx-0.6.31.tar.gz",
+        :unpack => "tar zxf nginx-0.6.31.tar.gz;",
         :configure => %w(
         ./configure
         --sbin-path=/usr/local/sbin
@@ -30,7 +30,7 @@ Capistrano::Configuration.instance(:must_exist).load do
         install_deps
         install_start_stop_daemon
         deprec2.download_src(SRC_PACKAGES[:nginx], src_dir)
-        deprec2.install_from_src(SRC_PACKAGES[:nginx], src_dir)
+        yum.install_from_src(SRC_PACKAGES[:nginx], src_dir)
         create_nginx_user
         # setup_vhost_dir     # XXX not done yet
         # install_index_page  # XXX not done yet

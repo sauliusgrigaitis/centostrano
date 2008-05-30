@@ -79,17 +79,6 @@ module Apt
     send(run_method, cmd, options)
   end
 
-  def enable_rmpforge_repository(options={})
-    cmd <<-CMD
-      sh -c '
-      cd #{src_dir};
-      wget http://dag.wieers.com/rpm/packages/rpmforge-release/rpmforge-release-0.3.6-1.el5.rf.`uname -i`.rpm;
-      rpm -i rpmforge-release-0.3.6-1.el5.rf.`uname -i`.rpm;
-      rm rpmforge-release-0.3.6-1.el5.rf.`uname -i`.rpm'
-    CMD
-    send(run_method, cmd, options)
-  end
-
 
 private
 
