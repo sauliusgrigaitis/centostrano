@@ -19,16 +19,15 @@ module Yum
     package_dir = File.join(src_dir, src_package[:dir])
     deprec2.unpack_src(src_package, src_dir)
     enable_rpmforge_repository
-    #rpm_install("http://www.asic-linux.com.mx/~izto/checkinstall/files/rpm/checkinstall-1.6.1-1.i386.rpm") 
-    sudo "sh -c 'echo \"echo \'/bin/rpm\'\" > /usr/bin/which; chmod 755 /usr/bin/which'"
-    apt.install( {:base => %w(gcc gcc-c++ make patch rpm-build checkinstall)}, :stable )
+    rpm_install("http://www.asic-linux.com.mx/~izto/checkinstall/files/rpm/checkinstall-1.6.1-1.i386.rpm") 
+    apt.install( {:base => %w(gcc gcc-c++ make patch rpm-build which)}, :stable )
     # XXX replace with invoke_command
     sudo <<-SUDO
     sh -c '
     cd #{package_dir};
     #{src_package[:configure]}
     #{src_package[:make]}
-    /usr/sbin/checkinstall -y -R -fstrans=no #{src_package[:install]}
+    /usr/local/sbin/checkinstall -y -R --install #{src_package[:install]}
     #{src_package[:post_install]}
     '
     SUDO
