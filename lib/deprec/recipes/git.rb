@@ -1,10 +1,11 @@
-# Copyright 2006-2008 by Saulius Grigaitis. All rights reserved.
+# Copyright 2008 by Saulius Grigaitis. All rights reserved.
 require 'fileutils'
 require 'uri'
 require 'optparse'
 
 Capistrano::Configuration.instance(:must_exist).load do 
   namespace :centos do namespace :git do
+    
   
   set :scm_group, 'scm'
   # Extract git attributes from :repository URL
@@ -32,11 +33,54 @@ Capistrano::Configuration.instance(:must_exist).load do
   desc "Install Git"
   task :install, :roles => :scm do
     install_deps
+    install_gitosis
   end
   
-  desc "install dependencies for Subversion"
+  desc "install dependencies for git"
   task :install_deps do
-    apt.install( {:base => %w(git)}, :stable)
+    yum.enable_repository :epel
+    apt.install( {:base => %w(git python-devel python-setuptools)}, :stable)
+  end
+
+  task :install_gitosis do
+    deprec2.groupadd(scm_group)
+    deprec2.useradd("git", { :gecos => 'git version control', :shell => '/bin/sh', :group => scm_group, :homedir => "/home/git"})
+    sudo "/usr/sbin/usermod -L git"
+    deprec2.add_user_to_group("git", scm_group)
+    
+    package_dir = File.join(src_dir, 'gitosis')
+    sudo <<-SUDO
+    cd #{src_dir};
+    test -d #{package_dir}.old && rm -fr #{package_dir}.old;
+    test -d #{package_dir} && mv #{package_dir} #{package_dir}.old;
+    git clone git://eagain.net/gitosis.git #{package_dir};
+    chown -R #{user} #{package_dir};  
+    chmod -R g+w #{package_dir};
+    cd #{package_dir};
+    python setup.py install
+    SUDO
+
+            
+    unless ssh_options[:keys]  
+      puts <<-ERROR
+
+      You need to define the name of your SSH key(s)
+     e.g. ssh_options[:keys] = %w(/Users/your_username/.ssh/id_rsa)
+
+      You can put this in your .caprc file in your home directory.
+
+      ERROR
+      exit
+    end
+
+    put File.read(ssh_options[:keys].first + ".pub"), "/tmp/id_rsa.pub",  :mode => 0600
+    sudo "sudo -H -u git gitosis-init < /tmp/id_rsa.pub"
+    sudo "sudo chmod 755 /home/git/repositories/gitosis-admin.git/hooks/post-update"
+
+    path_dir = "config/gitosis"
+    FileUtils.mkdir_p(path_dir) if !File.directory?(path_dir)
+    system("git clone git@#{domain}:gitosis-admin.git config/gitosis/gitosis-admin.git") if !File.exists?("#{path_dir}/gitosis-admin.git")
+
   end
  
   desc "grant a user access to git repos"
@@ -46,7 +90,7 @@ Capistrano::Configuration.instance(:must_exist).load do
     deprec2.groupadd(scm_group) 
     deprec2.add_user_to_group(git_account, scm_group)
   end
-  
+ 
   desc "Create git repository and import project into it"
   task :setup, :roles => :scm do 
     create_repos
@@ -56,17 +100,28 @@ Capistrano::Configuration.instance(:must_exist).load do
  
   desc "Create a git repository"
   task :create_repos, :roles => :scm do
-    set :git_account, top.user
-    grant_user_access
-    deprec2.mkdir(repos_path, :mode => 02775, :group => scm_group, :via => :sudo)
-    sudo "sh -c 'cd #{repos_path} && git --bare init'"
-    sudo "chmod -R g+w #{repos_path}"
+    
+    gitosis_username = File.open(ssh_options[:keys].first + ".pub", "r") do |line|
+      line.gets.split(" ").last
+    end
+
+    gitosis_conf = <<-GITOSIS
+
+[group #{group}]
+writable = #{application}
+members = #{gitosis_username}
+
+    GITOSIS
+
+    File.open("config/gitosis/gitosis-admin.git/gitosis.conf", "a") { |f| f.write(gitosis_conf) }
+    system "cd config/gitosis/gitosis-admin.git && git commit -a -m \"Added repository #{application} and write permission to user #{gitosis_username}\" && git push"
   end
  
   desc "Create git repository in local project"
   task :create_local_repos do
     unless File.exists?(".git")
       system("git init")
+      system("git remote add origin git@#{domain}:#{application}.git")
       system("git add .")
       system("git commit -a -m 'Initial import'")
     end
@@ -76,7 +131,9 @@ Capistrano::Configuration.instance(:must_exist).load do
   task :push, :roles => :scm do 
     add_ignores
     puts "Importing application."
-    system "git push #{repository} master"
+    system "git push origin master:refs/heads/master"
+    system "git-config --add branch.master.remote origin"
+    system "git-config --add branch.master.merge refs/heads/master"
     puts "Your repository is: #{repository}" 
   end
   
@@ -87,6 +144,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       log/*.log
       tmp/**/*
       db/*.sqlite3
+      config/gitosis
     FILE
     ["log", "tmp/cache", "tmp/pids", "tmp/sessions", "tmp/sockets"].each do |dir|
       system("touch #{dir}/.gitignore")

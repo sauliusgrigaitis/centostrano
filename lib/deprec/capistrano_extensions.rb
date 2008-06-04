@@ -259,6 +259,7 @@ module Deprec2
 
   # install package from source
   def install_from_src(src_package, src_dir)
+    raise "this should be replaces to yum"
     package_dir = File.join(src_dir, src_package[:dir])
     unpack_src(src_package, src_dir)
     apt.install( {:base => %w(gcc gcc-c++ make)}, :stable )

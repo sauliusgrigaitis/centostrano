@@ -4,13 +4,19 @@ require 'fileutils'
 
 module Yum
 
-  def enable_rpmforge_repository
+  def enable_repository(name)
+    case name
+    when :rpmforge
       rpm_install("http://dag.wieers.com/rpm/packages/rpmforge-release/rpmforge-release-0.3.6-1.el5.rf.`uname -i`.rpm")
+    when :epel
+      sudo "test -f /etc/yum.repos.d/epel.repo || rpm -Uvh http://download.fedora.redhat.com/pub/epel/5/i386/epel-release-5-2.noarch.rpm"
+    end
   end
   
   def rpm_install(packages, options={})
     send(run_method, "wget -Ncq #{[*packages].join(' ')}", options)
     files=[*packages].collect { |package| File.basename(package) }
+    # TODO hmm... This should me replaces with something more smart, like check if package is already installed
     send(run_method, "rpm -i --force #{files.join(' ')}", options)
     send(run_method, "rm #{files.join(' ')}", options)
   end
@@ -18,7 +24,8 @@ module Yum
   def install_from_src(src_package, src_dir)
     package_dir = File.join(src_dir, src_package[:dir])
     deprec2.unpack_src(src_package, src_dir)
-    enable_rpmforge_repository
+    enable_repository :rpmforge
+    enable_repository :epel
     rpm_install("http://www.asic-linux.com.mx/~izto/checkinstall/files/rpm/checkinstall-1.6.1-1.i386.rpm") 
     apt.install( {:base => %w(gcc gcc-c++ make patch rpm-build which)}, :stable )
     # XXX replace with invoke_command

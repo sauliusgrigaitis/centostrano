@@ -42,7 +42,7 @@ Capistrano::Configuration.instance(:must_exist).load do
   desc "Install monit"
   task :install do
     install_deps
-    yum.enable_rpmforge_repository
+    yum.enable_repository(:rpmforge)
     apt.install( {:base => %w(monit)}, :stable )
     #deprec2.download_src(SRC_PACKAGES[:monit], src_dir)
     #deprec2.install_from_src(SRC_PACKAGES[:monit], src_dir)
