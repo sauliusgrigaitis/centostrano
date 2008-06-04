@@ -115,8 +115,9 @@ Capistrano::Configuration.instance(:must_exist).load do
     Setup server to start monit on boot.
   DESC
   task :activate do
-    send(run_method, "/sbin/chkconfig --add monit")
-    send(run_method, "/sbin/chkconfig --level 45 monit on")
+    # TODO: service monit does not support chkconfig
+#    send(run_method, "/sbin/chkconfig --add monit")
+#    send(run_method, "/sbin/chkconfig --level 45 monit on")
   end
   
   desc <<-DESC
