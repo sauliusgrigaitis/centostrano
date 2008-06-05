@@ -95,10 +95,8 @@ Capistrano::Configuration.instance(:must_exist).load do
 
       task :config, :roles => [:app, :web] do
         deprec2.push_configs(:nginx, PROJECT_CONFIG_FILES[:nginx])
-        deprec2.push_configs(:monit, PROJECT_CONFIG_FILES[:monit])
         top.centos.mongrel.config_project
         symlink_nginx_vhost
-        symlink_monit_config
       end
 
       task :symlink_nginx_vhost, :roles => :web do
