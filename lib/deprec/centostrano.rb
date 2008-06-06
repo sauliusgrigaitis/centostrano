@@ -9,7 +9,7 @@ module Yum
     when :rpmforge
       rpm_install("http://dag.wieers.com/rpm/packages/rpmforge-release/rpmforge-release-0.3.6-1.el5.rf.`uname -i`.rpm")
     when :epel
-      sudo "test -f /etc/yum.repos.d/epel.repo || rpm -Uvh http://download.fedora.redhat.com/pub/epel/5/i386/epel-release-5-2.noarch.rpm"
+      sudo "sudo test -f /etc/yum.repos.d/epel.repo || sudo rpm -Uvh http://download.fedora.redhat.com/pub/epel/5/i386/epel-release-5-2.noarch.rpm"
     end
   end
   
