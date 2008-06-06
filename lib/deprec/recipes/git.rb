@@ -50,14 +50,14 @@ Capistrano::Configuration.instance(:must_exist).load do
     
     package_dir = File.join(src_dir, 'gitosis')
     sudo <<-SUDO
-    cd #{src_dir};
+    sh -c 'cd #{src_dir};
     test -d #{package_dir}.old && rm -fr #{package_dir}.old;
     test -d #{package_dir} && mv #{package_dir} #{package_dir}.old;
     git clone git://eagain.net/gitosis.git #{package_dir};
     chown -R #{user} #{package_dir};  
     chmod -R g+w #{package_dir};
     cd #{package_dir};
-    python setup.py install
+    python setup.py install'
     SUDO
 
             
