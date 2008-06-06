@@ -35,11 +35,13 @@ http {
 
     server {
         listen       80;
-        server_name  _ *;
+        server_name  _;
 
         #charset koi8-r;
 
         #access_log  logs/host.access.log  main;
+
+        server_name_in_redirect  off;
 
         location / {
             root   html;
