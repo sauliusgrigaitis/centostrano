@@ -23,7 +23,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       set :apache_conf, nil
       set :apache_default_vhost, false
       set :apache_default_vhost_conf, nil
-      set :apache_ctl, "/usr/local/apache2/bin/apachectl"
+      set :apache_ctl, "/etc/init.d/httpd"
       set(:apache_server_aliases) { web_server_aliases }
       set :apache_proxy_port, 8000
       set :apache_proxy_servers, 2
