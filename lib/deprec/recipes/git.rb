@@ -100,21 +100,27 @@ Capistrano::Configuration.instance(:must_exist).load do
  
   desc "Create a git repository"
   task :create_repos, :roles => :scm do
-    
-    gitosis_username = File.open(ssh_options[:keys].first + ".pub", "r") do |line|
+    gitosis_admin = File.open(ssh_options[:keys].first + ".pub", "r") do |line|
       line.gets.split(" ").last
     end
-
+    # create key pair if it doesn't exist, and fetch public key 
+    run "sh -c 'test -f /home/#{user}/.ssh/id_rsa.pub || /usr/bin/ssh-keygen -q -t rsa -N \"\" -f /home/#{user}/.ssh/id_rsa >&/dev/null'"
+    #run "chmod 600 /home/#{user}/.ssh/id_rsa && chmod 644 /home/#{user}/.ssh/id_rsa.pub"
+    get("/home/#{user}/.ssh/id_rsa.pub", "config/gitosis/gitosis_server.pub")
+    gitosis_server = File.open("config/gitosis/gitosis_server.pub", "r") do |line|
+      line.gets.split(" ").last
+    end
+    system("mv config/gitosis/gitosis_server.pub config/gitosis/gitosis-admin.git/keydir/#{gitosis_server}.pub")
     gitosis_conf = <<-GITOSIS
 
 [group #{group}]
 writable = #{application}
-members = #{gitosis_username}
+members = #{gitosis_admin} #{gitosis_server}
 
     GITOSIS
 
     File.open("config/gitosis/gitosis-admin.git/gitosis.conf", "a") { |f| f.write(gitosis_conf) }
-    system "cd config/gitosis/gitosis-admin.git && git commit -a -m \"Added repository #{application} and write permission to user #{gitosis_username}\" && git push"
+    system "cd config/gitosis/gitosis-admin.git && git add . && git commit -m \"Added repository #{application} and write permission to user #{gitosis_admin}\" && git push"
   end
  
   desc "Create git repository in local project"
