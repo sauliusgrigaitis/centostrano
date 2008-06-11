@@ -26,7 +26,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       end
       
       task :install_deps do
-        apt.install( {:base => %w(openssl openssl-devel)}, :stable )
+        apt.install( {:base => %w(pcre* gcc make openssl openssl-devel)}, :stable )
       end
 
     end
@@ -58,6 +58,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       
       # install dependencies for rubygems
       task :install_deps do
+        apt.install( {:base => %w(pcre* gcc make openssl openssl-devel)}, :stable )
       end
       
     end 
