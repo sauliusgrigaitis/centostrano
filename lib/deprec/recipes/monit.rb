@@ -42,7 +42,7 @@ Capistrano::Configuration.instance(:must_exist).load do
   desc "Install monit"
   task :install do
     install_deps
-    apt.enable_rmpforge_repository
+    yum.enable_repository(:rpmforge)
     apt.install( {:base => %w(monit)}, :stable )
     #deprec2.download_src(SRC_PACKAGES[:monit], src_dir)
     #deprec2.install_from_src(SRC_PACKAGES[:monit], src_dir)
@@ -115,8 +115,9 @@ Capistrano::Configuration.instance(:must_exist).load do
     Setup server to start monit on boot.
   DESC
   task :activate do
-    send(run_method, "/sbin/chkconfig --add monit")
-    send(run_method, "/sbin/chkconfig --level 45 monit on")
+    # TODO: service monit does not support chkconfig
+#    send(run_method, "/sbin/chkconfig --add monit")
+#    send(run_method, "/sbin/chkconfig --level 45 monit on")
   end
   
   desc <<-DESC

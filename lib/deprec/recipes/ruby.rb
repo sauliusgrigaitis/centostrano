@@ -5,14 +5,13 @@ Capistrano::Configuration.instance(:must_exist).load do
     namespace :ruby do
             
       SRC_PACKAGES[:ruby] = {
-        :filename => 'ruby-1.8.6-p110.tar.gz',   
-        :md5sum => "5d9f903eae163cda2374ef8fdba5c0a5  ruby-1.8.6-p110.tar.gz", 
-        :dir => 'ruby-1.8.6-p110',  
-        :url => "ftp://ftp.ruby-lang.org/pub/ruby/1.8/ruby-1.8.6-p110.tar.gz",
-        :unpack => "tar zxf ruby-1.8.6-p110.tar.gz;",
+        :filename => 'ruby-1.8.6-p114.tar.gz',   
+        :md5sum => "500a9f11613d6c8ab6dcf12bec1b3ed3  ruby-1.8.6-p114.tar.gz", 
+        :dir => 'ruby-1.8.6-p114',  
+        :url => "ftp://ftp.ruby-lang.org/pub/ruby/1.8/ruby-1.8.6-p114.tar.gz",
+        :unpack => "tar zxf ruby-1.8.6-p114.tar.gz;",
         :configure => %w(
           ./configure
-          --with-readline-dir=/usr/local
           ;
           ).reject{|arg| arg.match '#'}.join(' '),
         :make => 'make;',
@@ -22,7 +21,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       task :install do
         install_deps
         deprec2.download_src(SRC_PACKAGES[:ruby], src_dir)
-        deprec2.install_from_src(SRC_PACKAGES[:ruby], src_dir)
+        yum.install_from_src(SRC_PACKAGES[:ruby], src_dir)
       end
       
       task :install_deps do
@@ -48,7 +47,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       task :install do
         install_deps
         deprec2.download_src(SRC_PACKAGES[:rubygems], src_dir)
-        deprec2.install_from_src(SRC_PACKAGES[:rubygems], src_dir)
+        yum.install_from_src(SRC_PACKAGES[:rubygems], src_dir)
         # gem2.upgrade #  you may not want to upgrade your gems right now
         # If we want to selfupdate then we need to 
         # create symlink as latest gems version is broken
