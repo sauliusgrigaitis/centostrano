@@ -59,8 +59,8 @@ Capistrano::Configuration.instance(:must_exist).load do
          :mode => 0600,
          :owner => 'root:root'},
          
-        {:template => 'logrotate.erb',
-         :path => "logrotate", 
+        {:template => 'logrotate.conf.erb',
+         :path => "logrotate.conf", 
          :mode => 0644,
          :owner => 'root:root'}
       
