@@ -31,6 +31,10 @@ Capistrano::Configuration.instance(:must_exist).load do
       task :symlink_mongrel_rails, :roles => :app do
         sudo "ln -sf /usr/local/bin/mongrel_rails /usr/bin/mongrel_rails"
       end
+      
+      task :symlink_logrotate_config, :roles => :web do
+        sudo "ln -sf #{deploy_to}/mongrel/logrotate.conf /etc/logrotate.d/mongrel-#{application}"
+      end
     
       # Configure
       
@@ -53,6 +57,11 @@ Capistrano::Configuration.instance(:must_exist).load do
         {:template => 'monit.conf.erb',
          :path => "monit.conf", 
          :mode => 0600,
+         :owner => 'root:root'},
+         
+        {:template => 'logrotate.erb',
+         :path => "logrotate", 
+         :mode => 0644,
          :owner => 'root:root'}
       
       ]
@@ -90,6 +99,7 @@ Capistrano::Configuration.instance(:must_exist).load do
         deprec2.push_configs(:mongrel, PROJECT_CONFIG_FILES[:mongrel])
         symlink_mongrel_cluster
         symlink_monit_config
+        symlink_logrotate_config
       end
       
       task :symlink_monit_config, :roles => :app do
