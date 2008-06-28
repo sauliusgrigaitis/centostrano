@@ -54,7 +54,13 @@ Capistrano::Configuration.instance(:must_exist).load do
     {:template => 'rails_nginx_vhost.conf.erb',
       :path => "rails_nginx_vhost.conf", 
       :mode => 0644,
+      :owner => 'root:root'},
+      
+    {:template => 'logrotate.erb',
+      :path => "logrotate.conf", 
+      :mode => 0644,
       :owner => 'root:root'}
+      
     ]
     
   namespace :centos do
@@ -97,12 +103,17 @@ Capistrano::Configuration.instance(:must_exist).load do
         deprec2.push_configs(:nginx, PROJECT_CONFIG_FILES[:nginx])
         top.centos.mongrel.config_project
         symlink_nginx_vhost
+        symlink_logrotate_config
       end
 
       task :symlink_nginx_vhost, :roles => :web do
         sudo "ln -sf #{deploy_to}/nginx/rails_nginx_vhost.conf #{nginx_vhost_dir}/#{application}.conf"
       end
       
+      task :symlink_logrotate_config, :roles => :web do
+        sudo "ln -sf #{deploy_to}/nginx/logrotate.conf /etc/logrotate.d/nginx-#{application}"
+      end
+ 
       task :create_config_dir do
         deprec2.mkdir("#{shared_path}/config", :group => group, :mode => 0775, :via => :sudo)
       end
