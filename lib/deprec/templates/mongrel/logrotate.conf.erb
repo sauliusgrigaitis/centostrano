@@ -5,11 +5,7 @@
   missingok
   compress
   sharedscripts
-  postrotate
-    for i in `ls /var/www/apps/<%= application %>/shared/pids/mongrel.*.pid`; do
-      kill -USR2 `cat $i`
-    done
-  endscript
+  copytruncate
 }
 	
 
