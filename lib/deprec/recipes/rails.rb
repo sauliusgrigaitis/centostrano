@@ -232,6 +232,7 @@ Capistrano::Configuration.instance(:must_exist).load do
         top.centos.nginx.config_gen
         top.centos.mongrel.config_gen_system
         top.centos.monit.config_gen
+        top.centos.logrotate.config_gen
         
         # Nginx as our web frontend
         top.centos.nginx.install
@@ -259,6 +260,11 @@ Capistrano::Configuration.instance(:must_exist).load do
         
         # Install rails
         top.centos.rails.install
+               
+        # Install logrotate
+        top.centos.logrotate.install
+        top.centos.logrotate.config
+   
       end
       
       desc "setup and configure servers"
