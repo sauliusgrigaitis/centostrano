@@ -4,8 +4,8 @@ Capistrano::Configuration.instance(:must_exist).load do
     namespace :nginx do
 
       set :nginx_server_name, nil
-      set :nginx_user,  'nginx'
-      set :nginx_group, 'nginx'
+      set :nginx_user,  'nobody'
+      set :nginx_group, 'nogroup'
       set :nginx_vhost_dir, '/usr/local/nginx/conf/vhosts'
       set :nginx_client_max_body_size, '50M'
 
