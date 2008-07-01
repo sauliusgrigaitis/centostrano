@@ -28,9 +28,9 @@ Capistrano::Configuration.instance(:must_exist).load do
       desc "Install nginx"
       task :install do
         install_deps
-        install_start_stop_daemon
         deprec2.download_src(SRC_PACKAGES[:nginx], src_dir)
         yum.install_from_src(SRC_PACKAGES[:nginx], src_dir)
+        install_start_stop_daemon
         create_nginx_user
         # setup_vhost_dir     # XXX not done yet
         # install_index_page  # XXX not done yet
