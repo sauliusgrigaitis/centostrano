@@ -39,7 +39,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       # install dependencies for nginx
       task :install_deps do
         #apt.install( {:base => %w(libpcre3 libpcre3-dev libpcrecpp0 libssl-dev zlib1g-dev)}, :stable )
-        apt.install( {:base => %w(openssl openssl-devel  zlib-devel)}, :stable )
+        apt.install( {:base => %w(pcre* openssl openssl-devel  zlib-devel)}, :stable )
         # do we need libgcrypt11-dev?
       end
 
