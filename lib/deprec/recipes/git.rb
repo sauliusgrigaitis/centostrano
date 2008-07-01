@@ -1,164 +1,170 @@
-# Copyright 2008 by Saulius Grigaitis. All rights reserved.
-require 'fileutils'
-require 'uri'
-require 'optparse'
-
+# Copyright 2006-2008 by Mike Bailey. All rights reserved.
 Capistrano::Configuration.instance(:must_exist).load do 
-  namespace :centos do namespace :git do
-    
-  set :scm_group, 'scm'
-  # Extract git attributes from :repository URL
+  namespace :deprec do 
+    namespace :git do
 
-  # 
-  # Two examples of :repository entries are:
-  #
-  #   set :repository, 'ssh://www.rubyonrails.lt/var/git/centostrano.git'
-  #
-  # This has only been tested with ssh (haven't tested with git or http)
-  #
-  set (:git_scheme) { URI.parse(repository).scheme }  
-  set (:git_host)   { URI.parse(repository).host }
-  set (:git_path) { URI.parse(repository).path }
-  
-  # account name to perform actions on (such as granting access to an account)
-  # this is a hack to allow us to optionally pass a variable to tasks 
-  set (:git_account) do
-    Capistrano::CLI.ui.ask 'account name'
-  end
-  
-  set(:git_backup_dir) { File.join(backup_dir, 'git') }
-  
+      set :git_user, 'git'
+      set :git_group, 'git'
+      set :git_keys_file, '/home/git/.ssh/authorized_keys'
+      set :git_root, '/var/git'
 
-  desc "Install Git"
-  task :install, :roles => :scm do
-    install_deps
-    install_gitosis
-  end
-  
-  desc "install dependencies for git"
-  task :install_deps do
-    yum.enable_repository :epel
-    apt.install( {:base => %w(git python-devel python-setuptools)}, :stable)
-  end
+=begin
+      SRC_PACKAGES[:git] = {
+        :filename => 'git-1.5.5.4.tar.gz',   
+        :md5sum => "8255894042c8a6db07227475b8b4622f  git-1.5.5.4.tar.gz", 
+        :dir => 'git-1.5.5.4',  
+        :url => "http://kernel.org/pub/software/scm/git/git-1.5.5.4.tar.gz",
+        :unpack => "tar zxf git-1.5.5.4.tar.gz;",
+        :configure => %w(
+        ./configure
+        ;
+        ).reject{|arg| arg.match '#'}.join(' '),
+        :make => 'make;',
+        :install => 'make install;'
+      }
+=end
 
-  task :install_gitosis do
-    deprec2.groupadd(scm_group)
-    deprec2.useradd("git", { :gecos => 'git version control', :shell => '/bin/sh', :group => scm_group, :homedir => "/home/git"})
-    sudo "/usr/sbin/usermod -L git"
-    deprec2.add_user_to_group("git", scm_group)
-    
-    package_dir = File.join(src_dir, 'gitosis')
-    sudo <<-SUDO
-    sh -c 'cd #{src_dir};
-    test -d #{package_dir}.old && rm -fr #{package_dir}.old;
-    test -d #{package_dir} && mv #{package_dir} #{package_dir}.old;
-    git clone git://eagain.net/gitosis.git #{package_dir};
-    chown -R #{user} #{package_dir};  
-    chmod -R g+w #{package_dir};
-    cd #{package_dir};
-    python setup.py install'
-    SUDO
+      desc "Install git"
+      task :install do
+        install_deps
+      end
 
+      # install dependencies for git
+      task :install_deps do
+        yum.enable_repository :epel
+        apt.install( {:base => %w(git)}, :stable)
+      end
+
+      # Everything below is not tested on CentOS
+      # I recommend to use Gitosis, couse it supports permissions
+      
+      desc "Grant user ssh access to git"
+      task :add_user do
+        default(:target_user) { 
+          Capistrano::CLI.ui.ask "Add git keys for which user?" do |q|
+            q.default = user
+          end
+        }
+        if target_user == user
+          unless ssh_options[:keys]  
+            puts <<-ERROR
             
-    unless ssh_options[:keys]  
-      puts <<-ERROR
+            Error!
 
-      You need to define the name of your SSH key(s)
-     e.g. ssh_options[:keys] = %w(/Users/your_username/.ssh/id_rsa)
+            You need to define the name of your SSH key(s)
+            e.g. ssh_options[:keys] = %w(/Users/your_username/.ssh/id_rsa)
 
-      You can put this in your .caprc file in your home directory.
+            You can put this in your .caprc file in your home directory.
 
-      ERROR
-      exit
-    end
+            ERROR
+            exit
+          end
+          keys = ssh_options[:keys].collect{|key| File.read(key+'.pub')}.join("\n")
+        else
+          key_file = "config/ssh/authorized_keys/#{target_user}"
+          if File.readable?(key_file)
+            keys = File.read(key_file)
+          else
+            puts "Error! Could not find file '#{key_file}'"
+            exit
+          end
+        end
+        
+        deprec2.mkdir(File.dirname(git_keys_file), :mode => 0700, :owner => git_user, :group => git_group, :via => :sudo)
+        std.su_put(keys, "#{git_keys_file}-#{target_user}", '/tmp', :mode => 0600 )
+        regenerate_authorized_keys
+      end
 
-    put File.read(ssh_options[:keys].first + ".pub"), "/tmp/id_rsa.pub",  :mode => 0600
-    sudo "sudo -H -u git gitosis-init < /tmp/id_rsa.pub"
-    sudo "sudo chmod 755 /home/git/repositories/gitosis-admin.git/hooks/post-update"
+      task :del_user do
+        users = user_list
+        default(:target_user) { 
+          Capistrano::CLI.ui.choose do |q|
+            users.each {|user| q.choice user}
+          end
+        }
+        puts "Select a user to remove git access from."
+        sudo "rm #{git_keys_file}-#{target_user}"
+        regenerate_authorized_keys
+      end
+      
+      task :list_users do
+        users = user_list
+        puts "Git users:"
+        puts users.join("\n")
+      end
+      
+      task :create_remote do
+        
+        # Create local git repo if missing
+        if ! File.directory?('.git')
+          system('git init')
+          create_gitignore
+          create_files_in_empty_dirs
+          system("git add . && git commit -m 'initial import'")
+        end
+         
+        # Push to remote git repo
+        hostname = capture "echo $CAPISTRANO:HOST$"
+        system "git remote add origin git@#{hostname.chomp}:#{application}"
+        system "git push origin master:refs/heads/master"
+        
+        puts 
+        puts "New remote Git repo: #{git_user}@#{hostname.chomp}:#{application}"
+        puts    
+        
+        # Probably want to add this to .git/config
+        #
+        puts 'Add the following to .git/config'
+        puts '[branch "master"]'
+        puts ' remote = origin'
+        puts ' merge = refs/heads/master'
+          
+      end
+      
+      task :create_gitignore do
+        system("echo '.DS_Store' >> .gitignore") # files sometimes created by OSX 
+        system("echo 'log/*' >> .gitignore") if File.directory?('log')
+        system("echo 'tmp/**/*' >> .gitignore") if File.directory?('tmp')
+      end
+      
+      task :create_files_in_empty_dirs do
+        %w(log tmp).each { |dir| 
+          system("touch #{dir}/.gitignore") if File.directory?(dir)
+        }
+      end
+      
+      # Returns an array of users who have ssh access to git account
+      # Warning: Capistrano's capture only checks first server in list
+      # so keep them all in sync or act on one git repo only
+      task :user_list do
+        result = capture "ls #{git_keys_file}-* | perl -pi -e 's/.*#{File.basename(git_keys_file)}-//'", :via => :sudo
+        result.split("\n")
+      end
 
-    path_dir = "config/gitosis"
-    FileUtils.mkdir_p(path_dir) if !File.directory?(path_dir)
-    system("git clone git@#{domain}:gitosis-admin.git config/gitosis/gitosis-admin.git") if !File.exists?("#{path_dir}/gitosis-admin.git")
+      # Create root dir for git repositories
+      task :create_git_root do
+        deprec2.mkdir(git_root, :mode => 02775, :owner => git_user, :group => git_group, :via => :sudo)
+        sudo "chmod -R g+w #{git_root}"
+      end
+      
+      # task :create_git_user do
+      #   deprec2.groupadd(git_group) 
+      #   deprec2.useradd(git_user, :group => git_group, :shell => '/usr/local/bin/git-shell')
+      #   # Set the primary group for the git user (in case user already existed
+      #   # when previous command was run)
+      #   sudo "usermod --gid #{git_group} #{git_user}"
+      #   sudo "passwd --unlock #{git_user}"
+      # end
+      
+      # regenerate git authorized keys file from users file in same dir
+      task :regenerate_authorized_keys do
+        sudo "echo '' > #{git_keys_file}"
+        sudo "for file in `ls #{git_keys_file}-*`; do cat $file >> #{git_keys_file}; echo \"\n\" >> #{git_keys_file} ; done"
+        sudo "chown #{git_user}.#{git_group} #{git_keys_file}"
+        sudo "chmod 0600 #{git_keys_file}" 
+      end
 
+
+    end 
   end
- 
-  desc "grant a user access to git repos"
-  task :grant_user_access, :roles => :scm do
-    # creates account, scm_group and adds account to group
-    deprec2.useradd(git_account)
-    deprec2.groupadd(scm_group) 
-    deprec2.add_user_to_group(git_account, scm_group)
-  end
-
-  desc "Create git repository and import project into it"
-  task :setup, :roles => :scm do 
-    create_repos
-    create_local_repos
-    push 
-  end
- 
-  desc "Create a git repository"
-  task :create_repos, :roles => :scm do
-    gitosis_admin = File.open(ssh_options[:keys].first + ".pub", "r") do |line|
-      line.gets.split(" ").last
-    end
-    # create key pair if it doesn't exist, and fetch public key 
-    run "sh -c 'test -f /home/#{user}/.ssh/id_rsa.pub || /usr/bin/ssh-keygen -q -t rsa -N \"\" -f /home/#{user}/.ssh/id_rsa >&/dev/null'"
-    #run "chmod 600 /home/#{user}/.ssh/id_rsa && chmod 644 /home/#{user}/.ssh/id_rsa.pub"
-    get("/home/#{user}/.ssh/id_rsa.pub", "config/gitosis/gitosis_server.pub")
-    gitosis_server = File.open("config/gitosis/gitosis_server.pub", "r") do |line|
-      line.gets.split(" ").last
-    end
-    system("mv config/gitosis/gitosis_server.pub config/gitosis/gitosis-admin.git/keydir/#{gitosis_server}.pub")
-    gitosis_conf = <<-GITOSIS
-
-[group #{group}]
-writable = #{application}
-members = #{gitosis_admin} #{gitosis_server}
-
-    GITOSIS
-
-    File.open("config/gitosis/gitosis-admin.git/gitosis.conf", "a") { |f| f.write(gitosis_conf) }
-    system "cd config/gitosis/gitosis-admin.git && git add . && git commit -m \"Added repository #{application} and write permission to user #{gitosis_admin}\" && git push"
-  end
- 
-  desc "Create git repository in local project"
-  task :create_local_repos do
-    unless File.exists?(".git")
-      system("git init")
-      system("git remote add origin git@#{domain}:#{application}.git")
-      system("git add .")
-      system("git commit -a -m 'Initial import'")
-    end
-  end
-
-  desc "Import project into git repository."
-  task :push, :roles => :scm do 
-    add_ignores
-    puts "Importing application."
-    system "git push origin master:refs/heads/master"
-    system "git-config --add branch.master.remote origin"
-    system "git-config --add branch.master.merge refs/heads/master"
-    puts "Your repository is: #{repository}" 
-  end
-  
-  desc "ignore log files, tmp"
-  task :add_ignores, :roles => :scm  do
-    ignore = <<-FILE
-      .DS_Store
-      log/*.log
-      tmp/**/*
-      db/*.sqlite3
-      config/gitosis
-    FILE
-    ["log", "tmp/cache", "tmp/pids", "tmp/sessions", "tmp/sockets"].each do |dir|
-      system("touch #{dir}/.gitignore")
-    end
-    File.open(".gitignore", "w") { |f| f.write(ignore.strip.gsub(/^#{ignore[/\A\s*/]}/, "")) }
-    system "find . -type d -empty | xargs -I {} touch {}/.gitignore"
-    system "git add ."
-    system "git commit -a -m 'Touched .gitignore to emtpy folders, ignored log files, tmp, sqlite3 db'"
-  end
-  
-  end end
 end
