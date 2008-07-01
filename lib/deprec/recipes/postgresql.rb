@@ -7,6 +7,11 @@ Capistrano::Configuration.instance(:must_exist).load do
       desc "Install postgresql"
       task :install, :roles => :db do
         install_deps
+        #that's hack to initialize database (this should be replaced with initdb or so)
+        start
+        config_gen
+        config
+        restart
       end
       
       # Install dependencies for PostgreSQL 
@@ -18,11 +23,6 @@ Capistrano::Configuration.instance(:must_exist).load do
 
       desc "Create Database" 
       task :create_db, :roles => :db do
-        #that's hack to initialize database (this should be replaced with initdb or so)
-        start
-        config_gen
-        config
-        restart
         read_config
         createuser(db_user, db_password)
         createdb(db_name, db_user)
