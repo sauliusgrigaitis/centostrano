@@ -44,6 +44,7 @@ Capistrano::Configuration.instance(:must_exist).load do
   
   desc "install dependencies for Subversion"
   task :install_deps do
+    yum.enable_repository(:rpmforge)
     apt.install( {:base => %w(subversion)}, :stable )
     # XXX deprec1 - was building from source to get subversion-1.4.5 onto dapper. Compiled swig bindings for trac
     # apt.install( {:base => %w(build-essential wget libneon25 libneon25-dev swig python-dev libexpat1-dev)}, :stable )
