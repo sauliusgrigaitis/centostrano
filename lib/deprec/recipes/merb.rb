@@ -27,17 +27,17 @@ Capistrano::Configuration.instance(:must_exist).load do
           package_info = {
             :filename => "merb-#{gem}",   
             :dir => "merb-#{gem}",  
-            :unpack => "git clone git://github.com/wycats/merb-#{gem}.git"
+            :unpack => "git clone git://github.com/wycats/merb-#{gem}.git;"
           }     
-          deprec2.download_src(package_info, src_dir)
-          sudo "cd #{src_dir}/merb-#{gem}; rake install"
+          deprec2.unpack_src(package_info, src_dir)
+          sudo "sh -c' cd #{src_dir}/merb-#{gem}; rake install'"
         end
       end
      
       task :install_deps do
-        top.mongrel.install
-        top.git.install
-        gem2.install(%w(rack mongrel json erubis mime-types rspec hpricot mocha rubigen haml markaby mailfactory ruby2ruby))
+        top.centos.mongrel.install
+        top.centos.git.install
+        gem2.install(%w(rack mongrel json json_pure erubis mime-types rspec hpricot mocha rubigen haml markaby mailfactory ruby2ruby))
       end 
 
       task :symlink_mongrel_rails, :roles => :app do
@@ -127,17 +127,18 @@ Capistrano::Configuration.instance(:must_exist).load do
       
       desc "Start application server."
       task :start, :roles => :app do
-        send(run_method, "mongrel_rails cluster::start --clean -C #{mongrel_conf}")
+        send(run_method, "/usr/local/bin/merb --user #{merb_user} --group #{merb_group} --daemonize --cluster-nodes #{merb_servers} --merb-root #{current_path} --port #{merb_port} -e production")
       end
       
       desc "Stop application server."
       task :stop, :roles => :app do
-        send(run_method, "mongrel_rails cluster::stop -C #{mongrel_conf}")
+        send(run_method, "sh -c 'cd #{current_path} && merb -k all --merb-root'")
       end
       
       desc "Restart application server."
       task :restart, :roles => :app do
-        send(run_method, "mongrel_rails cluster::restart --clean -C #{mongrel_conf}")
+        top.centos.merb.stop
+        top.centos.merb.start
       end
       
       task :activate, :roles => :app do

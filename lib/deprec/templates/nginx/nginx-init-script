@@ -1,62 +1,109 @@
-#! /bin/sh
+#!/bin/sh
+#
+# this startup script was taken from nginx package in EPEL repository
+#
+# nginx - this script starts and stops the nginx daemin
+#
+# chkconfig:   - 85 15 
+# description:  Nginx is an HTTP(S) server, HTTP(S) reverse \
+#               proxy and IMAP/POP3 proxy server
+# processname: nginx
+# config:      /etc/nginx/nginx.conf
+# config:      /etc/sysconfig/nginx
+# pidfile:     /var/run/nginx.pid
 
-### BEGIN INIT INFO
-# Provides:          nginx
-# Required-Start:    $all
-# Required-Stop:     $all
-# Default-Start:     2 3 4 5
-# Default-Stop:      0 1 6
-# Short-Description: starts the nginx web server
-# Description:       starts nginx using start-stop-daemon
-### END INIT INFO
+# Source function library.
+. /etc/rc.d/init.d/functions
 
-PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
-DAEMON=/usr/local/sbin/nginx
-NAME=nginx
-DESC=nginx
+# Source networking configuration.
+. /etc/sysconfig/network
 
-test -x $DAEMON || exit 0
+# Check that networking is up.
+[ "$NETWORKING" = "no" ] && exit 0
 
-# Include nginx defaults if available
-if [ -f /etc/default/nginx ] ; then
-        . /etc/default/nginx
-fi
+nginx="/usr/local/sbin/nginx"
+prog=$(basename $nginx)
 
-set -e
+NGINX_CONF_FILE="/usr/local/nginx/conf/nginx.conf"
+
+lockfile=/var/lock/subsys/nginx
+
+start() {
+    [ -x $nginx ] || exit 5
+    [ -f $NGINX_CONF_FILE ] || exit 6
+    echo -n $"Starting $prog: "
+    daemon $nginx -c $NGINX_CONF_FILE
+    retval=$?
+    echo
+    [ $retval -eq 0 ] && touch $lockfile
+    return $retval
+}
+
+stop() {
+    echo -n $"Stopping $prog: "
+    killproc $prog -QUIT
+    retval=$?
+    echo
+    [ $retval -eq 0 ] && rm -f $lockfile
+    return $retval
+}
+
+restart() {
+    configtest || return $?
+    stop
+    start
+}
+
+reload() {
+    configtest || return $?
+    echo -n $"Reloading $prog: "
+    killproc $nginx -HUP
+    RETVAL=$?
+    echo
+}
+
+force_reload() {
+    restart
+}
+
+configtest() {
+  $nginx -t -c $NGINX_CONF_FILE
+}
+
+rh_status() {
+    status $prog
+}
+
+rh_status_q() {
+    rh_status >/dev/null 2>&1
+}
 
 case "$1" in
-  start)
-        echo -n "Starting $DESC: "
-        start-stop-daemon --start --quiet --pidfile /usr/local/nginx/logs/$NAME.pid \
-                --exec $DAEMON -- $DAEMON_OPTS
-        echo "$NAME."
+    start)
+        rh_status_q && exit 0
+        $1
         ;;
-  stop)
-        echo -n "Stopping $DESC: "
-        start-stop-daemon --stop --quiet --pidfile /usr/local/nginx/logs/$NAME.pid \
-                --exec $DAEMON
-        echo "$NAME."
+    stop)
+        rh_status_q || exit 0
+        $1
         ;;
-  restart|force-reload)
-        echo -n "Restarting $DESC: "
-        start-stop-daemon --stop --quiet --pidfile \
-                /usr/local/nginx/logs/$NAME.pid --exec $DAEMON
-        sleep 1
-        start-stop-daemon --start --quiet --pidfile \
-                /usr/local/nginx/logs/$NAME.pid --exec $DAEMON -- $DAEMON_OPTS
-        echo "$NAME."
+    restart|configtest)
+        $1
         ;;
-  reload)
-	      echo -n "Reloading $DESC configuration: "
-	      start-stop-daemon --stop --signal HUP --quiet --pidfile /usr/local/nginx/logs/$NAME.pid \
-	          --exec $DAEMON 
-	      echo "$NAME."
-	      ;;
-	  *)
-	        N=/etc/init.d/$NAME
-	        echo "Usage: $N {start|stop|restart|reload|force-reload}" >&2
-	        exit 1   
-	        ;;
-	esac
-
-	exit 0
+    reload)
+        rh_status_q || exit 7
+        $1
+        ;;
+    force-reload)
+        force_reload
+        ;;
+    status)
+        rh_status
+        ;;
+    condrestart|try-restart)
+        rh_status_q || exit 0
+	    ;;
+    *)
+        echo $"Usage: $0 {start|stop|status|restart|condrestart|try-restart|reload|force-reload|configtest}"
+        exit 2
+esac
