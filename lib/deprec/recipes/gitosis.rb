@@ -25,7 +25,7 @@ Capistrano::Configuration.instance(:must_exist).load do
     deprec2.groupadd(scm_group)
     deprec2.useradd("git", { :gecos => 'git version control', :shell => '/bin/sh', :group => scm_group, :homedir => "/home/git"})
     # TODO: should git user be locked? (Mike's sshd config doesn't allow locked users!)
-    # sudo "/usr/sbin/usermod -L git"
+    sudo "/usr/bin/passwd -u -f git" 
     deprec2.add_user_to_group("git", scm_group)
     
     package_dir = File.join(src_dir, 'gitosis')
@@ -55,12 +55,8 @@ Capistrano::Configuration.instance(:must_exist).load do
 
     put File.read(ssh_options[:keys].first + ".pub"), "/tmp/id_rsa.pub",  :mode => 0600
     sudo "sudo -H -u git gitosis-init < /tmp/id_rsa.pub"
+    sudo "sudo rm /tmp/id_rsa.pub"
     sudo "sudo chmod 755 /home/git/repositories/gitosis-admin.git/hooks/post-update"
-
-    path_dir = "config/gitosis"
-    FileUtils.mkdir_p(path_dir) if !File.directory?(path_dir)
-    system("git clone git@#{domain}:gitosis-admin.git config/gitosis/gitosis-admin.git") if !File.exists?("#{path_dir}/gitosis-admin.git")
-
   end
   
   desc "install dependencies for git"
@@ -71,6 +67,10 @@ Capistrano::Configuration.instance(:must_exist).load do
 
   desc "Create git repository and import project into it"
   task :setup, :roles => :scm do 
+     path_dir = "config/gitosis"
+    FileUtils.mkdir_p(path_dir) if !File.directory?(path_dir)
+    system("git clone git@#{domain}:gitosis-admin.git config/gitosis/gitosis-admin.git") if !File.exists?("#{path_dir}/gitosis-admin.git")
+
     create_repos
     create_local_repos
     push 
@@ -91,7 +91,7 @@ Capistrano::Configuration.instance(:must_exist).load do
     system("mv config/gitosis/gitosis_server.pub config/gitosis/gitosis-admin.git/keydir/#{gitosis_server}.pub")
     gitosis_conf = <<-GITOSIS
 
-[group #{group}]
+[group #{application}]
 writable = #{application}
 members = #{gitosis_admin} #{gitosis_server}
 
@@ -115,10 +115,10 @@ members = #{gitosis_admin} #{gitosis_server}
   task :push, :roles => :scm do 
     add_ignores
     puts "Importing application."
-    system "git push origin master:refs/heads/master"
+    system "git push git@#{domain}:#{application}.git master:refs/heads/master"
     system "git-config --add branch.master.remote origin"
     system "git-config --add branch.master.merge refs/heads/master"
-    puts "Your repository is: #{repository}" 
+    puts "Your repository is: git@#{domain}:#{application}.git" 
   end
   
   desc "ignore log files, tmp"
