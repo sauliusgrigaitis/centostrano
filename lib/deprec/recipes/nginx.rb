@@ -32,8 +32,6 @@ Capistrano::Configuration.instance(:must_exist).load do
         yum.install_from_src(SRC_PACKAGES[:nginx], src_dir)
         install_start_stop_daemon
         create_nginx_user
-        sudo "mkdir /usr/local/nginx/logs"
-        sudo "chown nginx:nginx /usr/local/nginx/logs"
         # setup_vhost_dir     # XXX not done yet
         # install_index_page  # XXX not done yet
       end

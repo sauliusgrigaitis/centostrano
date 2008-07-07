@@ -30,7 +30,7 @@ Capistrano::Configuration.instance(:must_exist).load do
             :unpack => "git clone git://github.com/wycats/merb-#{gem}.git;"
           }     
           deprec2.unpack_src(package_info, src_dir)
-          sudo "sh -c 'cd #{src_dir}/merb-#{gem}; rake install'"
+          sudo "sh -c' cd #{src_dir}/merb-#{gem}; rake install'"
         end
       end
      
