@@ -12,13 +12,10 @@ Capistrano::Configuration.instance(:must_exist).load do
         :unpack => "tar zxf ruby-1.8.6-p111.tar.gz; cd ruby-1.8.6-p111; wget -q -O - wget http://blog.phusion.nl/assets/r8ee-security-patch-20080623-2.txt | patch -p1 -s",
         :configure => %w(
           ./configure
-          --with-readline-dir=/usr/local
           ;
           ).reject{|arg| arg.match '#'}.join(' '),
         :make => 'make;',
-        :install => 'make install;',
-        :version => 'c1.8.6',
-        :release => '111eephusion'
+        :install => 'make install;'
       }
   
       task :install do
@@ -39,14 +36,12 @@ Capistrano::Configuration.instance(:must_exist).load do
     namespace :rubygems do
   
       SRC_PACKAGES[:rubygems] = {
-        :filename => 'rubygems-1.2.0.tgz',   
-        :md5sum => "b77a4234360735174d1692e6fc598402 rubygems-1.2.0.tgz", 
-        :dir => 'rubygems-1.2.0',  
-        :url => "http://rubyforge.org/frs/download.php/38646/rubygems-1.2.0.tgz",
-        :unpack => "tar zxf rubygems-1.2.0.tgz;",
-        :install => 'ruby setup.rb;',
-        :version => 'c1.2.0',
-        :release => '1'
+        :filename => 'rubygems-1.0.1.tgz',   
+        :md5sum => "0d5851084955c327ee1dc9cbd631aa5f  rubygems-1.0.1.tgz", 
+        :dir => 'rubygems-1.0.1',  
+        :url => "http://rubyforge.org/frs/download.php/29548/rubygems-1.0.1.tgz",
+        :unpack => "tar zxf rubygems-1.0.1.tgz;",
+        :install => 'ruby setup.rb;'
       }
       
       task :install do

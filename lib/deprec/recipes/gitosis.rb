@@ -8,6 +8,14 @@ Capistrano::Configuration.instance(:must_exist).load do
     
   set :scm_group, 'scm'
 
+  # 
+  # Two examples of :repository entries are:
+  #
+  #   set :repository, 'ssh://www.rubyonrails.lt/var/git/centostrano.git'
+  #
+  # This has only been tested with ssh (haven't tested with git or http)
+  #
+  
   set(:git_backup_dir) { File.join(backup_dir, 'git') }
 
   desc "Install Gitosis"
@@ -16,7 +24,7 @@ Capistrano::Configuration.instance(:must_exist).load do
     
     deprec2.groupadd(scm_group)
     deprec2.useradd("git", { :gecos => 'git version control', :shell => '/bin/sh', :group => scm_group, :homedir => "/home/git"})
-    # TODO: should git user be locked?
+    # TODO: should git user be locked? (Mike's sshd config doesn't allow locked users!)
     sudo "/usr/bin/passwd -u -f git" 
     deprec2.add_user_to_group("git", scm_group)
     
@@ -57,8 +65,8 @@ Capistrano::Configuration.instance(:must_exist).load do
     apt.install( {:base => %w(git python-devel python-setuptools)}, :stable)
   end
 
-  desc "Create remote git repository and import project into it"
-  task :setup_repo, :roles => :scm do 
+  desc "Create git repository and import project into it"
+  task :setup, :roles => :scm do 
      path_dir = "config/gitosis"
     FileUtils.mkdir_p(path_dir) if !File.directory?(path_dir)
     system("git clone git@#{domain}:gitosis-admin.git config/gitosis/gitosis-admin.git") if !File.exists?("#{path_dir}/gitosis-admin.git")

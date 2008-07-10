@@ -37,12 +37,16 @@ Capistrano::Configuration.instance(:must_exist).load do
       set :apache_config_file, '/usr/local/apache2/conf/httpd.conf'
 
 
+      # seems that apache from packages should be OK, it's much easier to update it later via yum
+      # so let's forget compiling from source.
+
+=begin
       SRC_PACKAGES[:apache] = {
-        :filename => 'httpd-2.2.9.tar.gz',   
-        :md5sum => "28470617033b8fb998779f6d76016f82 httpd-2.2.9.tar.gz", 
-        :dir => 'httpd-2.2.9',  
-        :url => "http://www.apache.org/dist/httpd/httpd-2.2.9.tar.gz",
-        :unpack => "tar zxf httpd-2.2.9.tar.gz;",
+        :filename => 'httpd-2.2.6.tar.gz',   
+        :md5sum => "d050a49bd7532ec21c6bb593b3473a5d  httpd-2.2.6.tar.gz", 
+        :dir => 'httpd-2.2.6',  
+        :url => "http://www.apache.org/dist/httpd/httpd-2.2.6.tar.gz",
+        :unpack => "tar zxf httpd-2.2.6.tar.gz;",
         :configure => %w(
           ./configure
           --enable-mods-shared=all
@@ -60,18 +64,17 @@ Capistrano::Configuration.instance(:must_exist).load do
           ;
           ).reject{|arg| arg.match '#'}.join(' '),
         :make => 'make;',
-        :install => '--fstrans=no make install;',
-        :post_install => 'install -b support/apachectl /etc/init.d/httpd;',
-        :version => 'c2.2.9',
-        :release => '1'
+        :install => 'make install;',
+        :post_install => 'install -b support/apachectl /etc/init.d/httpd;'
       }
+=end
 
       desc "Install apache"
       task :install do
         install_deps
-        sudo "yum remove -y httpd"
-        deprec2.download_src(SRC_PACKAGES[:apache], src_dir)
-        yum.install_from_src(SRC_PACKAGES[:apache], src_dir)
+        #deprec2.download_src(SRC_PACKAGES[:apache], src_dir)
+        #deprec2.install_from_src(SRC_PACKAGES[:apache], src_dir)a
+        apt.install( {:base => %w(httpd)}, :stable )
         setup_vhost_dir
         install_index_page
       end

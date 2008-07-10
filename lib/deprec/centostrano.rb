@@ -9,7 +9,7 @@ module Yum
     when :rpmforge
       rpm_install("http://dag.wieers.com/rpm/packages/rpmforge-release/rpmforge-release-0.3.6-1.el5.rf.`uname -i`.rpm")
     when :epel
-      sudo "sudo test -f /etc/yum.repos.d/epel.repo || sudo rpm -Uvh http://download.fedora.redhat.com/pub/epel/5/i386/epel-release-5-3.noarch.rpm"
+      sudo "sudo test -f /etc/yum.repos.d/epel.repo || sudo rpm -Uvh http://download.fedora.redhat.com/pub/epel/5/i386/epel-release-5-2.noarch.rpm"
     end
   end
   
@@ -34,7 +34,7 @@ module Yum
     cd #{package_dir};
     #{src_package[:configure]}
     #{src_package[:make]}
-    sudo /usr/local/sbin/checkinstall -y -R --install --pkgversion=#{src_package[:version]}  --pkgrelease=#{src_package[:release]} #{src_package[:install]}
+    /usr/local/sbin/checkinstall -y -R --install #{src_package[:install]}
     #{src_package[:post_install]}
     '
     SUDO

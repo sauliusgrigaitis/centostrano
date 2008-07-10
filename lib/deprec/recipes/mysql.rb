@@ -16,13 +16,6 @@ Capistrano::Configuration.instance(:must_exist).load do
         apt.install( {:base => %w(mysql mysql-server mysql-devel)}, :stable )
       end
       
-      desc "Create Database" 
-      task :create_db, :roles => :db do
-        read_config
-        sql = "CREATE DATABASE #{db_name}; GRANT ALL PRIVILEGES ON #{db_name}.* TO #{db_user}@localhost IDENTIFIED BY '#{db_password}';"  
-        execute(sql, db_user)
-      end
-       
       task :symlink_mysql_sockfile, :roles => :db do
         # rails puts "socket: /tmp/mysql.sock" into config/database.yml
         # this is not the location for our ubuntu's mysql socket file
@@ -92,23 +85,6 @@ Capistrano::Configuration.instance(:must_exist).load do
             
     end
   end
- 
-# Imported from Rails Machine gem (Copyright (c) 2006 Bradley Taylor, bradley@railsmachine.com)
-
-  def execute(sql, user)
-    run "mysql --user=root --execute=\"#{sql}\"" do |channel, stream, data|
-      handle_mysql_password(user, channel, stream, data)
-    end
-  end
-  
-  def handle_mysql_password(user, channel, stream, data)
-    logger.info data, "[database on #{channel[:host]} asked for password]"
-    if data =~ /^Enter password:/
-      pass = Capistrano::CLI.password_prompt "Enter database password for '#{user}':"
-      channel.send_data "#{pass}\n" 
-    end
-  end
-
 end
 
 #

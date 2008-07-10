@@ -14,10 +14,6 @@ Capistrano::Configuration.instance(:must_exist).load do
     top.centos.rails.setup_paths
     top.centos.rails.setup_shared_dirs
     top.centos.rails.install_gems_for_project
-    
-    # Quick fix for permission issue
-    # TODO: import fix from upstream deprec 2 when it will be available
-    set :run_method, :sudo
   end
   
   # Override default cap task using sudo to create dir
@@ -237,21 +233,15 @@ Capistrano::Configuration.instance(:must_exist).load do
         top.centos.mongrel.config_gen_system
         top.centos.monit.config_gen
         top.centos.logrotate.config_gen
-       
-        # Stop Apache and deactivate
-        top.centos.apache.stop
-        top.centos.apache.deactivate
-
+        
         # Nginx as our web frontend
         top.centos.nginx.install
         top.centos.nginx.config
         
         # Subversion
         top.centos.svn.install
-        
         # Git
         top.centos.git.install
-
         # Ruby
         top.centos.ruby.install      
         top.centos.rubygems.install      
