@@ -20,10 +20,7 @@ Capistrano::Configuration.instance(:must_exist).load do
   set :monit_webserver_auth_pass, 'monit'
   
   # Upstream changes: http://www.tildeslash.com/monit/dist/CHANGES.txt  
-  # rpmforge has packages of monit 4.9.2, let's use it instead of newest
-  # version from sources
   
-=begin
   SRC_PACKAGES[:monit] = {
     :filename => 'monit-4.10.1.tar.gz',   
     :md5sum => "d3143b0bbd79b53f1b019d2fc1dae656  monit-4.10.1.tar.gz", 
@@ -35,17 +32,16 @@ Capistrano::Configuration.instance(:must_exist).load do
       ;
       ).reject{|arg| arg.match '#'}.join(' '),
     :make => 'make;',
-    :install => 'make install;'
+    :install => 'make install;',
+    :version => 'c4.10.1',
+    :release => '1'
   }
-=end  
 
   desc "Install monit"
   task :install do
     install_deps
-    yum.enable_repository(:rpmforge)
-    apt.install( {:base => %w(monit)}, :stable )
-    #deprec2.download_src(SRC_PACKAGES[:monit], src_dir)
-    #deprec2.install_from_src(SRC_PACKAGES[:monit], src_dir)
+    deprec2.download_src(SRC_PACKAGES[:monit], src_dir)
+    yum.install_from_src(SRC_PACKAGES[:monit], src_dir)
   end
   
   # install dependencies for monit

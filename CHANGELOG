@@ -1,10 +1,62 @@
-== 0.0.1
+== 0.1  (July 10, 2008)
 
-* Ported core of original deprec2 recipes to CentOS
+* Added new recipes for Centos 5:
+gitosis
+postgresql
+merb(initial draft)
 
-== GIT
+* Ported recipes to CentOS 5:
+
+users
+ssh
+nginx
+apache
+svn
+ruby
+rails
+mongrel
+mysql
+memcache
+monit
+sphinx
+git
+logrotate
+
+== migrated to Git
+
+== Original deprec 2 changelog
 
 == SVN
+== 1.99.21 (June 17, 2008)
+	
+* added recipes and config templates for ar_sendmail
+* added gitosis support
+* added deprec:xen:migrate for "manually" moving slice between hosts
+
+== 1.99.20 (June 3, 2008)
+	
+* added git support: install git, manage ssh users and create remote repositories
+	
+== 1.99.19 (June 3, 2008)
+	
+* feature: added logrotate. configs generated for nginx and mongrel
+* bugfix: monit:install was calling monit:activate but this won't work will monit:config is called.
+
+== 1.99.18 (May  28, 2008)
+	
+* bugfix: nagios config option was not being set till after required
+	
+== 1.99.17 (May  22, 2008)
+	
+* monit config for mongrel now lives under config/mongrel instead of config/monit
+  This way, monit configs for services can live with the recipes/templates for that service.
+ 	
+== 1.99.16 (May  5, 2008)
+
+* change: start mongrel using mongrel_cluster with --clean option so mongrel
+  will start even when there are stale pids around.
+	
+* bugfix: nginx vhost template now uses :mongrel_port instead of 8000
 
 == 1.99.15 (Mar 27, 2008)
 

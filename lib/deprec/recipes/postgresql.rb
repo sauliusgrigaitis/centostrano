@@ -90,7 +90,7 @@ Capistrano::Configuration.instance(:must_exist).load do
     end
   end
 
-# Imported from Rails Machine gem
+# Imported from Rails Machine gem (Copyright (c) 2006 Bradley Taylor, bradley@railsmachine.com)
 
   def createdb(db, user)
     sudo "su - postgres -c \'createdb -O #{user} #{db}\'"  

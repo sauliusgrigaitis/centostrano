@@ -22,7 +22,9 @@ Capistrano::Configuration.instance(:must_exist).load do
         ;
         ).reject{|arg| arg.match '#'}.join(' '),
         :make => 'make;',
-        :install => 'make install;'
+        :install => 'make install;',
+        :version => 'c0.6.31',
+        :release => '1'
       }
 
       desc "Install nginx"

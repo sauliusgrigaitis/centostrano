@@ -1,30 +1,32 @@
-asdfas------------------------------------------
+------------------------------------------
 Centostrano - port of deprec2 to CentOS
 ------------------------------------------
 
-This project aims to port deprec2 to CentOS. I try to make Centostrano
-as close to original deprec2 as possible, but I did some changes because 
-of conflicts between Centostrano and deprec2. Instead of binary 'depify'
-one must use 'centify', instead of 'deprec' namespace of capistrano 
+This project aims to port deprec2 to CentOS. Intention is to keep Centostrano
+as close to original deprec2 as possible, but some changes are implemented, 
+because of conflicts between Centostrano and deprec2. Instead of binary 
+'depify' one must use 'centify', instead of 'deprec' namespace of capistrano 
 tasks one must use 'centos', everything else should be the same as 
-original deprec, so I include original deprec info files too.
+original deprec, so original deprec info files are included too.
 
-Currently Centostrano supports CentOS 5.1. There are some work done to
-support CentOS 4.6, but I removed the support because I personaly do
-not need CentOS 4.6 support and there were too much hacks (like 
-unoficial repositories, issues with gitosis because of too old python 
-etc.), if there will be demand for Centos 4.6 support, I'll merge previous
-work to current Centostrano. 
+Currently Centostrano supports CentOS 5.1 and 5.2.
 
-Also, I added Git(+ Gitosis for configuration) and PostgreSQL installation 
-and setup scripts, those needs more testing, so any feedback is welcome.
+Gitosis and PostgreSQL installation and setup scripts are added
+
+Any feedback is welcome!
 
 == Credits
 
-Saulius Grigaitis is porter and maintainer of Centostrano
-All credits goes to creator of original deprec - Mike Bailey.
+Mike Bailey: Original creator of deprec 2
+Saulius Grigaitis: porter and maintainer of Centostrano
 
-== Original deprec2 readme
+== Links
+
+Centostrano homepage: http://rubyonrails.lt/redmine/projects/show/centostrano
+Centostrano at github: http://www.rubyonrails.lt/centostrano
+Centostrano at rubyforge: http://rubyforge.org/projects/centostrano/
+
+== Original deprec 2 README
 
 ------------------------------------------
 deprec - Deployment Recipes for Capistrano
