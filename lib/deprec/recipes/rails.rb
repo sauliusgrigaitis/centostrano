@@ -233,15 +233,21 @@ Capistrano::Configuration.instance(:must_exist).load do
         top.centos.mongrel.config_gen_system
         top.centos.monit.config_gen
         top.centos.logrotate.config_gen
-        
+       
+        # Stop Apache and deactivate
+        top.centos.apache.stop
+        top.centos.apache.deactivate
+
         # Nginx as our web frontend
         top.centos.nginx.install
         top.centos.nginx.config
         
         # Subversion
         top.centos.svn.install
+        
         # Git
         top.centos.git.install
+
         # Ruby
         top.centos.ruby.install      
         top.centos.rubygems.install      
