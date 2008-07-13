@@ -50,10 +50,48 @@ Capistrano::Configuration.instance(:must_exist).load do
         gem2.install 'sqlite3-ruby'
         gem2.install 'mysql --  --with-mysql-include=/usr/include/mysql --with-mysql-lib=/usr/lib/mysql'
         gem2.install 'rails'
-        gem2.install 'rspec' # seems to be required to run rake db:migrate (???)
-        # gem2.install 'builder' # XXX ? needed ?
+        gem2.install 'rspec'
       end
       
+      desc <<-DESC
+      Install full rails stack on a stock standard CentOS server (5.1 and 5.2 tested)
+      DESC
+        
+      task :install_stack do
+        # Ruby everywhere!
+        top.centos.ruby.install      
+        top.centos.rubygems.install      
+
+        # Install mysql
+        deprec2.for_roles('web') do
+          top.centos.nginx.install        
+        end
+         
+        deprec2.for_roles('app') do
+          top.centos.svn.install
+          top.centos.git.install     
+          top.centos.mongrel.install
+          top.centos.monit.install
+          top.centos.rails.install
+        end
+         
+        deprec2.for_roles('web,app') do
+          top.centos.logrotate.install        
+        end
+        
+        # Install database separately
+        # deprec2.for_roles('db') do
+        #   top.centos.mysql.install
+        #   top.centos.mysql.start      
+        # end
+
+      end
+     
+      task :install_rails_stack do
+        puts "deprecated: this task is now called install_stack"
+        install_stack
+      end
+
       task :install_gems_for_project do
           if gems_for_project
             gems_for_project.each { |gem| gem2.install(gem) }
@@ -73,6 +111,7 @@ Capistrano::Configuration.instance(:must_exist).load do
          :owner => 'root:root'}  
       ]
 
+      desc "Generate config files for rails app."
       task :config_gen do
         PROJECT_CONFIG_FILES[:nginx].each do |file|
           deprec2.render_template(:nginx, file)
@@ -81,6 +120,7 @@ Capistrano::Configuration.instance(:must_exist).load do
         top.deprec.mongrel.config_project
       end
 
+      desc "Push out config files for rails app."
       task :config, :roles => [:app, :web] do
         deprec2.push_configs(:nginx, PROJECT_CONFIG_FILES[:nginx])
         top.centos.mongrel.config_project
@@ -99,8 +139,8 @@ Capistrano::Configuration.instance(:must_exist).load do
       task :create_config_dir do
         deprec2.mkdir("#{shared_path}/config", :group => group, :mode => 0775, :via => :sudo)
       end
-      
-      # create deployment group and add current user to it
+
+      desc "Create deployment group and add current user to it"
       task :setup_user_perms do
         deprec2.groupadd(group)
         deprec2.add_user_to_group(user, group)
@@ -209,51 +249,6 @@ Capistrano::Configuration.instance(:must_exist).load do
         run "ln -nfs #{shared_path}/config/database.yml #{release_path}/config/database.yml" 
       end
 
-      desc <<-DESC
-      Install full rails stack on a stock standard CentOS server (5.1 and 5.2 tested)
-      DESC
-        
-      task :install_stack do
-        # Ruby everywhere!
-        top.centos.ruby.install      
-        top.centos.rubygems.install      
-        
-        # Mongrel as our app server
-        top.centos.mongrel.install
-        top.centos.mongrel.config_system
-        
-        # Monit
-        top.centos.monit.install
-        top.centos.monit.config
-
-        # Install mysql
-        deprec2.for_roles('web') do
-          top.centos.nginx.install        
-        end
-         
-        deprec2.for_roles('app') do
-          top.centos.svn.install
-          top.centos.git.install     
-          top.centos.mongrel.install
-          top.centos.monit.install
-          top.centos.rails.install
-        end
-         
-        deprec2.for_roles('web,app') do
-          top.centos.logrotate.install        
-        end
-         
-        deprec2.for_roles('db') do
-          top.centos.mysql.install
-          top.centos.mysql.start      
-        end
-
-      end
-     
-      task :install_rails_stack do
-        puts "deprecated: this task is now called install_stack"
-        install_stack
-      end
 
       desc "setup and configure servers"
       task :setup_servers do
