@@ -48,10 +48,6 @@ caprc = unindent(<<-FILE)
   #
   # require 'deprec'
   #
-  # Include centostrano - CentOS deployment recipes for Capistrano (www.rubyonrails.lt/centostrano)
-  #
-  require 'centostrano'
-  #
   # SSH options
   #
   # Use ssh keys instead of typing password every time

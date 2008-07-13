@@ -6,7 +6,7 @@ SPEC = Gem::Specification.new do |spec|
   spec.email = 'saulius.grigaitis@mif.vu.lt'
   spec.homepage = 'http://www.rubyonrails.lt/centostrano'
   spec.rubyforge_project = 'centostrano'
-  spec.version = '0.0.1'
+  spec.version = '0.1'
   spec.summary = 'CentOS deployment recipes for capistrano'
   spec.description = <<-EOF
       This project is port of deprec2 for CentOS. Centostrano provides libraries 

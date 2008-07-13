@@ -5,6 +5,7 @@ Capistrano::Configuration.instance(:must_exist).load do
 
       set :git_user, 'git'
       set :git_group, 'git'
+      set :git_port, '9418'
       set :git_keys_file, '/home/git/.ssh/authorized_keys'
       set :git_root, '/var/git'
 
@@ -93,6 +94,12 @@ Capistrano::Configuration.instance(:must_exist).load do
         puts users.join("\n")
       end
       
+      task :serve do
+        cmd = "git-daemon --verbose --export-all --port=#{git_port} --base-path=#{Dir.pwd} --base-path-relaxed"
+        puts cmd
+        `#{cmd}`
+      end
+
       task :create_remote do
         
         # Create local git repo if missing
