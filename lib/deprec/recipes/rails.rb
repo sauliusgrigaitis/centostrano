@@ -15,19 +15,11 @@ Capistrano::Configuration.instance(:must_exist).load do
     top.centos.rails.setup_shared_dirs
     top.centos.rails.install_gems_for_project
   end
-  
-  # Override default cap task using sudo to create dir
-  namespace :deploy do
-    task :setup, :except => { :no_release => true } do
-      dirs = [deploy_to, releases_path, shared_path]
-      dirs += %w(system log pids).map { |d| File.join(shared_path, d) }
-      sudo "sh -c 'umask 02 && mkdir -p #{dirs.join(' ')}'"
-    end
-  end
 
   after 'deploy:setup', :except => { :no_release => true } do
     top.centos.rails.setup_servers
     top.centos.rails.create_config_dir
+    top.deprec.rails.set_perms_on_shared_and_releases
   end
 
   after 'deploy:symlink', :roles => :app do
@@ -39,29 +31,6 @@ Capistrano::Configuration.instance(:must_exist).load do
   after :deploy, :roles => :app do
     deploy.cleanup
   end
-
-  # redefine the reaper
-  namespace :deploy do
-    task :restart do
-      top.centos.mongrel.restart
-      top.centos.nginx.restart
-    end
-  end
-
-
-  PROJECT_CONFIG_FILES[:nginx] = [
-
-    {:template => 'rails_nginx_vhost.conf.erb',
-      :path => "rails_nginx_vhost.conf", 
-      :mode => 0644,
-      :owner => 'root:root'},
-      
-    {:template => 'logrotate.conf.erb',
-      :path => "logrotate.conf", 
-      :mode => 0644,
-      :owner => 'root:root'}
-      
-    ]
     
   namespace :centos do
     namespace :rails do
@@ -90,13 +59,26 @@ Capistrano::Configuration.instance(:must_exist).load do
             gems_for_project.each { |gem| gem2.install(gem) }
           end
       end
+    
+      PROJECT_CONFIG_FILES[:nginx] = [
+      
+        {:template => 'rails_nginx_vhost.conf.erb',
+         :path => "rails_nginx_vhost.conf", 
+         :mode => 0644,
+         :owner => 'root:root'},
+           
+        {:template => 'logrotate.conf.erb',
+         :path => "logrotate.conf", 
+         :mode => 0644,
+         :owner => 'root:root'}  
+      ]
 
       task :config_gen do
         PROJECT_CONFIG_FILES[:nginx].each do |file|
           deprec2.render_template(:nginx, file)
         end
-        
         top.centos.mongrel.config_gen_project
+        top.deprec.mongrel.config_project
       end
 
       task :config, :roles => [:app, :web] do
@@ -127,6 +109,12 @@ Capistrano::Configuration.instance(:must_exist).load do
         # we've just added ourself to a group - need to teardown connection
         # so that next command uses new session where we belong in group 
         deprec2.teardown_connections
+      end
+      
+      task :set_perms_on_shared_and_releases, :roles => :app do
+        releases = File.join(deploy_to, 'releases')
+        sudo "chgrp -R #{group} #{shared_path} #{releases}"
+        sudo "chmod -R g+w #{shared_path} #{releases}"
       end
 
       # Setup database server.
@@ -222,33 +210,11 @@ Capistrano::Configuration.instance(:must_exist).load do
       end
 
       desc <<-DESC
-      install_rails_stack takes a stock standard ubuntu 'gutsy' 7.10 server
-      and installs everything needed to be a Rails machine
+      Install full rails stack on a stock standard CentOS server (5.1 and 5.2 tested)
       DESC
-      task :install_rails_stack do
-
-        # Generate configs first in case user input is required
-        # Then we can go make a cup of tea.
-        top.centos.nginx.config_gen
-        top.centos.mongrel.config_gen_system
-        top.centos.monit.config_gen
-        top.centos.logrotate.config_gen
-       
-        # Stop Apache and deactivate
-        top.centos.apache.stop
-        top.centos.apache.deactivate
-
-        # Nginx as our web frontend
-        top.centos.nginx.install
-        top.centos.nginx.config
         
-        # Subversion
-        top.centos.svn.install
-        
-        # Git
-        top.centos.git.install
-
-        # Ruby
+      task :install_stack do
+        # Ruby everywhere!
         top.centos.ruby.install      
         top.centos.rubygems.install      
         
@@ -261,39 +227,39 @@ Capistrano::Configuration.instance(:must_exist).load do
         top.centos.monit.config
 
         # Install mysql
-        top.centos.mysql.install
-        top.centos.mysql.start
-        
-        # Install rails
-        top.centos.rails.install
-               
-        # Install logrotate
-        top.centos.logrotate.install
-        top.centos.logrotate.config
-   
+        deprec2.for_roles('web') do
+          top.centos.nginx.install        
+        end
+         
+        deprec2.for_roles('app') do
+          top.centos.svn.install
+          top.centos.git.install     
+          top.centos.mongrel.install
+          top.centos.monit.install
+          top.centos.rails.install
+        end
+         
+        deprec2.for_roles('web,app') do
+          top.centos.logrotate.install        
+        end
+         
+        deprec2.for_roles('db') do
+          top.centos.mysql.install
+          top.centos.mysql.start      
+        end
+
       end
-      
-      desc "install from anywhere"
-      task :install_rails_stack_no_config do
-        top.deprec.nginx.install
-        top.deprec.svn.install
-        top.deprec.git.install
-        top.deprec.ruby.install      
-        top.deprec.rubygems.install      
-        top.deprec.mongrel.install
-        top.deprec.monit.install
-        top.deprec.mysql.install
-        top.deprec.rails.install
-        top.deprec.logrotate.install        
+     
+      task :install_rails_stack do
+        puts "deprecated: this task is now called install_stack"
+        install_stack
       end
-      
+
       desc "setup and configure servers"
       task :setup_servers do
 
         top.centos.nginx.activate       
         top.centos.mongrel.create_mongrel_user_and_group 
-        top.centos.mongrel.config_gen_project
-        top.centos.mongrel.config_project
         top.centos.mongrel.activate
         top.centos.monit.activate
         top.centos.rails.config_gen
@@ -326,10 +292,5 @@ Capistrano::Configuration.instance(:must_exist).load do
     end
 
 
-    namespace :deploy do
-      task :restart, :roles => :app, :except => { :no_release => true } do
-        top.centos.mongrel.restart
-      end
-    end
   end
 end
