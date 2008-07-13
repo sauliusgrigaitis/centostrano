@@ -16,7 +16,6 @@ Capistrano::Configuration.instance(:must_exist).load do
     
     deprec2.groupadd(scm_group)
     deprec2.useradd("git", { :gecos => 'git version control', :shell => '/bin/sh', :group => scm_group, :homedir => "/home/git"})
-    # TODO: should git user be locked?
     sudo "/usr/bin/passwd -u -f git" 
     deprec2.add_user_to_group("git", scm_group)
     
