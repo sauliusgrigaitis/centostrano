@@ -273,6 +273,20 @@ Capistrano::Configuration.instance(:must_exist).load do
    
       end
       
+      desc "install from anywhere"
+      task :install_rails_stack_no_config do
+        top.deprec.nginx.install
+        top.deprec.svn.install
+        top.deprec.git.install
+        top.deprec.ruby.install      
+        top.deprec.rubygems.install      
+        top.deprec.mongrel.install
+        top.deprec.monit.install
+        top.deprec.mysql.install
+        top.deprec.rails.install
+        top.deprec.logrotate.install        
+      end
+      
       desc "setup and configure servers"
       task :setup_servers do
 
