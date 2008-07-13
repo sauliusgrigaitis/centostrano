@@ -35,8 +35,11 @@ Capistrano::Configuration.instance(:must_exist).load do
         install_start_stop_daemon
         create_nginx_user
         sudo "test -d /usr/local/nginx/logs || (sudo mkdir /usr/local/nginx/logs && sudo chown nobody:nobody /usr/local/nginx/logs)"
-        # setup_vhost_dir     # XXX not done yet
         # install_index_page  # XXX not done yet
+        SYSTEM_CONFIG_FILES[:nginx].each do |file|
+          deprec2.render_template(:nginx, file.merge(:remote => true))
+        end
+        activate
       end
 
       # install dependencies for nginx
@@ -113,11 +116,11 @@ Capistrano::Configuration.instance(:must_exist).load do
       Activate nginx start scripts on server.
       Setup server to start nginx on boot.
       DESC
-      task :activate, :roles => :web do
+      task :activate do
         activate_system
       end
 
-      task :activate_system, :roles => :web do
+      task :activate_system do
         send(run_method, "/sbin/chkconfig --add nginx")
         send(run_method, "/sbin/chkconfig --level 345 nginx on")
       end
@@ -126,7 +129,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       Dectivate nginx start scripts on server.
       Setup server to start nginx on boot.
       DESC
-      task :deactivate, :roles => :web do
+      task :deactivate do
         send(run_method, "/sbin/chkconfig --del nginx")
       end
 

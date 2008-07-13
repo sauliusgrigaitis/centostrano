@@ -73,7 +73,11 @@ Capistrano::Configuration.instance(:must_exist).load do
         deprec2.download_src(SRC_PACKAGES[:apache], src_dir)
         yum.install_from_src(SRC_PACKAGES[:apache], src_dir)
         setup_vhost_dir
-        install_index_page
+        # install_index_page
+        activate
+        SYSTEM_CONFIG_FILES[:apache].each do |file|
+          deprec2.render_template(:apache, file.merge(:remote => true))
+        end
       end
       
       # install dependencies for apache
@@ -154,7 +158,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       end
 
       desc "Set apache to start on boot"
-      task :activate, :roles => :web do
+      task :activate do
         send(run_method, "/sbin/chkconfig --add httpd")
         send(run_method, "/sbin/chkconfig --level 345 httpd on")
       end
@@ -173,7 +177,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       end
 
       # Generate an index.html page  
-      task :install_index_page, :roles => :web do
+      task :install_index_page do
         deprec2.mkdir(apache_docroot, :owner => :root, :group => :deploy, :mode => 0775, :via => :sudo)
         std.su_put deprec2.render_template(:apache, :template => 'index.html.erb'), File.join(apache_docroot, 'index.html')
         std.su_put deprec2.render_template(:apache, :template => 'master.css'), File.join(apache_docroot, 'master.css')
