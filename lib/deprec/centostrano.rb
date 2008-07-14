@@ -9,7 +9,7 @@ module Yum
     when :rpmforge
       rpm_install("http://dag.wieers.com/rpm/packages/rpmforge-release/rpmforge-release-0.3.6-1.el5.rf.`uname -i`.rpm")
     when :epel
-      sudo "sudo test -f /etc/yum.repos.d/epel.repo || sudo rpm -Uvh http://download.fedora.redhat.com/pub/epel/5/i386/epel-release-5-3.noarch.rpm"
+      sudo "sudo test -f /etc/yum.repos.d/epel.repo || sudo rpm -U http://download.fedora.redhat.com/pub/epel/5/i386/epel-release-5-3.noarch.rpm"
     end
   end
   
@@ -17,7 +17,7 @@ module Yum
     send(run_method, "wget -Ncq #{[*packages].join(' ')}", options)
     files=[*packages].collect { |package| File.basename(package) }
     # TODO hmm... This should me replaces with something more smart, like check if package is already installed
-    send(run_method, "rpm -i --force #{files.join(' ')}", options)
+    send(run_method, "rpm -U --force  #{files.join(' ')}", options)
     send(run_method, "rm #{files.join(' ')}", options)
   end
 

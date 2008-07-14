@@ -19,7 +19,7 @@ Capistrano::Configuration.instance(:must_exist).load do
   after 'deploy:setup', :except => { :no_release => true } do
     top.centos.rails.setup_servers
     top.centos.rails.create_config_dir
-    top.deprec.rails.set_perms_on_shared_and_releases
+    top.centos.rails.set_perms_on_shared_and_releases
   end
 
   after 'deploy:symlink', :roles => :app do
@@ -42,7 +42,7 @@ Capistrano::Configuration.instance(:must_exist).load do
 
       task :install_deps do
         apt.install( {:base => %w(sqlite sqlite-devel)}, :stable )
-        apt.install( {:base => %w(mysql mysql-devel)}, :stable )
+        apt.install( {:base => %w(mysql-devel)}, :stable )
       end
 
       # install some required ruby gems
@@ -61,8 +61,14 @@ Capistrano::Configuration.instance(:must_exist).load do
         # Ruby everywhere!
         top.centos.ruby.install      
         top.centos.rubygems.install      
-
-        # Install mysql
+        
+        # Stop and deactivate apache 2
+        deprec2.for_roles('web') do
+          top.centos.apache.stop
+          top.centos.apache.deactivate
+        end
+ 
+        # Install nginx 
         deprec2.for_roles('web') do
           top.centos.nginx.install        
         end
@@ -117,7 +123,7 @@ Capistrano::Configuration.instance(:must_exist).load do
           deprec2.render_template(:nginx, file)
         end
         top.centos.mongrel.config_gen_project
-        top.deprec.mongrel.config_project
+        top.centos.mongrel.config_project
       end
 
       desc "Push out config files for rails app."

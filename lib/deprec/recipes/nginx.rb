@@ -4,8 +4,8 @@ Capistrano::Configuration.instance(:must_exist).load do
     namespace :nginx do
 
       set :nginx_server_name, nil
-      set :nginx_user,  'nobody'
-      set :nginx_group, 'nogroup'
+      set :nginx_user,  'nginx'
+      set :nginx_group, 'nginx'
       set :nginx_vhost_dir, '/usr/local/nginx/conf/vhosts'
       set :nginx_client_max_body_size, '50M'
 
@@ -32,9 +32,9 @@ Capistrano::Configuration.instance(:must_exist).load do
         install_deps
         deprec2.download_src(SRC_PACKAGES[:nginx], src_dir)
         yum.install_from_src(SRC_PACKAGES[:nginx], src_dir)
-        install_start_stop_daemon
+        #install_start_stop_daemon
         create_nginx_user
-        sudo "test -d /usr/local/nginx/logs || (sudo mkdir /usr/local/nginx/logs && sudo chown nobody:nobody /usr/local/nginx/logs)"
+        #sudo "test -d /usr/local/nginx/logs || (sudo mkdir /usr/local/nginx/logs && sudo chown nobody:nobody /usr/local/nginx/logs)"
         # install_index_page  # XXX not done yet
         SYSTEM_CONFIG_FILES[:nginx].each do |file|
           deprec2.render_template(:nginx, file.merge(:remote => true))
@@ -99,18 +99,18 @@ Capistrano::Configuration.instance(:must_exist).load do
         deprec2.push_configs(:nginx, SYSTEM_CONFIG_FILES[:nginx])
       end
 
-      desc "install start_stop_daemon"
-      task :install_start_stop_daemon, :roles => :web do
-        commands = <<-DESC
-          sh -c 'cd /usr/local/src; 
-          wget http://developer.axis.com/download/distribution/apps-sys-utils-start-stop-daemon-IR1_9_18-1.tar.gz; 
-          tar zxvf apps-sys-utils-start-stop-daemon-IR1_9_18-1.tar.gz;
-          cd /usr/local/src/apps/sys-utils/start-stop-daemon-IR1_9_18-1/; 
-          gcc start-stop-daemon.c -o start-stop-daemon;
-          cp start-stop-daemon /usr/sbin;' 
-        DESC
-        send(run_method, commands)
-      end
+#      desc "install start_stop_daemon"
+      #task :install_start_stop_daemon, :roles => :web do
+        #commands = <<-DESC
+          #sh -c 'cd /usr/local/src; 
+          #wget http://developer.axis.com/download/distribution/apps-sys-utils-start-stop-daemon-IR1_9_18-1.tar.gz; 
+          #tar zxvf apps-sys-utils-start-stop-daemon-IR1_9_18-1.tar.gz;
+          #cd /usr/local/src/apps/sys-utils/start-stop-daemon-IR1_9_18-1/; 
+          #gcc start-stop-daemon.c -o start-stop-daemon;
+          #cp start-stop-daemon /usr/sbin;' 
+        #DESC
+        #send(run_method, commands)
+      #end
   
       desc <<-DESC
       Activate nginx start scripts on server.

@@ -85,7 +85,7 @@ Capistrano::Configuration.instance(:must_exist).load do
   default(:backup_dir) { '/var/backups'}  
 
   # XXX rails deploy stuff
-  set :apps_root,     File.join( %w(/ var www apps) )          # parent dir for apps
+  set :apps_root,     File.join( %w(/ opt apps) )          # parent dir for apps
   default(:deploy_to)    { File.join(apps_root, application) } # dir for current app
   default(:current_path) { File.join(deploy_to, "current") }
   default(:shared_path)  { File.join(deploy_to, "shared") }

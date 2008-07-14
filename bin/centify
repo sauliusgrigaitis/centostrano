@@ -48,6 +48,8 @@ caprc = unindent(<<-FILE)
   #
   # require 'deprec'
   #
+  require 'centostrano'
+  #
   # SSH options
   #
   # Use ssh keys instead of typing password every time
