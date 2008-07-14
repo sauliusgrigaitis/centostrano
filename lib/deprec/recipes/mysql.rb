@@ -27,7 +27,7 @@ Capistrano::Configuration.instance(:must_exist).load do
         # rails puts "socket: /tmp/mysql.sock" into config/database.yml
         # this is not the location for our ubuntu's mysql socket file
         # so we create this link to make deployment using rails defaults simpler
-        sudo "ln -sf /var/run/mysqld/mysqld.sock /tmp/mysql.sock"
+        sudo "ln -sf /var/lib/mysql/mysql.sock /tmp/mysql.sock"
       end
       
       # Configuration
@@ -39,7 +39,14 @@ Capistrano::Configuration.instance(:must_exist).load do
          :mode => 0644,
          :owner => 'root:root'}
       ]
-      
+
+      desc "Create DB according to production settings in database.yml"
+      task :setup_db do
+        top.centos.mysql.activate
+        top.centos.mysql.start
+        top.centos.mysql.create_db
+      end
+
       desc "Generate configuration file(s) for mysql from template(s)"
       task :config_gen do
         SYSTEM_CONFIG_FILES[:mysql].each do |file|
