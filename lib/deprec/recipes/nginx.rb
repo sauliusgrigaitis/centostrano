@@ -34,7 +34,7 @@ Capistrano::Configuration.instance(:must_exist).load do
         yum.install_from_src(SRC_PACKAGES[:nginx], src_dir)
         #install_start_stop_daemon
         create_nginx_user
-        #sudo "test -d /usr/local/nginx/logs || (sudo mkdir /usr/local/nginx/logs && sudo chown nobody:nobody /usr/local/nginx/logs)"
+        sudo "test -d /usr/local/nginx/logs || (sudo mkdir /usr/local/nginx/logs)"# && sudo chown nobody:nobody /usr/local/nginx/logs)"
         # install_index_page  # XXX not done yet
         SYSTEM_CONFIG_FILES[:nginx].each do |file|
           deprec2.render_template(:nginx, file.merge(:remote => true))
