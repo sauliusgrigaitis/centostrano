@@ -27,7 +27,15 @@ Capistrano::Configuration.instance(:must_exist).load do
         createuser(db_user, db_password)
         createdb(db_name, db_user)
       end
-       
+      
+      desc "Create DB according to production settings in database.yml"
+      task :setup_db do
+        top.centos.postgresql.activate
+        top.centos.postgresql.start
+        top.centos.postgresql.create_db
+      end
+
+      
       # Configuration
       
       SYSTEM_CONFIG_FILES[:postgresql] = [
