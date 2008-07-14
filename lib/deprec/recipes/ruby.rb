@@ -9,10 +9,10 @@ Capistrano::Configuration.instance(:must_exist).load do
         :md5sum => "c36e011733a3a3be6f43ba27b7cd7485 ruby-1.8.6-p111.tar.gz", 
         :dir => 'ruby-1.8.6-p111',  
         :url => "ftp://ftp.ruby-lang.org/pub/ruby/1.8/ruby-1.8.6-p111.tar.gz",
-        :unpack => "tar zxf ruby-1.8.6-p111.tar.gz; cd ruby-1.8.6-p111; wget -q -O - wget http://blog.phusion.nl/assets/r8ee-security-patch-20080623-2.txt | patch -p1 -s",
+        :unpack => "tar zxf ruby-1.8.6-p111.tar.gz; cd ruby-1.8.6-p111; wget -q -O - wget http://blog.phusion.nl/assets/r8ee-security-patch-20080623-2.txt | patch -p1",
         :configure => %w(
           ./configure
-          --with-readline-dir=/usr/local
+          --with-install-readline
           ;
           ).reject{|arg| arg.match '#'}.join(' '),
         :make => 'make;',
@@ -28,7 +28,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       end
       
       task :install_deps do
-        apt.install( {:base => %w(pcre* gcc make openssl openssl-devel)}, :stable )
+        apt.install( {:base => %w(pcre* gcc make openssl openssl-devel readline-devel)}, :stable )
       end
 
     end
