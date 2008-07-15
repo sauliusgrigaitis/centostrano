@@ -129,6 +129,26 @@ members = #{gitosis_admin} #{gitosis_server}
     system "git add ."
     system "git commit -a -m 'Touched .gitignore to emtpy folders, ignored log files, tmp, sqlite3 db'"
   end
-  
+
+  desc "setup \"external\" repository accessible to redmine"
+  task :setup_for_redmine do
+    sudo "test -d /var/git/checkout || sudo mkdir -p /var/git/checkout"
+    sudo "test -d /var/git/checkout/#{application} || sudo git clone /home/git/repositories/#{application}.git /var/git/checkout/#{application}"
+    sudo "chown -R git:deploy /var/git/checkout/#{application}"
+    hook_file = "/home/git/repositories/#{application}.git/hooks/post-update"
+    hook_file_tmp = "/tmp/hook_file.tmp"
+    sudo "echo \"#!/bin/sh\" > #{hook_file_tmp}"
+    [
+      "cd /var/git/checkout/#{application} || exit", 
+      "unset GIT_DIR",
+      "git pull /home/git/repositories/#{application}.git/ master",
+      "exec git-update-server-info"
+    ].each { |l| sudo "echo \"#{l}\" >> #{hook_file_tmp}" }
+    sudo "mv #{hook_file_tmp} #{hook_file}"
+    sudo "chmod 755 #{hook_file}"
+    sudo "chown git:scm #{hook_file}"
+    puts "\nPut '/var/git/checkout/#{application}/.git' into Redmine Git repository settings\n\n"
+  end
+   
   end end
 end
