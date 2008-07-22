@@ -16,7 +16,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       desc "Install merb"
       task :install, :roles => :app do
         install_deps
-        %w(core plugins more).each do |gem|
+        %w(extlib core more plugins).each do |gem|
           package_info = {
             :filename => "merb-#{gem}",   
             :dir => "merb-#{gem}",  
