@@ -16,7 +16,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       desc "Install merb"
       task :install, :roles => :app do
         install_deps
-        %w(core plugins more).each do |gem|
+        %w(extlib core plugins).each do |gem|
           package_info = {
             :filename => "merb-#{gem}",   
             :dir => "merb-#{gem}",  
@@ -30,7 +30,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       task :install_deps do
         top.centos.mongrel.install
         top.centos.git.install
-        gem2.install(%w(rack mongrel json json_pure erubis mime-types rspec hpricot mocha rubigen haml markaby mailfactory ruby2ruby))
+        gem2.install(%w(rack mongrel json json_pure erubis mime-types rspec hpricot mocha rubigen haml markaby mailfactory ruby2ruby facets))
       end 
 
       
