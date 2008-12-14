@@ -86,11 +86,10 @@ Capistrano::Configuration.instance(:must_exist).load do
         end
         
         # Install database separately
-        # deprec2.for_roles('db') do
-        #   top.centos.mysql.install
-        #   top.centos.mysql.start      
-        # end
-
+        deprec2.for_roles('db') do
+          top.centos.mysql.install
+          top.centos.mysql.start      
+        end
       end
      
       task :install_rails_stack do
