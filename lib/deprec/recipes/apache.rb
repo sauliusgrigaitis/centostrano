@@ -38,11 +38,11 @@ Capistrano::Configuration.instance(:must_exist).load do
 
 
       SRC_PACKAGES[:apache] = {
-        :filename => 'httpd-2.2.9.tar.gz',   
-        :md5sum => "28470617033b8fb998779f6d76016f82 httpd-2.2.9.tar.gz", 
-        :dir => 'httpd-2.2.9',  
-        :url => "http://www.apache.org/dist/httpd/httpd-2.2.9.tar.gz",
-        :unpack => "tar zxf httpd-2.2.9.tar.gz;",
+        :filename => 'httpd-2.2.10.tar.gz',   
+        :md5sum => "28470617033b8fb998779f6d76016f82 httpd-2.2.10.tar.gz", 
+        :dir => 'httpd-2.2.10',  
+        :url => "http://www.apache.org/dist/httpd/httpd-2.2.10.tar.gz",
+        :unpack => "tar zxf httpd-2.2.10.tar.gz;",
         :configure => %w(
           ./configure
           --enable-mods-shared=all
@@ -62,7 +62,7 @@ Capistrano::Configuration.instance(:must_exist).load do
         :make => 'make;',
         :install => '--fstrans=no make install;',
         :post_install => 'install -b support/apachectl /etc/init.d/httpd;',
-        :version => 'c2.2.9',
+        :version => 'c2.2.10',
         :release => '1'
       }
 
@@ -159,6 +159,8 @@ Capistrano::Configuration.instance(:must_exist).load do
 
       desc "Set apache to start on boot"
       task :activate do
+        send(run_method, "sed -i '2i# chkconfig: 2345 10 90' /etc/init.d/httpd")
+        send(run_method, "sed -i '3i# description: Activates/Deactivates Apache Web Server' /etc/init.d/httpd")
         send(run_method, "/sbin/chkconfig --add httpd")
         send(run_method, "/sbin/chkconfig --level 345 httpd on")
       end

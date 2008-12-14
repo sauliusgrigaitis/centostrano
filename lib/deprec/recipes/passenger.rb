@@ -1,6 +1,6 @@
 # Copyright 2006-2008 by Mike Bailey. All rights reserved.
 Capistrano::Configuration.instance(:must_exist).load do 
-  namespace :deprec do 
+  namespace :centos do 
     namespace :passenger do
       
       set :passenger_install_dir, '/opt/passenger'
@@ -23,13 +23,13 @@ Capistrano::Configuration.instance(:must_exist).load do
         :version => 'release-2.0.3', # Specify a tagged release to deploy
         :configure => '',
         :make => '',
-        :install => './bin/passenger-install-apache2-module'
+        :install => ' ./bin/passenger-install-apache2-module'
       }
       
       SYSTEM_CONFIG_FILES[:passenger] = [
 
         {:template => 'passenger.erb',
-          :path => '/etc/apache2/conf.d/passenger',
+          :path => '/etc/httpd/conf.d/passenger',
           :mode => 0755,
           :owner => 'root:root'}
 
@@ -47,6 +47,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       desc "Install passenger"
       task :install, :roles => :passenger do
         install_deps
+        gem2.install 'rack'
         deprec2.download_src(SRC_PACKAGES[:passenger], src_dir)
 
         # Non standard - passenger requires input
@@ -57,13 +58,16 @@ Capistrano::Configuration.instance(:must_exist).load do
         cd #{dest_dir} &&
         #{sudo} ruby -i -pe '$_ = $_.sub("STDIN.readline","# do nothing")' bin/passenger-install-apache2-module
         EOF
-        run "cd #{dest_dir} && #{sudo} ./bin/passenger-install-apache2-module"
+        run "export APXS2=/usr/local/apache2/bin/apxs"
+        run "export APR_CONFIG=/usr/local/apache2/bin/apr-1-config" 
+        sudo "su -c 'export APXS2=/usr/local/apache2/bin/apxs && export APR_CONFIG=/usr/local/apache2/bin/apr-1-config && cd #{dest_dir} && ./bin/passenger-install-apache2-module'"
+        #run "cd #{dest_dir} && #{sudo} ./bin/passenger-install-apache2-module"
         run "#{sudo} unlink #{passenger_install_dir} 2>/dev/null; #{sudo} ln -sf #{dest_dir} #{passenger_install_dir}"
       end
 
       # install dependencies for nginx
       task :install_deps, :roles => :passenger do
-        apt.install( {:base => %w(apache2-mpm-prefork apache2-prefork-dev rsync)}, :stable )
+        apt.install( {:base => %w(rsync apr-devel)}, :stable )
       end
        
       desc "Generate Passenger apache configs (system & project level)."
@@ -114,7 +118,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       
       desc "Restart Apache"
       task :restart_apache, :roles => :passenger do
-        run "#{sudo} /etc/init.d/apache2 restart"
+        run "#{sudo} /etc/init.d/httpd restart"
       end
       
     end
