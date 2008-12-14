@@ -123,7 +123,6 @@ Capistrano::Configuration.instance(:must_exist).load do
           deprec2.render_template(:nginx, file)
         end
         top.centos.mongrel.config_gen_project
-        top.centos.mongrel.config_project
       end
 
       desc "Push out config files for rails app."
