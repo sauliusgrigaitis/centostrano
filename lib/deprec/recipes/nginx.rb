@@ -7,14 +7,15 @@ Capistrano::Configuration.instance(:must_exist).load do
       set :nginx_user,  'nginx'
       set :nginx_group, 'nginx'
       set :nginx_vhost_dir, '/usr/local/nginx/conf/vhosts'
-      set :nginx_client_max_body_size, '50M'
+      set :nginx_client_max_body_size, '100M'
+      set :nginx_worker_processes, 4
 
       SRC_PACKAGES[:nginx] = {
-        :filename => 'nginx-0.6.31.tar.gz',   
-        :md5sum => "824bcc25bbd5b636f182237b69227bd2  nginx-0.6.31.tar.gz", 
-        :dir => 'nginx-0.6.31',  
-        :url => "http://sysoev.ru/nginx/nginx-0.6.31.tar.gz",
-        :unpack => "tar zxf nginx-0.6.31.tar.gz;",
+        :filename => 'nginx-0.6.34.tar.gz',   
+        :md5sum => "837bcfb88bdc6b6efc4e63979c9c7b41 nginx-0.6.34.tar.gz", 
+        :dir => 'nginx-0.6.34',  
+        :url => "http://sysoev.ru/nginx/nginx-0.6.34.tar.gz",
+        :unpack => "tar zxf nginx-0.6.34.tar.gz;",
         :configure => %w(
         ./configure
         --sbin-path=/usr/local/sbin
@@ -23,7 +24,7 @@ Capistrano::Configuration.instance(:must_exist).load do
         ).reject{|arg| arg.match '#'}.join(' '),
         :make => 'make;',
         :install => 'make install;',
-        :version => 'c0.6.31',
+        :version => 'c0.6.34',
         :release => '1'
       }
 
