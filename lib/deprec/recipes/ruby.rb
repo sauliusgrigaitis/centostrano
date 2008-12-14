@@ -40,9 +40,9 @@ Capistrano::Configuration.instance(:must_exist).load do
   
       SRC_PACKAGES[:rubygems] = {
         :filename => 'rubygems-1.2.0.tgz',   
-        :md5sum => "b77a4234360735174d1692e6fc598402 rubygems-1.2.0.tgz", 
+        :md5sum => "a04ee6f6897077c5b75f5fd1e134c5a9  rubygems-1.3.1.tgz", 
+        :url => "http://rubyforge.org/frs/download.php/45905/rubygems-1.3.1.tgz",
         :dir => 'rubygems-1.2.0',  
-        :url => "http://rubyforge.org/frs/download.php/38646/rubygems-1.2.0.tgz",
         :unpack => "tar zxf rubygems-1.2.0.tgz;",
         :install => 'ruby setup.rb;',
         :version => 'c1.2.0',
