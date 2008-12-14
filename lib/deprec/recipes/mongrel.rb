@@ -21,7 +21,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       # Install 
       
       desc "Install mongrel"
-      task :install do
+      task :install, :roles => :app do
         gem2.install 'mongrel'
         gem2.install 'mongrel_cluster'
         gem2.install 'swiftiply'
@@ -32,7 +32,7 @@ Capistrano::Configuration.instance(:must_exist).load do
         activate_system
       end
       
-      task :symlink_mongrel_rails do
+      task :symlink_mongrel_rails, :roles => :app do
         sudo "ln -sf /usr/local/bin/mongrel_rails /usr/bin/mongrel_rails"
       end
       
