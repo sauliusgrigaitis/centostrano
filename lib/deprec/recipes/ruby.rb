@@ -9,7 +9,7 @@ Capistrano::Configuration.instance(:must_exist).load do
         :md5sum => "c36e011733a3a3be6f43ba27b7cd7485 ruby-1.8.6-p111.tar.gz", 
         :dir => 'ruby-1.8.6-p111',  
         :url => "ftp://ftp.ruby-lang.org/pub/ruby/1.8/ruby-1.8.6-p111.tar.gz",
-        :unpack => "tar zxf ruby-1.8.6-p111.tar.gz; cd ruby-1.8.6-p111; wget -q -O - wget http://blog.phusion.nl/assets/r8ee-security-patch-20080623-2.txt | patch -p1",
+        :unpack => "tar zxf ruby-1.8.6-p111.tar.gz; cd ruby-1.8.6-p111; wget -q -O - wget http://blog.phusion.nl/assets/r8ee-security-patch-20080623-2.txt | patch -p1;",
         :configure => %w(
           ./configure
           --with-install-readline
@@ -28,7 +28,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       end
       
       task :install_deps do
-        apt.install( {:base => %w(pcre* gcc make openssl openssl-devel readline-devel)}, :stable )
+        apt.install( {:base => %w(pcre* gcc make openssl openssl-devel readline-devel patch)}, :stable )
       end
 
     end
@@ -39,13 +39,13 @@ Capistrano::Configuration.instance(:must_exist).load do
     namespace :rubygems do
   
       SRC_PACKAGES[:rubygems] = {
-        :filename => 'rubygems-1.2.0.tgz',   
+        :filename => 'rubygems-1.3.1.tgz',   
         :md5sum => "a04ee6f6897077c5b75f5fd1e134c5a9  rubygems-1.3.1.tgz", 
         :url => "http://rubyforge.org/frs/download.php/45905/rubygems-1.3.1.tgz",
-        :dir => 'rubygems-1.2.0',  
-        :unpack => "tar zxf rubygems-1.2.0.tgz;",
+        :dir => 'rubygems-1.3.1',  
+        :unpack => "tar zxf rubygems-1.3.1.tgz;",
         :install => 'ruby setup.rb;',
-        :version => 'c1.2.0',
+        :version => 'c1.3.1',
         :release => '1'
       }
       
