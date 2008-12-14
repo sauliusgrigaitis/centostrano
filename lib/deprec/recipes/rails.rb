@@ -63,16 +63,13 @@ Capistrano::Configuration.instance(:must_exist).load do
         top.centos.rubygems.install      
         
         # Stop and deactivate apache 2
-        deprec2.for_roles('web') do
-          top.centos.apache.stop
-          top.centos.apache.deactivate
-        end
- 
+        top.centos.apache.stop
+        top.centos.apache.deactivate
+
         # Install nginx 
-        deprec2.for_roles('web') do
-          top.centos.nginx.install        
-        end
-         
+        top.centos.nginx.install        
+        
+        # XXX check this out before removing - Mike 
         deprec2.for_roles('app') do
           top.centos.svn.install
           top.centos.git.install     
@@ -81,15 +78,10 @@ Capistrano::Configuration.instance(:must_exist).load do
           top.centos.rails.install
         end
          
-        deprec2.for_roles('web,app') do
-          top.centos.logrotate.install        
-        end
+        top.centos.logrotate.install        
         
-        # Install database separately
-        deprec2.for_roles('db') do
-          top.centos.mysql.install
-          top.centos.mysql.start      
-        end
+        top.centos.mysql.install
+        top.centos.mysql.start      
       end
      
       task :install_rails_stack do
