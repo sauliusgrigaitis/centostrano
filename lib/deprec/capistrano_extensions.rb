@@ -6,7 +6,6 @@ module Deprec2
   
   # Temporarily modify ROLES if HOSTS not set
   # Capistrano's default behaviour is for HOSTS to override ROLES
-
   def for_roles(roles)
     old_roles = ENV['ROLES']
     ENV['ROLES'] = roles.to_s unless ENV['HOSTS']
@@ -14,7 +13,7 @@ module Deprec2
     ENV['ROLES'] = old_roles.to_s unless ENV['HOSTS']
   end
   
- # Temporarily ignore ROLES and HOSTS
+  # Temporarily ignore ROLES and HOSTS
   def ignoring_roles_and_hosts
     old_roles = ENV['ROLES']
     old_hosts = ENV['HOSTS']
@@ -24,8 +23,7 @@ module Deprec2
     ENV['ROLES'] = old_roles
     ENV['HOSTS'] = old_hosts
   end
-
-
+  
   DEPREC_TEMPLATES_BASE = File.join(File.dirname(__FILE__), 'templates')
 
   # Render template (usually a config file) 
@@ -260,17 +258,21 @@ module Deprec2
       # when getting source with git
       when :git
         # ensure git is installed
-        apt.install( {:base => %w(git-core)}, :stable) #TODO fix this to test ubuntu version <hardy might need specific git 
+        apt.install( {:base => %w(git)}, :stable) #TODO fix this to test ubuntu version <hardy might need specific git version for full git submodules support
         package_dir = File.join(src_dir, src_package[:dir])
-        run "if [ -d #{package_dir} ]; then cd #{package_dir} && #{sudo} git pull && #{sudo} git submodule init && #{sudo} g
-       # Checkout the revision wanted if defined
-       invoke_command "cd #{package_dir} && git co #{src_package[:version]}", :via => :via if src_package[:version]
-      # when getting source with wget
+        run "if [ -d #{package_dir} ]; then cd #{package_dir} && #{sudo} git checkout master && #{sudo} git pull && #{sudo} git submodule init && #{sudo} git submodule update; else #{sudo} git clone #{src_package[:url]} #{package_dir} && cd #{package_dir} && #{sudo} git submodule init && #{sudo} git submodule update ; fi"
+      	# Checkout the revision wanted if defined
+      	if src_package[:version]
+      	  run "cd #{package_dir} && git branch | grep '#{src_package[:version]}$' && #{sudo} git branch -D '#{src_package[:version]}'; exit 0"
+      	  run "cd #{package_dir} && #{sudo} git checkout -b #{src_package[:version]} #{src_package[:version]}" 
+        end
+	
+      # when getting source with wget    
       when :http
         # ensure wget is installed
         apt.install( {:base => %w(wget)}, :stable )
         # XXX replace with invoke_command
-        run "cd #{src_dir} && test -f #{src_package[:filename]} #{md5_clause} || #{sudo} wget --quiet --timestamping #{src_p
+        run "cd #{src_dir} && test -f #{src_package[:filename]} #{md5_clause} || #{sudo} wget --quiet --timestamping #{src_package[:url]}"
       else
         puts "DOWNLOAD SRC: Download method not recognised. src_package[:download_method]: #{src_package[:download_method]}"
     end
@@ -295,7 +297,7 @@ module Deprec2
         EOF
       else
         puts "UNPACK SRC: Download method not recognised. src_package[:download_method]: #{src_package[:download_method]} "
-    end 
+    end
     sudo <<-EOF
     bash -c '
     cd #{src_dir};
@@ -304,7 +306,7 @@ module Deprec2
     '
     EOF
   end
-  
+
   def set_package_defaults(pkg)
     pkg[:filename] ||= File.basename(pkg[:url])
     pkg[:dir] ||= pkg[:filename].sub(/(\.tgz|\.tar\.gz)/,'')
