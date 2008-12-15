@@ -6,7 +6,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       set :passenger_install_dir, '/opt/passenger'
       set(:passenger_document_root) { "#{current_path}/public" }
       set :passenger_rails_allow_mod_rewrite, 'off'
-      set :passenger_vhost_dir, '/etc/apache2/sites-enabled'
+      set :passenger_vhost_dir, '/etc/httpd/sites-enabled'
       # Default settings for Passenger config files
       set :passenger_log_level, 0
       set :passenger_user_switching, 'on'
@@ -20,7 +20,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       SRC_PACKAGES[:passenger] = {
         :url => "git://github.com/FooBarWidget/passenger.git",
         :download_method => :git,
-        :version => 'release-2.0.3', # Specify a tagged release to deploy
+        :version => 'release-2.0.6', # Specify a tagged release to deploy
         :configure => '',
         :make => '',
         :install => ' ./bin/passenger-install-apache2-module'
@@ -60,7 +60,7 @@ Capistrano::Configuration.instance(:must_exist).load do
         EOF
         run "export APXS2=/usr/local/apache2/bin/apxs"
         run "export APR_CONFIG=/usr/local/apache2/bin/apr-1-config" 
-        sudo "su -c 'export APXS2=/usr/local/apache2/bin/apxs && export APR_CONFIG=/usr/local/apache2/bin/apr-1-config && cd #{dest_dir} && ./bin/passenger-install-apache2-module'"
+        sudo "su -c 'export PATH=/usr/local/apache2/bin:$PATH && export APXS2=/usr/local/apache2/bin/apxs && export APR_CONFIG=/usr/local/apache2/bin/apr-1-config && cd #{dest_dir} && ./bin/passenger-install-apache2-module'"
         #run "cd #{dest_dir} && #{sudo} ./bin/passenger-install-apache2-module"
         run "#{sudo} unlink #{passenger_install_dir} 2>/dev/null; #{sudo} ln -sf #{dest_dir} #{passenger_install_dir}"
       end
