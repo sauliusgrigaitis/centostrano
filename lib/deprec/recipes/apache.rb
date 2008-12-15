@@ -38,11 +38,11 @@ Capistrano::Configuration.instance(:must_exist).load do
 
 
       SRC_PACKAGES[:apache] = {
-        :filename => 'httpd-2.2.10.tar.gz',   
-        :md5sum => "28470617033b8fb998779f6d76016f82 httpd-2.2.10.tar.gz", 
-        :dir => 'httpd-2.2.10',  
-        :url => "http://www.apache.org/dist/httpd/httpd-2.2.10.tar.gz",
-        :unpack => "tar zxf httpd-2.2.10.tar.gz;",
+        :filename => 'httpd-2.2.11.tar.gz',   
+        :md5sum => "03e0a99a5de0f3f568a0087fb9993af9 httpd-2.2.11.tar.gz", 
+        :dir => 'httpd-2.2.11',  
+        :url => "http://www.apache.org/dist/httpd/httpd-2.2.11.tar.gz",
+        :unpack => "tar zxf httpd-2.2.11.tar.gz;",
         :configure => %w(
           ./configure
           --enable-mods-shared=all
@@ -62,7 +62,7 @@ Capistrano::Configuration.instance(:must_exist).load do
         :make => 'make;',
         :install => '--fstrans=no make install;',
         :post_install => 'install -b support/apachectl /etc/init.d/httpd;',
-        :version => 'c2.2.10',
+        :version => 'c2.2.11',
         :release => '1'
       }
 
