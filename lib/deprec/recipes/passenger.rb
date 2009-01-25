@@ -6,7 +6,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       set :passenger_install_dir, '/opt/passenger'
       set(:passenger_document_root) { "#{current_path}/public" }
       set :passenger_rails_allow_mod_rewrite, 'off'
-      set :passenger_vhost_dir, '/etc/httpd/sites-enabled'
+      set :passenger_vhost_dir, '/usr/local/apache2/conf/apps'
       # Default settings for Passenger config files
       set :passenger_log_level, 0
       set :passenger_user_switching, 'on'
@@ -29,7 +29,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       SYSTEM_CONFIG_FILES[:passenger] = [
 
         {:template => 'passenger.erb',
-          :path => '/etc/httpd/conf.d/passenger',
+          :path => '/usr/local/apache2/conf/apps/passenger',
           :mode => 0755,
           :owner => 'root:root'}
 
@@ -47,7 +47,6 @@ Capistrano::Configuration.instance(:must_exist).load do
       desc "Install passenger"
       task :install, :roles => :passenger do
         install_deps
-        gem2.install 'rack'
         deprec2.download_src(SRC_PACKAGES[:passenger], src_dir)
 
         # Non standard - passenger requires input
@@ -68,6 +67,8 @@ Capistrano::Configuration.instance(:must_exist).load do
       # install dependencies for nginx
       task :install_deps, :roles => :passenger do
         apt.install( {:base => %w(rsync apr-devel)}, :stable )
+        gem2.install 'rack'
+        top.centos.apache.install
       end
        
       desc "Generate Passenger apache configs (system & project level)."
@@ -108,7 +109,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       end
 
       task :symlink_passenger_vhost, :roles => :passenger do
-        sudo "ln -sf #{deploy_to}/passenger/apache_vhost #{passenger_vhost_dir}/#{application}"
+        sudo "ln -sf #{deploy_to}/passenger/apache_vhost #{passenger_vhost_dir}/#{application}.conf"
       end
       
       desc "Restart Application"
