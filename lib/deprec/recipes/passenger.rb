@@ -3,7 +3,17 @@ Capistrano::Configuration.instance(:must_exist).load do
   namespace :centos do 
     namespace :passenger do
       
-      set :passenger_install_dir, '/opt/passenger'
+      set :passenger_use_ree, true
+      
+      set(:passenger_install_dir) { 
+        if passenger_use_ree
+          "#{ree_install_dir}/lib/ruby/gems/1.8/gems/passenger-2.0.6"
+        else
+          '/opt/passenger'
+        end
+      }
+      
+
       set(:passenger_document_root) { "#{current_path}/public" }
       set :passenger_rails_allow_mod_rewrite, 'off'
       set :passenger_vhost_dir, '/usr/local/apache2/conf/apps'
@@ -27,11 +37,17 @@ Capistrano::Configuration.instance(:must_exist).load do
       }
       
       SYSTEM_CONFIG_FILES[:passenger] = [
+      # Hmm...we need to place those non-app config files somewhere else - Saulius
+        {:template => 'passenger.load.erb',
+          :path => '/usr/local/apache2/conf/apps/passenger.load',
+          :mode => 0755,
+          :owner => 'root:root'},
 
-        {:template => 'passenger.erb',
-          :path => '/usr/local/apache2/conf/apps/passenger',
+        {:template => 'passenger.conf.erb',
+          :path => '/usr/local/apache2/conf/apps/passenger.conf',
           :mode => 0755,
           :owner => 'root:root'}
+
 
       ]
 
@@ -49,25 +65,36 @@ Capistrano::Configuration.instance(:must_exist).load do
         install_deps
         deprec2.download_src(SRC_PACKAGES[:passenger], src_dir)
 
-        # Non standard - passenger requires input
-        package_dir = File.join(src_dir, 'passenger.git')
-        dest_dir = passenger_install_dir + '-' + (SRC_PACKAGES[:passenger][:version] || 'trunk')
-        run "#{sudo} rsync -avz #{package_dir}/ #{dest_dir}"
-        run <<-EOF
-        cd #{dest_dir} &&
-        #{sudo} ruby -i -pe '$_ = $_.sub("STDIN.readline","# do nothing")' bin/passenger-install-apache2-module
-        EOF
-        run "export APXS2=/usr/local/apache2/bin/apxs"
-        run "export APR_CONFIG=/usr/local/apache2/bin/apr-1-config" 
-        sudo "su -c 'export PATH=/usr/local/apache2/bin:$PATH && export APXS2=/usr/local/apache2/bin/apxs && export APR_CONFIG=/usr/local/apache2/bin/apr-1-config && cd #{dest_dir} && ./bin/passenger-install-apache2-module'"
-        #run "cd #{dest_dir} && #{sudo} ./bin/passenger-install-apache2-module"
-        run "#{sudo} unlink #{passenger_install_dir} 2>/dev/null; #{sudo} ln -sf #{dest_dir} #{passenger_install_dir}"
+        if passenger_use_ree
+          # needs porting to CentOS - Saulius
+          # Install the Passenger that came with Ruby Enterprise Edition
+          run "yes | #{sudo} env PATH=#{ree_install_dir}/bin:$PATH #{ree_install_dir}/bin/passenger-install-apache2-module"
+        else
+          package_dir = File.join(src_dir, 'passenger.git')
+          dest_dir = passenger_install_dir + '-' + (SRC_PACKAGES[:passenger][:version] || 'trunk')
+          run "#{sudo} rsync -avz #{package_dir}/ #{dest_dir}"
+          sudo "su -c 'export PATH=/usr/local/apache2/bin:$PATH && export APXS2=/usr/local/apache2/bin/apxs && export APR_CONFIG=/usr/local/apache2/bin/apr-1-config && cd #{dest_dir} && yes '' | ./bin/passenger-install-apache2-module'"
+          #run "cd #{dest_dir} && #{sudo} ./bin/passenger-install-apache2-module"
+          run "#{sudo} unlink #{passenger_install_dir} 2>/dev/null; #{sudo} ln -sf #{dest_dir} #{passenger_install_dir}"
+        end
+          
+        initial_config_push
+      end
+
+      task :initial_config_push, :roles => :web do
+        # XXX Non-standard!
+        # We need to push out the .load and .conf files for Passenger
+        SYSTEM_CONFIG_FILES[:passenger].each do |file|
+          deprec2.render_template(:passenger, file.merge(:remote => true))
+        end
       end
 
       # install dependencies for nginx
       task :install_deps, :roles => :passenger do
         apt.install( {:base => %w(rsync apr-devel)}, :stable )
+        gem2.install 'fastthread'
         gem2.install 'rack'
+        gem2.install 'rake'
         top.centos.apache.install
       end
        
@@ -92,24 +119,68 @@ Capistrano::Configuration.instance(:must_exist).load do
       end
 
       desc "Push Passenger config files (system & project level) to server"
-      task :config, :roles => :passenger do
+      task :config, :roles => :app do
         config_system
         config_project  
       end
 
       desc "Push Passenger configs (system level) to server"
-      task :config_system, :roles => :passenger do
+      task :config_system, :roles => :app do
         deprec2.push_configs(:passenger, SYSTEM_CONFIG_FILES[:passenger])
+        activate_system
       end
 
       desc "Push Passenger configs (project level) to server"
-      task :config_project, :roles => :passenger do
+      task :config_project, :roles => :app do
         deprec2.push_configs(:passenger, PROJECT_CONFIG_FILES[:passenger])
         symlink_passenger_vhost
+        activate_project
       end
 
-      task :symlink_passenger_vhost, :roles => :passenger do
+      task :symlink_passenger_vhost, :roles => :app do
         sudo "ln -sf #{deploy_to}/passenger/apache_vhost #{passenger_vhost_dir}/#{application}.conf"
+      end
+      
+      task :activate do
+        activate_system
+        activate_project
+      end
+      
+      task :activate_system do
+        #sudo "a2enmod passenger"
+        top.centos.web.reload
+      end
+      
+      task :activate_project do
+        #sudo "a2ensite #{application}"
+        top.centos.web.reload
+      end
+      
+      task :deactivate do
+        puts
+        puts "******************************************************************"
+        puts
+        puts "Danger!"
+        puts
+        puts
+        puts "Do you want to deactivate just this project or all Passenger"
+        puts "projects on this server? Try a more granular command:"
+        puts
+        puts "cap centos:passenger:deactivate_system  # disable Passenger"
+        puts "cap centos:passenger:deactivate_project # disable only this project"
+        puts
+        puts "******************************************************************"
+        puts
+      end
+      
+      task :deactivate_system do
+        #sudo "a2dismod passenger"
+        top.centos.web.reload
+      end
+      
+      task :deactivate_project do
+        #sudo "a2dissite #{application}"
+        top.centos.web.reload
       end
       
       desc "Restart Application"
@@ -122,6 +193,38 @@ Capistrano::Configuration.instance(:must_exist).load do
         run "#{sudo} /etc/init.d/httpd restart"
       end
       
+      namespace :ree do
+      # need to port to CentOS all that REE thing - Saulius
+        set :ree_version, 'ruby-enterprise-1.8.6-20090113'
+        set :ree_install_dir, "/opt/#{ree_version}"
+        set :ree_short_path, '/opt/ruby-enterprise'
+        
+        SRC_PACKAGES[:ree] = {
+          :md5sum => "e8d796a5bae0ec1029a88ba95c5d901d #{ree_version}.tar.gz",
+          :url => "http://rubyforge.org/frs/download.php/50087/#{ree_version}.tar.gz",
+          :configure => '',
+          :make => '',
+          :install => "./installer --auto /opt/#{ree_version}"
+        }
+   
+        task :install do
+          install_deps
+          deprec2.download_src(SRC_PACKAGES[:ree], src_dir)
+          deprec2.install_from_src(SRC_PACKAGES[:ree], src_dir)
+          symlink_ree
+        end
+        
+        task :install_deps do
+          apt.install({:base => %w(libssl-dev libmysqlclient15-dev libreadline5-dev)}, :stable)
+        end
+        
+        task :symlink_ree do
+          sudo "ln -sf /opt/#{ree_version} #{ree_short_path}"
+        end
+        
+      end
+    
+
     end
   end
 end
