@@ -103,11 +103,14 @@ Capistrano::Configuration.instance(:must_exist).load do
         top.centos.rails.install
         top.centos.logrotate.install  
          
-        # Not sure we want to install db as part of this recipe
-        # What if we're using db on another server? Don't reinstall!
-        #              
-        # top.centos.db.install       # Uses value of db_server_type
 
+        # We not longer install database server as part of this task.
+        # There is too much danger that someone will wreck an existing
+        # shared database.
+        #
+        # Install database server with:
+        #
+        #   cap centos:db:install
       end
      
       task :install_rails_stack do
