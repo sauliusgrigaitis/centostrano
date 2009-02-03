@@ -33,7 +33,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       # install dependencies for git
       task :install_deps do
         yum.enable_repository :epel
-        apt.install( {:base => %w(git)}, :stable)
+        apt.install( {:base => %w(git curl-devel)}, :stable)
       end
 
          
