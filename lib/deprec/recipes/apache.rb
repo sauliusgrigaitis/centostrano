@@ -107,7 +107,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       end
 
       desc "Set apache to start on boot"
-      task :activate do
+      task :activate, :roles => :web do
         send(run_method, "sed -i '2i# chkconfig: 2345 10 90' /etc/init.d/httpd")
         send(run_method, "sed -i '3i# description: Activates/Deactivates Apache Web Server' /etc/init.d/httpd")
         send(run_method, "/sbin/chkconfig --add httpd")
