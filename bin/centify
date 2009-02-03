@@ -104,7 +104,7 @@ files = {
    
     namespace :deploy do
       task :restart, :roles => :app, :except => { :no_release => true } do
-        top.centos.mongrel.restart
+        top.centos.app.restart
       end
     end
     
