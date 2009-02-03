@@ -3,8 +3,6 @@ Capistrano::Configuration.instance(:must_exist).load do
   namespace :centos do 
     namespace :passenger do
       
-      set :passenger_use_ree, true
-      
       set(:passenger_install_dir) { 
         if passenger_use_ree
           "#{ree_install_dir}/lib/ruby/gems/1.8/gems/passenger-2.0.6"
