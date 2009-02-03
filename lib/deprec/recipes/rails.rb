@@ -1,6 +1,10 @@
 # Copyright 2006-2008 by Mike Bailey. All rights reserved.
 Capistrano::Configuration.instance(:must_exist).load do 
 
+  set :app_user_prefix,  'app_'
+  set(:app_user) { app_user_prefix + application }
+  set :app_group_prefix,  'app_'
+  set(:app_group) { app_group_prefix + application }
   set :database_yml_in_scm, true
   set :app_symlinks, nil
   set :rails_env, 'production'
@@ -11,21 +15,44 @@ Capistrano::Configuration.instance(:must_exist).load do
   # Hook into the default capistrano deploy tasks
   before 'deploy:setup', :except => { :no_release => true } do
     top.centos.rails.setup_user_perms
+    top.centos.rails.create_app_user_and_group
     top.centos.rails.setup_paths
     top.centos.rails.setup_shared_dirs
     top.centos.rails.install_gems_for_project
   end
 
   after 'deploy:setup', :except => { :no_release => true } do
-    top.centos.rails.setup_servers
     top.centos.rails.create_config_dir
+    top.centos.rails.config_gen
+    top.centos.rails.config
+    top.centos.rails.activate_services
     top.centos.rails.set_perms_on_shared_and_releases
+    top.centos.web.reload
   end
 
   after 'deploy:symlink', :roles => :app do
     top.centos.rails.symlink_shared_dirs
     top.centos.rails.symlink_database_yml unless database_yml_in_scm
-    top.centos.mongrel.set_perms_for_mongrel_dirs
+    top.centos.rails.make_writable_by_app
+  end
+  
+  # XXX This should be restricted a bit to limit what app can write to. - Mike
+  desc "set group ownership and permissions on dirs app server needs to write to"
+  task :make_writable_by_app, :roles => :app do
+    tmp_dir = "#{deploy_to}/current/tmp"
+    shared_dir = "#{deploy_to}/shared"
+    # XXX Factor this out
+    files = ["#{mongrel_log_dir}/mongrel.log", "#{mongrel_log_dir}/#{rails_env}.log"]
+
+    sudo "chgrp -R #{app_group} #{tmp_dir} #{shared_dir}"
+    sudo "chmod -R g+w #{tmp_dir} #{shared_dir}" 
+    # set owner and group of log files 
+    files.each { |file|
+      sudo "touch #{file}"
+      sudo "chown #{app_user} #{file}"   
+      sudo "chgrp #{app_group} #{file}" 
+      sudo "chmod g+w #{file}"   
+    } 
   end
 
   after :deploy, :roles => :app do
@@ -49,7 +76,9 @@ Capistrano::Configuration.instance(:must_exist).load do
       task :install_gems do
         gem2.install 'sqlite3-ruby'
         gem2.install 'mysql --  --with-mysql-include=/usr/include/mysql --with-mysql-lib=/usr/lib/mysql'
+        gem2.install 'postgres'
         gem2.install 'rails'
+        gem2.install 'rake'
         gem2.install 'rspec'
       end
       
@@ -58,30 +87,27 @@ Capistrano::Configuration.instance(:must_exist).load do
       DESC
         
       task :install_stack do
-        # Ruby everywhere!
-        top.centos.ruby.install      
-        top.centos.rubygems.install      
-        
-        # Stop and deactivate apache 2
-        top.centos.apache.stop
-        top.centos.apache.deactivate
-
-        # Install nginx 
-        top.centos.nginx.install        
-        
-        # XXX check this out before removing - Mike 
-        deprec2.for_roles('app') do
-          top.centos.svn.install
-          top.centos.git.install     
-          top.centos.mongrel.install
-          top.centos.monit.install
-          top.centos.rails.install
-        end
+        if app_server_type == :passenger and passenger_use_ree 
+          top.centos.ree.install
+          # XXX symlink ruby binaries into /usr/local/bin?
+          # or put /opt/ruby-enterprise into path?
+        else
+          top.centos.ruby.install      
+          top.centos.rubygems.install
+         end
+        top.centos.web.install        # Uses value of web_server_type 
+        top.centos.svn.install
+        top.centos.git.install
+        top.centos.app.install        # Uses value of app_server_type
+        top.centos.monit.install
+        top.centos.rails.install
+        top.centos.logrotate.install  
          
-        top.centos.logrotate.install        
-        
-        top.centos.mysql.install
-        top.centos.mysql.start      
+        # Not sure we want to install db as part of this recipe
+        # What if we're using db on another server? Don't reinstall!
+        #              
+        # top.centos.db.install       # Uses value of db_server_type
+
       end
      
       task :install_rails_stack do
@@ -89,47 +115,15 @@ Capistrano::Configuration.instance(:must_exist).load do
         install_stack
       end
 
-      task :install_gems_for_project, :roles => :app do
-          if gems_for_project
-            gems_for_project.each { |gem| gem2.install(gem) }
-          end
-      end
-    
-      PROJECT_CONFIG_FILES[:nginx] = [
-      
-        {:template => 'rails_nginx_vhost.conf.erb',
-         :path => "rails_nginx_vhost.conf", 
-         :mode => 0644,
-         :owner => 'root:root'},
-           
-        {:template => 'logrotate.conf.erb',
-         :path => "logrotate.conf", 
-         :mode => 0644,
-         :owner => 'root:root'}  
-      ]
-
-      desc "Generate config files for rails app."
       task :config_gen do
-        PROJECT_CONFIG_FILES[:nginx].each do |file|
-          deprec2.render_template(:nginx, file)
-        end
-        top.centos.mongrel.config_gen_project
+        top.centos.web.config_gen_project
+        top.centos.app.config_gen_project
       end
 
       desc "Push out config files for rails app."
-      task :config, :roles => [:app, :web] do
-        deprec2.push_configs(:nginx, PROJECT_CONFIG_FILES[:nginx])
-        top.centos.mongrel.config_project
-        symlink_nginx_vhost
-        symlink_nginx_logrotate_config
-      end
-
-      task :symlink_nginx_vhost, :roles => :web do
-        sudo "ln -sf #{deploy_to}/nginx/rails_nginx_vhost.conf #{nginx_vhost_dir}/#{application}.conf"
-      end
-      
-      task :symlink_nginx_logrotate_config, :roles => :web do
-        sudo "ln -sf #{deploy_to}/nginx/logrotate.conf /etc/logrotate.d/nginx-#{application}"
+      task :config do
+        top.centos.web.config_project
+        top.centos.app.config_project
       end
  
       task :create_config_dir, :roles => :app do
@@ -140,13 +134,23 @@ Capistrano::Configuration.instance(:must_exist).load do
       task :setup_user_perms, :roles => [:app, :web] do
         deprec2.groupadd(group)
         deprec2.add_user_to_group(user, group)
-        deprec2.groupadd(mongrel_group)
-        deprec2.add_user_to_group(user, mongrel_group)
+        deprec2.groupadd(app_group)
+        deprec2.add_user_to_group(user, app_group)
         # we've just added ourself to a group - need to teardown connection
         # so that next command uses new session where we belong in group 
         deprec2.teardown_connections
       end
-      
+     
+      desc "Create user and group for application to run as"
+      task :create_app_user_and_group, :roles => :app do
+        deprec2.groupadd(app_group) 
+        deprec2.useradd(app_user, :group => app_group, :homedir => false)
+        # Set the primary group for the user the application runs as (in case 
+        # user already existed when previous command was run)
+        sudo "usermod --gid #{app_group} #{app_user}"
+      end
+
+
       task :set_perms_on_shared_and_releases, :roles => :app do
         releases = File.join(deploy_to, 'releases')
         sudo "chgrp -R #{group} #{shared_path} #{releases}"
@@ -187,14 +191,21 @@ Capistrano::Configuration.instance(:must_exist).load do
           end
         end
       end
-      
-      # desc "Symlink shared files."
-      # task :symlink_shared_files, :roles => [:app, :web] do
-      #   if shared_files
-      #     shared_files.each { |file| run "ln -nfs #{shared_path}/#{file} #{current_path}/#{file}" }
-      #   end
-      # end
 
+      task :install_gems_for_project, :roles => :app do
+        if gems_for_project
+          gems_for_project.each { |gem| gem2.install(gem) }
+        end
+      end
+      
+      desc "Activate web, app and monit"
+      task :activate_services do
+        top.centos.web.activate       
+        top.centos.app.activate
+        top.centos.monit.activate
+      end
+
+      
       # database.yml stuff
       #
       # XXX DRY this up 
@@ -245,20 +256,9 @@ Capistrano::Configuration.instance(:must_exist).load do
         run "ln -nfs #{shared_path}/config/database.yml #{release_path}/config/database.yml" 
       end
 
-
-      desc "setup and configure servers"
-      task :setup_servers do
-
-        top.centos.nginx.activate       
-        top.centos.mongrel.create_mongrel_user_and_group 
-        top.centos.mongrel.activate
-        top.centos.monit.activate
-        top.centos.rails.config_gen
-        top.centos.rails.config
-      end
     end
 
-    namespace :db do
+    namespace :database do
       
       desc "Create database"
       task :create, :roles => :db do
