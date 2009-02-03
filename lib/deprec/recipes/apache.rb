@@ -38,6 +38,7 @@ Capistrano::Configuration.instance(:must_exist).load do
         sudo "yum remove -y httpd"
         deprec2.download_src(SRC_PACKAGES[:apache], src_dir)
         yum.install_from_src(SRC_PACKAGES[:apache], src_dir)
+        #enable_mod_rewrite
       end
       
       # install dependencies for apache
@@ -79,6 +80,11 @@ Capistrano::Configuration.instance(:must_exist).load do
       # Stub so generic tasks don't fail (e.g. centos:web:config_project)
       task :config_project, :roles => :web do
       end
+
+      task :enable_mod_rewrite, :roles => :web do
+        #sudo "a2enmod rewrite"
+      end
+
 
       desc "Start Apache"
       task :start, :roles => :web do
