@@ -3,40 +3,6 @@ Capistrano::Configuration.instance(:must_exist).load do
   namespace :centos do
     namespace :apache do
       
-      # put apache config for site in shared/config/apache2 dir
-      # link it into apps to enable, unlink to disable? 
-      # http://times.usefulinc.com/2006/09/15-rails-debian-apache
-      
-      # XXX Check this over after a nice sleep
-      #
-      # def set_apache_conf
-      #   if apache_default_vhost
-      #     set :apache_conf, "/usr/local/apache2/conf/default.conf" unless apache_default_vhost_conf
-      #   else 
-      #     set :apache_conf, "/usr/local/apache2/conf/apps/#{application}.conf" unless apache_conf
-      #   end
-      # end
-        
-      set(:apache_server_name) { domain }
-      set :apache_user, 'daemon' # XXX this is not yet being inserted into httpd.conf!
-                                 # I've added it for deprec:nagios:install
-      set :apache_conf, nil
-      set :apache_default_vhost, false
-      set :apache_default_vhost_conf, nil
-      set :apache_ctl, "/etc/init.d/httpd"
-      set(:apache_server_aliases) { web_server_aliases }
-      set :apache_proxy_port, 8000
-      set :apache_proxy_servers, 2
-      set :apache_proxy_address, "127.0.0.1"
-      set :apache_ssl_enabled, false
-      set :apache_ssl_ip, nil
-      set :apache_ssl_forward_all, false
-      set :apache_ssl_chainfile, false
-      set :apache_docroot, '/usr/local/apache2/htdocs'
-      set :apache_vhost_dir, '/usr/local/apache2/conf/apps'
-      set :apache_config_file, '/usr/local/apache2/conf/httpd.conf'
-
-
       SRC_PACKAGES[:apache] = {
         :filename => 'httpd-2.2.11.tar.gz',   
         :md5sum => "03e0a99a5de0f3f568a0087fb9993af9 httpd-2.2.11.tar.gz", 
@@ -72,23 +38,11 @@ Capistrano::Configuration.instance(:must_exist).load do
         sudo "yum remove -y httpd"
         deprec2.download_src(SRC_PACKAGES[:apache], src_dir)
         yum.install_from_src(SRC_PACKAGES[:apache], src_dir)
-        setup_vhost_dir
-        # install_index_page
-        activate
-        SYSTEM_CONFIG_FILES[:apache].each do |file|
-          deprec2.render_template(:apache, file.merge(:remote => true))
-        end
       end
       
       # install dependencies for apache
       task :install_deps do
         apt.install( {:base => %w(zlib1g-dev zlib1g openssl openssl-devel)}, :stable )
-      end
-      
-      # Create dir for vhost config files
-      task :setup_vhost_dir do
-        deprec2.mkdir(apache_vhost_dir, :owner => 'root', :group => group, :mode => 0775, :via => :sudo)
-        deprec2.append_to_file_if_missing(apache_config_file, 'Include conf/apps/')
       end
       
       SYSTEM_CONFIG_FILES[:apache] = [
@@ -97,17 +51,12 @@ Capistrano::Configuration.instance(:must_exist).load do
       ]
 
       PROJECT_CONFIG_FILES[:apache] = [
-        
-        {:template => "httpd-vhost-app.conf.erb",
-         :path => 'conf/httpd-vhost-app.conf',
-         :mode => 0755,
-         :owner => 'root:root'}
+        # Not required
       ]
 
       desc "Generate configuration file(s) for apache from template(s)"
       task :config_gen do
         config_gen_system
-        config_gen_project
       end
 
       task :config_gen_system do
@@ -124,37 +73,31 @@ Capistrano::Configuration.instance(:must_exist).load do
       
       desc "Push apache config files to server"
       task :config, :roles => :web do
-        config_system
-        config_project
-      end
-
-      task :config_system, :roles => :web do
         deprec2.push_configs(:apache, SYSTEM_CONFIG_FILES[:apache])
       end
 
+      # Stub so generic tasks don't fail (e.g. centos:web:config_project)
       task :config_project, :roles => :web do
-        deprec2.push_configs(:apache, PROJECT_CONFIG_FILES[:apache])
-        sudo "ln -sf #{deploy_to}/apache/conf/httpd-vhost-app.conf /usr/local/apache2/conf/apps/#{application}.conf"        
       end
 
       desc "Start Apache"
       task :start, :roles => :web do
-        send(run_method, "#{apache_ctl} start")
+        send(run_method, "/etc/init.d/httpd start")
       end
 
       desc "Stop Apache"
       task :stop, :roles => :web do
-        send(run_method, "#{apache_ctl} stop")
+        send(run_method, "/etc/init.d/httpd stop")
       end
 
       desc "Restart Apache"
       task :restart, :roles => :web do
-        send(run_method, "#{apache_ctl} restart")
+        send(run_method, "/etc/init.d/httpd restart")
       end
 
       desc "Reload Apache"
       task :reload, :roles => :web do
-        send(run_method, "#{apache_ctl} reload")
+        send(run_method, "/etc/init.d/httpd reload")
       end
 
       desc "Set apache to start on boot"
@@ -181,8 +124,8 @@ Capistrano::Configuration.instance(:must_exist).load do
       # Generate an index.html page  
       task :install_index_page do
         deprec2.mkdir(apache_docroot, :owner => :root, :group => :deploy, :mode => 0775, :via => :sudo)
-        std.su_put deprec2.render_template(:apache, :template => 'index.html.erb'), File.join(apache_docroot, 'index.html')
-        std.su_put deprec2.render_template(:apache, :template => 'master.css'), File.join(apache_docroot, 'master.css')
+        std.su_put deprec2.render_template(:apache, :template => 'index.html.erb'), File.join('/var/www/index.html')
+        std.su_put deprec2.render_template(:apache, :template => 'master.css'), File.join('/var/www/master.css')
       end
       
     end
