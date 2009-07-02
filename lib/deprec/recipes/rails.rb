@@ -28,13 +28,14 @@ Capistrano::Configuration.instance(:must_exist).load do
     top.centos.rails.activate_services
     top.centos.rails.set_perms_on_shared_and_releases
     top.centos.web.reload
+    top.centos.rails.setup_database
   end
 
   after 'deploy:symlink', :roles => :app do
     top.centos.rails.symlink_shared_dirs
     top.centos.rails.symlink_database_yml unless database_yml_in_scm
     top.centos.rails.make_writable_by_app
-    set_owner_of_environment_rb if web_server_type == :passenger
+    set_owner_of_environment_rb if web_server_type.to_s == 'passenger'
   end
 
   after :deploy, :roles => :app do
@@ -43,6 +44,13 @@ Capistrano::Configuration.instance(:must_exist).load do
     
   namespace :centos do
     namespace :rails do
+
+      task :setup_database, :roles => :db do
+        deprec2.read_database_yml
+        top.centos.db.create_user
+        top.centos.db.create_database
+        top.centos.db.grant_user_access_to_database
+      end
 
       task :install, :roles => :app do
         install_deps
@@ -58,7 +66,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       task :install_gems do
         gem2.install 'sqlite3-ruby'
         gem2.install 'mysql --  --with-mysql-include=/usr/include/mysql --with-mysql-lib=/usr/lib/mysql'
-        gem2.install 'postgres'
+        gem2.install 'ruby-pg'
         gem2.install 'rails'
         gem2.install 'rake'
         gem2.install 'rspec'
@@ -69,7 +77,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       DESC
         
       task :install_stack do
-        if app_server_type == :passenger and passenger_use_ree 
+        if app_server_type.to_s == 'passenger' and passenger_use_ree
           top.centos.ree.install
         else
           top.centos.ruby.install      

@@ -334,6 +334,13 @@ module Deprec2
     SUDO
   end
 
+  def read_database_yml
+    db_config = YAML.load_file('config/database.yml')
+    set :db_user, db_config[rails_env]["username"]
+    set :db_password, db_config[rails_env]["password"] 
+    set :db_name, db_config[rails_env]["database"]
+  end
+
 
   ##
   # Run a command and ask for input when input_query is seen.
